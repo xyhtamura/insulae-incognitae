@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tagalog&display=swap" rel="stylesheet">
 
     <script src="glyphData.js"></script>
+    <script src="lexicon.js"></script>
     <script src="translationModule.js"></script>
     <script src="backgroundManager.js"></script>
     <script src="lineGenerator.js"></script>
@@ -228,9 +229,11 @@ body {
             let currentLineData = Array.from(lineP.children).map(span => {
                 return { char: span.textContent, className: span.className };
             });
-            const originalLength = currentLineData.length;
+            // signature BEFORE (detects same-length swaps, not just length changes)
+            const before = currentLineData.map(c => c.char).join('');
             const mutatedLineData = translator.translateLineData(currentLineData);
-            if (mutatedLineData.length !== originalLength) {
+            const after = mutatedLineData.map(c => c.char).join('');
+            if (before !== after) {
                 lineP.innerHTML = buildHTMLFromData(mutatedLineData);
             }
         }
