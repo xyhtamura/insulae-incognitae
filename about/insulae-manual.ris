@@ -1,244 +1,4 @@
 TY  - BOOK
-ID  - borgdorff-2012
-T1  - The Conflict of the Faculties: Perspectives on Artistic Research and Academia
-AU  - Borgdorff, Henk
-PY  - 2012
-PB  - Leiden University Press
-DO  - 10.5117/9789087281670
-UR  - https://doi.org/10.5117/9789087281670
-N1  - The written text is not a post-hoc report about an artwork, but an articulation of the tacit/pre-reflective knowledge generated through artistic practice.
-KW  - Insulae-L1-ResearchCreation
-ER  - 
-
-TY  - JOUR
-ID  - biggs-2004
-T1  - The Role of the Text in Practice-Based Research
-AU  - Biggs, Michael A. R.
-PY  - 2004
-PB  - University of Hertfordshire
-JF  - Working Papers in Art and Design
-VL  - 3
-UR  - https://www.herts.ac.uk/__data/assets/pdf_file/0004/12289/WPIAAD_vol3_biggs.pdf
-N1  - Text and non-text artifact interact: the text establishes the epistemic framework and research questions that allow the artifact to function as an answer.
-KW  - Insulae-L1-ResearchCreation
-ER  - 
-
-TY  - BOOK
-ID  - biggs-karlsson-2011
-T1  - The Routledge Companion to Research in the Arts
-AU  - Biggs, Michael
-AU  - Karlsson, Henrik
-PY  - 2011
-PB  - Routledge
-DO  - 10.4324/9780203841334
-UR  - https://doi.org/10.4324/9780203841334
-N1  - Surveys the methodological structures of practice-led research, establishing criteria for creative artifacts acting as knowledge claims.
-KW  - Insulae-L1-ResearchCreation
-ER  - 
-
-TY  - JOUR
-ID  - chapman-sawchuk-2012
-T1  - Research-Creation: Intervention, Analysis and 'Family Resemblances'
-AU  - Chapman, Owen
-AU  - Sawchuk, Kim
-PY  - 2012
-PB  - Canadian Journal of Communication
-JF  - Canadian Journal of Communication
-VL  - 37
-IS  - 1
-SP  - 5
-EP  - 26
-DO  - 10.22230/cjc.2012v37n1a2589
-UR  - https://doi.org/10.22230/cjc.2012v37n1a2589
-N1  - Distinguishes four modes of research-creation; locates the manual at the intersection of process documentation and critical intervention.
-KW  - Insulae-L1-ResearchCreation
-ER  - 
-
-TY  - BOOK
-ID  - loveless-2019
-T1  - How to Make Art at the End of the World: A Manifesto for Research-Creation
-AU  - Loveless, Natalie
-PY  - 2019
-PB  - Duke University Press
-DO  - 10.1215/9781478004646
-UR  - https://doi.org/10.1215/9781478004646
-N1  - Reframes research-creation as an institutional and disciplinary intervention; the artist-authored manual serves as an accountable companion text.
-KW  - Insulae-L1-ResearchCreation
-ER  - 
-
-TY  - BOOK
-ID  - nelson-2013
-T1  - Practice as Research in the Arts: Principles, Protocols, Pedagogies, Resistances
-AU  - Nelson, Robin
-PY  - 2013
-PB  - Palgrave Macmillan
-DO  - 10.1057/9781137282910
-UR  - https://doi.org/10.1057/9781137282910
-N1  - The multi-mode submission model; how documentation translates 'know-how' (embodied practice) into 'know-that' (citable research).
-KW  - Insulae-L1-ResearchCreation
-ER  - 
-
-TY  - BOOK
-ID  - hannula-suoranta-vaden-2014
-T1  - Artistic Research Methodology: Narrative, Power and the Public Sphere
-AU  - Hannula, Mika
-AU  - Suoranta, Juha
-AU  - Vadén, Tere
-PY  - 2014
-PB  - Peter Lang
-UR  - https://www.peterlang.com/document/1109968
-N1  - Emphasizes transparency of materials, methodological reflexivity, and the artist's narrative as an epistemic trial.
-KW  - Insulae-L1-ResearchCreation
-ER  - 
-
-TY  - BOOK
-ID  - blackwell-et-al-2022
-T1  - Live Coding: A User's Manual
-AU  - Blackwell, Alan F.
-AU  - Cocker, Emma
-AU  - Cox, Geoff
-AU  - McLean, Alex
-AU  - Magnusson, Thor
-PY  - 2022
-PB  - The MIT Press
-DO  - 10.7551/mitpress/13770.001.0001
-UR  - https://doi.org/10.7551/mitpress/13770.001.0001
-N1  - Employs the 'user manual' genre as an academic/creative monograph format to examine computational performance and socio-technical commitments.
-KW  - Insulae-L2-CriticalCode
-ER  - 
-
-TY  - BOOK
-ID  - montfort-et-al-2012
-T1  - 10 PRINT CHR$(205.5+RND(1)); : GOTO 10
-AU  - Montfort, Nick
-AU  - Baudoin, Patsy
-AU  - Bell, John
-AU  - Bogost, Ian
-AU  - Douglass, Jeremy
-AU  - Marino, Mark C.
-AU  - Mateas, Michael
-AU  - Reas, Casey
-AU  - Sack, Warren
-AU  - Vawter, Noah
-PY  - 2012
-PB  - The MIT Press
-DO  - 10.7551/mitpress/9780262017466.001.0001
-UR  - https://doi.org/10.7551/mitpress/9780262017466.001.0001
-N1  - Critical code studies method; unpacks a single procedural line generator across cultural, algorithmic, and historical registers.
-KW  - Insulae-L2-CriticalCode
-ER  - 
-
-TY  - BOOK
-ID  - chun-2011
-T1  - Programmed Visions: Software and Memory
-AU  - Chun, Wendy Hui Kyong
-PY  - 2011
-PB  - The MIT Press
-DO  - 10.7551/mitpress/9780262015424.001.0001
-UR  - https://doi.org/10.7551/mitpress/9780262015424.001.0001
-N1  - Code, executability, and how technical documentation constructs the user while producing the illusion of total transparency.
-KW  - Insulae-L2-CriticalCode
-ER  - 
-
-TY  - BOOK
-ID  - fuller-2008
-T1  - Software Studies: A Lexicon
-AU  - Fuller, Matthew
-PY  - 2008
-PB  - The MIT Press
-DO  - 10.7551/mitpress/9780262062749.001.0001
-UR  - https://doi.org/10.7551/mitpress/9780262062749.001.0001
-N1  - Establishes computational operations, variables, and algorithms as political, aesthetic, and cultural objects.
-KW  - Insulae-L2-CriticalCode
-ER  - 
-
-TY  - RPRT
-ID  - perlin-2002
-T1  - Improving Noise
-AU  - Perlin, Ken
-PY  - 2002
-PB  - ACM
-SP  - 681
-EP  - 682
-DO  - 10.1145/566570.566636
-UR  - https://doi.org/10.1145/566570.566636
-N1  - The standard procedural terrain algorithm rejected by Insulae in favor of line-by-line real-time temporal generation.
-KW  - Insulae-L2-CriticalCode
-ER  - 
-
-TY  - BOOK
-ID  - cage-1961
-T1  - Silence: Lectures and Writings
-AU  - Cage, John
-PY  - 1961
-PB  - Wesleyan University Press
-UR  - https://www.wesleyan.edu/wespress/cage/silence.html
-N1  - Foundational manifesto on chance operations, aleatoric procedures, and ceding authorial determination to generative scores.
-KW  - Insulae-L2-CriticalCode
-ER  - 
-
-TY  - GEN
-ID  - cage-1951
-T1  - Music of Changes
-AU  - Cage, John
-PY  - 1951
-PB  - Henmar Press / C.F. Peters
-UR  - https://www.editionpeters.com/product/music-of-changes-vol-1/ep6256
-N1  - Paradigmatic aleatoric score using I Ching chance operations to generate non-repeating acoustic events.
-KW  - Insulae-L2-CriticalCode
-ER  - 
-
-TY  - GEN
-ID  - knowles-tenney-1967
-T1  - A House of Dust
-AU  - Knowles, Alison
-AU  - Tenney, James
-PY  - 1967
-PB  - Ragnar Digital / Fluxus Archive
-UR  - https://www.ragnardigital.art/collection/a-house-of-dust
-N1  - Early computational poem generated in FORTRAN; establishes generative algorithmic rules as poetic scores.
-KW  - Insulae-L2-CriticalCode
-ER  - 
-
-TY  - BOOK
-ID  - ono-1964
-T1  - Grapefruit: A Book of Instructions and Drawings
-AU  - Ono, Yoko
-PY  - 1964
-PB  - Wunternaum Press / Simon & Schuster
-UR  - https://www.simonandschuster.com/books/Grapefruit/Yoko-Ono/9780743201100
-N1  - Instruction scores where the manual is the primary site of conceptual creation and performance.
-KW  - Insulae-L2-CriticalCode
-ER  - 
-
-TY  - JOUR
-ID  - lewitt-1967
-T1  - Paragraphs on Conceptual Art
-AU  - LeWitt, Sol
-PY  - 1967
-PB  - Artforum
-JF  - Artforum
-VL  - 5
-IS  - 10
-SP  - 79
-EP  - 83
-UR  - https://www.artforum.com/features/paragraphs-on-conceptual-art-210452/
-N1  - The instruction is the machine that makes the art, separating conceptual specification from material execution.
-KW  - Insulae-L2-CriticalCode
-ER  - 
-
-TY  - GEN
-ID  - arcangel-2002
-T1  - Super Mario Clouds
-AU  - Arcangel, Cory
-PY  - 2002
-PB  - Artist installation
-UR  - https://coryarcangel.com/works/2002-001-super-mario-clouds.html
-N1  - Minimalist cartridge modification demonstrating procedural scrolling as an autonomous visual event.
-KW  - Insulae-L2-CriticalCode
-ER  - 
-
-TY  - BOOK
 ID  - rinehart-ippolito-2014
 T1  - Re-collection: Art, New Media, and Social Memory
 AU  - Rinehart, Richard
@@ -248,7 +8,7 @@ PB  - The MIT Press
 DO  - 10.7551/mitpress/9780262027014.001.0001
 UR  - https://doi.org/10.7551/mitpress/9780262027014.001.0001
 N1  - Variable Media Initiative; computational artworks are preserved not as frozen physical relics but through technical manuals and scores specifying behaviors and dependencies.
-KW  - Insulae-L3-Conservation
+KW  - Manual-S1-Environment
 ER  - 
 
 TY  - JOUR
@@ -260,8 +20,8 @@ PB  - Tate Gallery
 JF  - Tate Papers
 VL  - 6
 UR  - https://www.tate.org.uk/research/tate-papers/06/authenticity-change-and-loss-conservation-of-time-based-media-installations
-N1  - Applies Goodman's allographic art concept to media installations: the artist manual defines the 'work-defining properties' amidst variable hardware.
-KW  - Insulae-L3-Conservation
+N1  - Applies Goodman's allographic art concept to media installations: the artist manual defines the 'work-defining properties' amidst variable hardware lifecycles.
+KW  - Manual-S1-Environment
 ER  - 
 
 TY  - JOUR
@@ -274,7 +34,7 @@ JF  - Places Journal
 DO  - 10.22269/181120
 UR  - https://doi.org/10.22269/181120
 N1  - Reframes media theory around physical maintenance, wiring, single-board computers, and operational manuals.
-KW  - Insulae-L3-Conservation
+KW  - Manual-S1-Environment
 ER  - 
 
 TY  - BOOK
@@ -286,7 +46,7 @@ PB  - University of Minnesota Press
 DO  - 10.5749/9781452954899
 UR  - https://doi.org/10.5749/9781452954899
 N1  - Bridges ancient inscriptional substrates with contemporary computational and urban infrastructure.
-KW  - Insulae-L3-Conservation
+KW  - Manual-S1-Environment
 ER  - 
 
 TY  - BOOK
@@ -298,7 +58,7 @@ PB  - University of Minnesota Press
 DO  - 10.5749/minnesota/9780816677658.001.0001
 UR  - https://doi.org/10.5749/minnesota/9780816677658.001.0001
 N1  - Media archaeology of micro-temporal execution and operativity in electronic and digital systems.
-KW  - Insulae-L3-Conservation
+KW  - Manual-S1-Environment
 ER  - 
 
 TY  - JOUR
@@ -323,7 +83,82 @@ EP  - 31
 DO  - 10.1145/1629607.1629613
 UR  - https://doi.org/10.1145/1629607.1629613
 N1  - Documents the historical convergence of telephony infrastructure and digital computation into the internet.
-KW  - Insulae-L3-Conservation
+KW  - Manual-S1-Environment
+ER  - 
+
+TY  - RPRT
+ID  - perlin-2002
+T1  - Improving Noise
+AU  - Perlin, Ken
+PY  - 2002
+PB  - ACM
+SP  - 681
+EP  - 682
+DO  - 10.1145/566570.566636
+UR  - https://doi.org/10.1145/566570.566636
+N1  - The standard procedural continuous heightmap algorithm rejected by Insulae in favor of line-by-line real-time temporal generation.
+KW  - Manual-S2-Operation
+ER  - 
+
+TY  - BOOK
+ID  - montfort-et-al-2012
+T1  - 10 PRINT CHR$(205.5+RND(1)); : GOTO 10
+AU  - Montfort, Nick
+AU  - Baudoin, Patsy
+AU  - Bell, John
+AU  - Bogost, Ian
+AU  - Douglass, Jeremy
+AU  - Marino, Mark C.
+AU  - Mateas, Michael
+AU  - Reas, Casey
+AU  - Sack, Warren
+AU  - Vawter, Noah
+PY  - 2012
+PB  - The MIT Press
+DO  - 10.7551/mitpress/9780262017466.001.0001
+UR  - https://doi.org/10.7551/mitpress/9780262017466.001.0001
+N1  - Critical code studies method; unpacks a single procedural line generator across cultural, algorithmic, and historical registers.
+KW  - Manual-S2-Operation
+ER  - 
+
+TY  - BOOK
+ID  - blackwell-et-al-2022
+T1  - Live Coding: A User's Manual
+AU  - Blackwell, Alan F.
+AU  - Cocker, Emma
+AU  - Cox, Geoff
+AU  - McLean, Alex
+AU  - Magnusson, Thor
+PY  - 2022
+PB  - The MIT Press
+DO  - 10.7551/mitpress/13770.001.0001
+UR  - https://doi.org/10.7551/mitpress/13770.001.0001
+N1  - Employs the 'user manual' genre as an academic/creative monograph format to examine computational performance and socio-technical commitments.
+KW  - Manual-S2-Operation
+ER  - 
+
+TY  - BOOK
+ID  - chun-2011
+T1  - Programmed Visions: Software and Memory
+AU  - Chun, Wendy Hui Kyong
+PY  - 2011
+PB  - The MIT Press
+DO  - 10.7551/mitpress/9780262015424.001.0001
+UR  - https://doi.org/10.7551/mitpress/9780262015424.001.0001
+N1  - Code, executability, and how technical documentation constructs the user while producing the illusion of total transparency.
+KW  - Manual-S2-Operation
+ER  - 
+
+TY  - BOOK
+ID  - fuller-2008
+T1  - Software Studies: A Lexicon
+AU  - Fuller, Matthew
+PY  - 2008
+PB  - The MIT Press
+DO  - 10.7551/mitpress/9780262062749.001.0001
+UR  - https://doi.org/10.7551/mitpress/9780262062749.001.0001
+N1  - Establishes computational operations, variables, and algorithms as political, aesthetic, and cultural objects.
+KW  - Manual-S2-Operation
 ER  - 
 
 TY  - BOOK
@@ -335,93 +170,18 @@ PB  - Palgrave Macmillan
 DO  - 10.1007/978-3-319-54822-7
 UR  - https://doi.org/10.1007/978-3-319-54822-7
 N1  - Postcolonial critique of procedural generation and the digital terra nullius in simulation/strategy games.
-KW  - Insulae-L4-CounterCartography
+KW  - Manual-S2-Operation
 ER  - 
 
-TY  - BOOK
-ID  - wood-2010
-T1  - Rethinking the Power of Maps
-AU  - Wood, Denis
-AU  - Fels, John
-AU  - Krygier, John
-PY  - 2010
-PB  - The Guilford Press
-UR  - https://www.guilford.com/books/Rethinking-the-Power-of-Maps/Denis-Wood/9781593853662
-N1  - Cartographic manuals, keys, and projections as active propositions serving institutional power rather than neutral records.
-KW  - Insulae-L4-CounterCartography
-ER  - 
-
-TY  - BOOK
-ID  - glissant-1997
-T1  - Poetics of Relation
-AU  - Glissant, Édouard
-PY  - 1997
-PB  - University of Michigan Press
-DO  - 10.3998/mpub.10257
-UR  - https://doi.org/10.3998/mpub.10257
-N1  - The right to opacity and archipelagic relation resisting colonial cartographic transparency and mastery.
-KW  - Insulae-L4-CounterCartography
-ER  - 
-
-TY  - JOUR
-ID  - hauofa-1994
-T1  - Our Sea of Islands
-AU  - Hau'ofa, Epeli
-PY  - 1994
-PB  - University of Hawai'i Press
-JF  - The Contemporary Pacific
-VL  - 6
-IS  - 1
-SP  - 148
-EP  - 161
-UR  - https://scholarspace.manoa.hawaii.edu/handle/10125/12960
-N1  - Replaces the colonial framing of islands as isolated dots with an oceanic network of relational voyages and exchange.
-KW  - Insulae-L4-CounterCartography
-ER  - 
-
-TY  - BOOK
-ID  - scott-1994
-T1  - Barangay: Sixteenth-Century Philippine Culture and Society
-AU  - Scott, William Henry
-PY  - 1994
-PB  - Ateneo de Manila University Press
-UR  - https://www.ateneopress.org/books/barangay-sixteenth-century-philippine-culture-and-society
-N1  - Standard historical source for precolonial Philippine coastal and riverine polities, trade, and script literacies.
-KW  - Insulae-L4-CounterCartography
-ER  - 
-
-TY  - BOOK
-ID  - junker-1999
-T1  - Raiding, Trading, and Feasting: The Political Economy of Philippine Chiefdoms
-AU  - Junker, Laura Lee
-PY  - 1999
-PB  - University of Hawai'i Press
-DO  - 10.1515/9780824864064
-UR  - https://doi.org/10.1515/9780824864064
-N1  - Archaeological analysis of Philippine coastal polities participating in regional maritime trade networks across East and Southeast Asia.
-KW  - Insulae-L4-CounterCartography
-ER  - 
-
-TY  - BOOK
-ID  - warren-2007
-T1  - The Sulu Zone, 1768–1898: The Dynamics of External Trade, Slavery, and Ethnicity in the Transformation of a Southeast Asian Maritime State
-AU  - Warren, James Francis
-PY  - 2007
-PB  - NUS Press
-UR  - https://nuspress.nus.edu.sg/products/the-sulu-zone-1768-1898
-N1  - Treats the Sulu and Celebes Seas as a fluid maritime zone of polyglot interaction rather than a national periphery.
-KW  - Insulae-L4-CounterCartography
-ER  - 
-
-TY  - RPRT
-ID  - unicode-2025
-T1  - The Unicode Standard, Version 17.0
-AU  - Unicode Consortium
-PY  - 2025
-PB  - Unicode Consortium
-UR  - https://www.unicode.org/versions/Unicode17.0.0/core-spec/chapter-17/
-N1  - Technical standard governing digital character allocation; documents how scripts like Tagalog/Baybayin are encoded within contemporary computational standards.
-KW  - Insulae-L4-CounterCartography
+TY  - GEN
+ID  - arcangel-2002
+T1  - Super Mario Clouds
+AU  - Arcangel, Cory
+PY  - 2002
+PB  - Artist installation
+UR  - https://coryarcangel.com/works/2002-001-super-mario-clouds.html
+N1  - Minimalist cartridge modification demonstrating procedural scrolling as an autonomous visual event.
+KW  - Manual-S2-Operation
 ER  - 
 
 TY  - JOUR
@@ -438,6 +198,246 @@ EP  - 28
 DO  - 10.13185/paha2023.13202
 UR  - https://doi.org/10.13185/paha2023.13202
 N1  - Analyzes José Garcia Villa's comma and punctuation poems as structural and rhythmic infrastructure in concrete poetics.
-KW  - Insulae-L4-CounterCartography
+KW  - Manual-S3-Typography
+ER  - 
+
+TY  - RPRT
+ID  - unicode-2025
+T1  - The Unicode Standard, Version 17.0
+AU  - Unicode Consortium
+PY  - 2025
+PB  - Unicode Consortium
+UR  - https://www.unicode.org/versions/Unicode17.0.0/core-spec/chapter-17/
+N1  - Technical standard governing digital character allocation; documents how scripts like Tagalog/Baybayin are encoded within contemporary computational standards.
+KW  - Manual-S3-Typography
+ER  - 
+
+TY  - BOOK
+ID  - scott-1994
+T1  - Barangay: Sixteenth-Century Philippine Culture and Society
+AU  - Scott, William Henry
+PY  - 1994
+PB  - Ateneo de Manila University Press
+UR  - https://www.ateneopress.org/books/barangay-sixteenth-century-philippine-culture-and-society
+N1  - Standard historical source for precolonial Philippine coastal and riverine polities, trade, and script literacies.
+KW  - Manual-S4-Provenance
+ER  - 
+
+TY  - BOOK
+ID  - junker-1999
+T1  - Raiding, Trading, and Feasting: The Political Economy of Philippine Chiefdoms
+AU  - Junker, Laura Lee
+PY  - 1999
+PB  - University of Hawai'i Press
+DO  - 10.1515/9780824864064
+UR  - https://doi.org/10.1515/9780824864064
+N1  - Archaeological analysis of Philippine coastal polities participating in regional maritime trade networks across East and Southeast Asia.
+KW  - Manual-S4-Provenance
+ER  - 
+
+TY  - BOOK
+ID  - warren-2007
+T1  - The Sulu Zone, 1768–1898: The Dynamics of External Trade, Slavery, and Ethnicity in the Transformation of a Southeast Asian Maritime State
+AU  - Warren, James Francis
+PY  - 2007
+PB  - NUS Press
+UR  - https://nuspress.nus.edu.sg/products/the-sulu-zone-1768-1898
+N1  - Treats the Sulu and Celebes Seas as a fluid maritime zone of polyglot interaction rather than a national periphery.
+KW  - Manual-S4-Provenance
+ER  - 
+
+TY  - JOUR
+ID  - hauofa-1994
+T1  - Our Sea of Islands
+AU  - Hau'ofa, Epeli
+PY  - 1994
+PB  - University of Hawai'i Press
+JF  - The Contemporary Pacific
+VL  - 6
+IS  - 1
+SP  - 148
+EP  - 161
+UR  - https://scholarspace.manoa.hawaii.edu/handle/10125/12960
+N1  - Replaces the colonial framing of islands as isolated dots with an oceanic network of relational voyages and exchange.
+KW  - Manual-S4-Provenance
+ER  - 
+
+TY  - BOOK
+ID  - glissant-1997
+T1  - Poetics of Relation
+AU  - Glissant, Édouard
+PY  - 1997
+PB  - University of Michigan Press
+DO  - 10.3998/mpub.10257
+UR  - https://doi.org/10.3998/mpub.10257
+N1  - The right to opacity and archipelagic relation resisting colonial cartographic transparency and mastery.
+KW  - Manual-S4-Provenance
+ER  - 
+
+TY  - BOOK
+ID  - wood-2010
+T1  - Rethinking the Power of Maps
+AU  - Wood, Denis
+AU  - Fels, John
+AU  - Krygier, John
+PY  - 2010
+PB  - The Guilford Press
+UR  - https://www.guilford.com/books/Rethinking-the-Power-of-Maps/Denis-Wood/9781593853662
+N1  - Cartographic manuals, keys, and projections as active propositions serving institutional power rather than neutral records.
+KW  - Manual-S4-Provenance
+ER  - 
+
+TY  - BOOK
+ID  - borgdorff-2012
+T1  - The Conflict of the Faculties: Perspectives on Artistic Research and Academia
+AU  - Borgdorff, Henk
+PY  - 2012
+PB  - Leiden University Press
+DO  - 10.5117/9789087281670
+UR  - https://doi.org/10.5117/9789087281670
+N1  - The written text is not a post-hoc report about an artwork, but an articulation of the tacit/pre-reflective knowledge generated through artistic practice.
+KW  - Manual-S5-Method
+ER  - 
+
+TY  - JOUR
+ID  - biggs-2004
+T1  - The Role of the Text in Practice-Based Research
+AU  - Biggs, Michael A. R.
+PY  - 2004
+PB  - University of Hertfordshire
+JF  - Working Papers in Art and Design
+VL  - 3
+UR  - https://www.herts.ac.uk/__data/assets/pdf_file/0004/12289/WPIAAD_vol3_biggs.pdf
+N1  - Text and non-text artifact interact: the text establishes the epistemic framework and research questions that allow the artifact to function as an answer.
+KW  - Manual-S5-Method
+ER  - 
+
+TY  - BOOK
+ID  - biggs-karlsson-2011
+T1  - The Routledge Companion to Research in the Arts
+AU  - Biggs, Michael
+AU  - Karlsson, Henrik
+PY  - 2011
+PB  - Routledge
+DO  - 10.4324/9780203841334
+UR  - https://doi.org/10.4324/9780203841334
+N1  - Surveys the methodological structures of practice-led research, establishing criteria for creative artifacts acting as knowledge claims.
+KW  - Manual-S5-Method
+ER  - 
+
+TY  - JOUR
+ID  - chapman-sawchuk-2012
+T1  - Research-Creation: Intervention, Analysis and 'Family Resemblances'
+AU  - Chapman, Owen
+AU  - Sawchuk, Kim
+PY  - 2012
+PB  - Canadian Journal of Communication
+JF  - Canadian Journal of Communication
+VL  - 37
+IS  - 1
+SP  - 5
+EP  - 26
+DO  - 10.22230/cjc.2012v37n1a2589
+UR  - https://doi.org/10.22230/cjc.2012v37n1a2589
+N1  - Distinguishes four modes of research-creation; locates the manual at the intersection of process documentation and critical intervention.
+KW  - Manual-S5-Method
+ER  - 
+
+TY  - BOOK
+ID  - loveless-2019
+T1  - How to Make Art at the End of the World: A Manifesto for Research-Creation
+AU  - Loveless, Natalie
+PY  - 2019
+PB  - Duke University Press
+DO  - 10.1215/9781478004646
+UR  - https://doi.org/10.1215/9781478004646
+N1  - Reframes research-creation as an institutional and disciplinary intervention; the artist-authored manual serves as an accountable companion text.
+KW  - Manual-S5-Method
+ER  - 
+
+TY  - BOOK
+ID  - nelson-2013
+T1  - Practice as Research in the Arts: Principles, Protocols, Pedagogies, Resistances
+AU  - Nelson, Robin
+PY  - 2013
+PB  - Palgrave Macmillan
+DO  - 10.1057/9781137282910
+UR  - https://doi.org/10.1057/9781137282910
+N1  - The multi-mode submission model; how documentation translates 'know-how' (embodied practice) into 'know-that' (citable research).
+KW  - Manual-S5-Method
+ER  - 
+
+TY  - BOOK
+ID  - hannula-suoranta-vaden-2014
+T1  - Artistic Research Methodology: Narrative, Power and the Public Sphere
+AU  - Hannula, Mika
+AU  - Suoranta, Juha
+AU  - Vadén, Tere
+PY  - 2014
+PB  - Peter Lang
+UR  - https://www.peterlang.com/document/1109968
+N1  - Emphasizes transparency of materials, methodological reflexivity, and the artist's narrative as an epistemic trial.
+KW  - Manual-S5-Method
+ER  - 
+
+TY  - BOOK
+ID  - cage-1961
+T1  - Silence: Lectures and Writings
+AU  - Cage, John
+PY  - 1961
+PB  - Wesleyan University Press
+UR  - https://www.wesleyan.edu/wespress/cage/silence.html
+N1  - Foundational manifesto on chance operations, aleatoric procedures, and ceding authorial determination to generative scores.
+KW  - Manual-S5-Method
+ER  - 
+
+TY  - GEN
+ID  - cage-1951
+T1  - Music of Changes
+AU  - Cage, John
+PY  - 1951
+PB  - Henmar Press / C.F. Peters
+UR  - https://www.editionpeters.com/product/music-of-changes-vol-1/ep6256
+N1  - Paradigmatic aleatoric score using I Ching chance operations to generate non-repeating acoustic events.
+KW  - Manual-S5-Method
+ER  - 
+
+TY  - GEN
+ID  - knowles-tenney-1967
+T1  - A House of Dust
+AU  - Knowles, Alison
+AU  - Tenney, James
+PY  - 1967
+PB  - Ragnar Digital / Fluxus Archive
+UR  - https://www.ragnardigital.art/collection/a-house-of-dust
+N1  - Early computational poem generated in FORTRAN; establishes generative algorithmic rules as poetic scores.
+KW  - Manual-S5-Method
+ER  - 
+
+TY  - BOOK
+ID  - ono-1964
+T1  - Grapefruit: A Book of Instructions and Drawings
+AU  - Ono, Yoko
+PY  - 1964
+PB  - Wunternaum Press / Simon & Schuster
+UR  - https://www.simonandschuster.com/books/Grapefruit/Yoko-Ono/9780743201100
+N1  - Instruction scores where the manual is the primary site of conceptual creation and performance.
+KW  - Manual-S5-Method
+ER  - 
+
+TY  - JOUR
+ID  - lewitt-1967
+T1  - Paragraphs on Conceptual Art
+AU  - LeWitt, Sol
+PY  - 1967
+PB  - Artforum
+JF  - Artforum
+VL  - 5
+IS  - 10
+SP  - 79
+EP  - 83
+UR  - https://www.artforum.com/features/paragraphs-on-conceptual-art-210452/
+N1  - The instruction is the machine that makes the art, separating conceptual specification from material execution.
+KW  - Manual-S5-Method
 ER  - 
 
