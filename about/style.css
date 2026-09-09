@@ -793,6 +793,29 @@ footer a { text-decoration: none; text-transform: uppercase; letter-spacing: .08
   .paper-grid { grid-template-columns: 170px minmax(0, 680px); gap: 3.5rem; }
   .section-number { position: static; margin-bottom: .45rem; }
   .apparatus .section-number { position: static; }
+.download-links {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1.2rem;
+}
+.btn-download {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.55rem 1rem;
+  font-size: 0.82rem;
+  font-family: var(--mono);
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--forest);
+  text-decoration: none;
+  border-radius: 2px;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.btn-download:hover {
+  background: var(--forest);
+  color: #fff;
+  border-color: var(--forest);
 }
 
 @media (max-width: 820px) {
