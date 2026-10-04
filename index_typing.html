@@ -12,37 +12,52 @@
 
   <script src="backgroundManager.js"></script>
   <script src="LetterMap.js"></script>
+  <script src="glyphData.js"></script>
+  <script src="lexicon.js"></script>
+  <script src="translationModule.js"></script>
+  <script src="typingEcology.js"></script>
   <script src="typerEngine.js"></script>
 
   <style>
+    @font-face {
+      font-family: "Noto Sans Tagalog Local";
+      src: url("fonts/NotoSansTagalog-Regular.ttf") format("truetype");
+      font-display: swap;
+    }
     body {
       margin: 0; padding: 0; overflow: hidden;
       height: 100vh; display: flex; justify-content: center; align-items: center;
       transition: background-color 1s ease;
       /* add CJK fallback */
-      font-family: "IBM Plex Mono", "Noto Sans JP", "Noto Sans", sans-serif;
+      font-family: "IBM Plex Mono", "Noto Sans JP", "Noto Sans", "Noto Sans Tagalog Local", sans-serif;
     }
     #terminal {
-      font-size: min(2.5vmin, calc((100vw - 80px) / 43), 16px); line-height: 1;
+      font-size: clamp(12px, 2.5vmin, 18px); line-height: 1;
       text-align: left; white-space: pre-wrap; padding: 20px;
       border-radius: 10px; width: 100%; height: 100%;
       display: flex; justify-content: center; align-items: center;
       transition: background-color 1s ease; max-width: 780px; overflow: hidden;
     }
     #terminal { box-sizing: border-box; }
-    #terminal-content {
+    #typing-field {
       position: relative; width: 95%; height: 30em; max-height: calc(100% - 140px);
-      overflow: hidden; outline: none;
+      overflow: hidden;
     }
+    #terminal-content, #flight-layer { position: absolute; inset: 0; }
+    #terminal-content { outline: none; }
+    #flight-layer { pointer-events: none; overflow: hidden; }
+    .bird { position: absolute; line-height: 1; color: #202b28; text-shadow: 0 0 3px #f5f8ef; }
     #terminal-content:focus-visible { outline: 1px solid currentColor; outline-offset: 8px; }
     #terminal-content p {
       position: absolute; bottom: 0; margin: 0; height: 1em;
       line-height: 1; letter-spacing: 0.08em; white-space: pre;
+      transform-origin: left bottom;
     }
     #controls {
       position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
       width: min(90%, 680px); box-sizing: border-box; padding: 12px 16px;
-      display: flex; align-items: center; gap: 14px;
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px;
+      max-height: 35vh; overflow: auto;
       border: 1px solid #444; border-radius: 6px; color: #202020;
       background: #f1f1ecee; font-size: 12px; line-height: 1.5;
     }
@@ -53,6 +68,13 @@
     }
     #play-pause:focus-visible { outline: 2px solid #202020; outline-offset: 3px; }
     #typing-help { margin: 0; }
+    #controls label { display: flex; align-items: center; gap: 5px; }
+    #controls input { margin: 0; }
+    #typing-help, #controls details { flex-basis: 100%; }
+    #controls summary { cursor: pointer; }
+    #controls details p { margin: 6px 0 0; }
+    [data-mutation="translation"] { text-decoration: underline dotted; text-underline-offset: 0.15em; }
+    [data-mutation="ecology"] { box-shadow: inset 0 -1px currentColor; }
 
     /* Natural text mode:
        No fixed width. Each glyph can use its natural width.
@@ -97,11 +119,22 @@
 </head>
 <body>
   <div id="terminal">
-    <div id="terminal-content" tabindex="0" role="group" aria-label="Type terrain" aria-describedby="typing-help"></div>
+    <div id="typing-field">
+      <div id="terminal-content" tabindex="0" role="group" aria-label="Type terrain" aria-describedby="typing-help"></div>
+      <div id="flight-layer" aria-hidden="true"></div>
+    </div>
   </div>
   <div id="controls">
     <button id="play-pause" type="button" aria-controls="terminal-content">Play</button>
-    <p id="typing-help">Type letters to add terrain. Enter completes a line. Play scrolls completed lines upward.</p>
+    <label><input id="translation-enabled" type="checkbox" checked>Translation</label>
+    <label><input id="ecology-enabled" type="checkbox" checked>Ecology</label>
+    <p id="typing-help">Enter completes a line. Play advances completed terrain one row every two seconds. Birds fly between steps.</p>
+    <details>
+      <summary>Keys and interactions</summary>
+      <p>R/Q: rainforest. L/W: temperate forest. N/K: taiga. E/T: water. J/P: cold water. U/F: reef. I/Y: estuary. O: swamp. V: ice. S/B: savanna. C/G: steppe. Z/M: tundra. A/D: sand. X: mountain. H: plain. Space leaves a gap.</p>
+      <p>Water touching forest can become estuary. Open ground touching water can become swamp; beside forest, it can become forest. Ice cools nearby water. Forest patches can release birds. Contact must persist across steps.</p>
+      <p>Translation rewrites recognized words and syllables. Dotted underlines mark rewritten text; solid underlines mark biome changes. The active line stays editable. Pause holds movement and mutations.</p>
+    </details>
   </div>
 
   <script>
@@ -110,12 +143,19 @@
 
     const engine = new TyperEngine({
       container: document.getElementById('terminal-content'),
+      flightLayer: document.getElementById('flight-layer'),
       cols: 30,
       rows: 30
     });
 
     const surface = document.getElementById('terminal-content');
     const playback = document.getElementById('play-pause');
+    document.getElementById('translation-enabled').addEventListener('change', (event) => {
+      engine.translationEnabled = event.target.checked;
+    });
+    document.getElementById('ecology-enabled').addEventListener('change', (event) => {
+      engine.ecologyEnabled = event.target.checked;
+    });
     playback.addEventListener('click', (event) => {
       engine.setPlaying(!engine.playing);
       playback.textContent = engine.playing ? 'Pause' : 'Play';
