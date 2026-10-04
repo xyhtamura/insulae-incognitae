@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Insulae Incognita — Typewriter Variant</title>
 
   <!-- Fonts -->
@@ -22,14 +23,36 @@
       font-family: "IBM Plex Mono", "Noto Sans JP", "Noto Sans", sans-serif;
     }
     #terminal {
-      font-size: 2.5vmin; line-height: 1.05;
+      font-size: min(2.5vmin, calc((100vw - 80px) / 43), 16px); line-height: 1;
       text-align: left; white-space: pre-wrap; padding: 20px;
       border-radius: 10px; width: 100%; height: 100%;
       display: flex; justify-content: center; align-items: center;
       transition: background-color 1s ease; max-width: 780px; overflow: hidden;
     }
-    #terminal-content { max-width: 95%; max-height: 90%; overflow: hidden; }
-    #terminal-content p { margin: 0; line-height: 1.0; letter-spacing: 0.08em; }
+    #terminal { box-sizing: border-box; }
+    #terminal-content {
+      position: relative; width: 95%; height: 30em; max-height: calc(100% - 140px);
+      overflow: hidden; outline: none;
+    }
+    #terminal-content:focus-visible { outline: 1px solid currentColor; outline-offset: 8px; }
+    #terminal-content p {
+      position: absolute; bottom: 0; margin: 0; height: 1em;
+      line-height: 1; letter-spacing: 0.08em; white-space: pre;
+    }
+    #controls {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      width: min(90%, 680px); box-sizing: border-box; padding: 12px 16px;
+      display: flex; align-items: center; gap: 14px;
+      border: 1px solid #444; border-radius: 6px; color: #202020;
+      background: #f1f1ecee; font-size: 12px; line-height: 1.5;
+    }
+    #play-pause {
+      font: inherit; min-width: 72px; min-height: 40px; padding: 8px 14px;
+      border: 1px solid #444; border-radius: 3px; background: #fff; color: #202020;
+      cursor: pointer;
+    }
+    #play-pause:focus-visible { outline: 2px solid #202020; outline-offset: 3px; }
+    #typing-help { margin: 0; }
 
     /* Natural text mode:
        No fixed width. Each glyph can use its natural width.
@@ -74,18 +97,50 @@
 </head>
 <body>
   <div id="terminal">
-    <div id="terminal-content"></div>
+    <div id="terminal-content" tabindex="0" role="group" aria-label="Type terrain" aria-describedby="typing-help"></div>
+  </div>
+  <div id="controls">
+    <button id="play-pause" type="button" aria-controls="terminal-content">Play</button>
+    <p id="typing-help">Type letters to add terrain. Enter completes a line. Play scrolls completed lines upward.</p>
   </div>
 
   <script>
     const background = new BackgroundManager();
-    (function loop(){ background.update(); requestAnimationFrame(loop); })();
+    background.update();
 
     const engine = new TyperEngine({
       container: document.getElementById('terminal-content'),
       cols: 30,
       rows: 30
     });
+
+    const surface = document.getElementById('terminal-content');
+    const playback = document.getElementById('play-pause');
+    playback.addEventListener('click', (event) => {
+      engine.setPlaying(!engine.playing);
+      playback.textContent = engine.playing ? 'Pause' : 'Play';
+      // Pointer activation returns to typing; keyboard activation retains focus.
+      if (event.detail > 0) surface.focus({ preventScroll: true });
+    });
+    surface.focus({ preventScroll: true });
+
+    let previousTime = null;
+    let colorTime = 0;
+    function loop(time) {
+      const seconds = previousTime === null ? 0 : Math.min((time - previousTime) / 1000, 0.1);
+      previousTime = time;
+      if (!document.hidden && engine.playing) {
+        engine.advance(seconds);
+        colorTime += seconds;
+        while (colorTime >= 1 / 60) {
+          background.update();
+          colorTime -= 1 / 60;
+        }
+      }
+      requestAnimationFrame(loop);
+    }
+    document.addEventListener('visibilitychange', () => { previousTime = null; });
+    requestAnimationFrame(loop);
   </script>
 </body>
 </html>

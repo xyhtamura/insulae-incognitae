@@ -1,20 +1,34 @@
-// typerEngine.js
+// Completed lines scroll above a fixed, editable typing line.
 class TyperEngine {
   constructor({ container, cols = 30, rows = 30 }) {
     this.container = container;
     this.cols = cols;
     this.rows = rows;
 
-    this.lines = [this._makeEmptyLine()];
-    this.cursor = { row: 0, col: 0 };
+    this.line = [];
+    this.completed = [];
+    this.playing = false;
 
     this._render();
-    window.addEventListener('keydown', (e) => this._onKey(e));
+    // Controls keep their native keys; typing belongs to this surface.
+    this.container.addEventListener('keydown', (e) => this._onKey(e));
   }
 
-  _makeEmptyLine() { return []; }
+  setPlaying(playing) { this.playing = playing; }
+
+  advance(seconds) {
+    if (!this.playing || seconds <= 0) return;
+    for (const line of this.completed) {
+      line.distance += seconds; // One line height per second.
+      line.element.style.bottom = `${line.distance}em`;
+    }
+    while (this.completed[0]?.distance >= this.rows) {
+      this.completed.shift().element.remove();
+    }
+  }
 
   _onKey(e) {
+    if (e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
     const key = e.key;
 
     if (key === 'Enter')     { e.preventDefault(); this._newline();   return; }
@@ -26,6 +40,7 @@ class TyperEngine {
     const ch = key.toLowerCase();
     const mapping = LETTER_TO_BIOME[ch];
     if (!mapping) return;
+    e.preventDefault();
 
     const glyphs = mapping.glyphs;
     const char = glyphs[Math.floor(Math.random() * glyphs.length)];
@@ -42,81 +57,65 @@ class TyperEngine {
   }
 
   _typeCell(cell) {
-    if (this.cursor.col >= this.cols) this._newline();
-
-    const line = this.lines[this.cursor.row];
-    line.splice(this.cursor.col, 0, cell);
-    if (line.length > this.cols) line.length = this.cols;
-    this.cursor.col++;
-
+    if (this.line.length >= this.cols) this._newline();
+    this.line.push(cell);
     this._render();
   }
 
   _space() {
-    if (this.cursor.col >= this.cols) this._newline();
-    const line = this.lines[this.cursor.row];
-    line.splice(this.cursor.col, 0, { char: ' ', className: '' });
-    if (line.length > this.cols) line.length = this.cols;
-    this.cursor.col++;
-    this._render();
+    this._typeCell({ char: ' ', className: '' });
   }
 
   _newline() {
-    this.lines.splice(this.cursor.row + 1, 0, this._makeEmptyLine());
-    this.cursor.row++;
-    this.cursor.col = 0;
-
-    if (this.lines.length > this.rows) {
-      this.lines.shift();
-      this.cursor.row = Math.max(0, this.cursor.row - 1);
+    // Make room for a submitted line even while the field is paused.
+    let distance = 1;
+    for (let i = this.completed.length - 1; i >= 0; i--) {
+      this.completed[i].distance = Math.max(this.completed[i].distance, distance + 1);
+      distance = this.completed[i].distance;
     }
+    this.completed.push({ cells: this.line, distance: 1 });
+    this.completed = this.completed.filter(line => line.distance < this.rows);
+    this.line = [];
     this._render();
   }
 
   _backspace() {
-    if (this.cursor.col > 0) {
-      const line = this.lines[this.cursor.row];
-      line.splice(this.cursor.col - 1, 1);
-      this.cursor.col--;
-      this._render();
-      return;
+    if (this.line.length) {
+      this.line.pop();
+    } else if (this.completed.length) {
+      // Recover the most recent visible line for editing.
+      this.line = this.completed.pop().cells;
     }
-    if (this.cursor.row > 0) {
-      const prevLen = this.lines[this.cursor.row - 1].length;
-      this.lines.splice(this.cursor.row, 1);
-      this.cursor.row--;
-      this.cursor.col = Math.min(prevLen, this.cols);
-      this._render();
+    this._render();
+  }
+
+  _makeParagraph(cells) {
+    const p = document.createElement('p');
+    for (const cell of cells) {
+      const span = document.createElement('span');
+      span.className = cell.className || 'unknown';
+      span.textContent = cell.char;
+      p.appendChild(span);
     }
+    return p;
   }
 
   _render() {
     const frag = document.createDocumentFragment();
-
-    for (let r = 0; r < this.lines.length; r++) {
-      const p = document.createElement('p');
-      const line = this.lines[r];
-
-      for (let c = 0; c < Math.min(line.length, this.cols); c++) {
-        const span = document.createElement('span');
-        span.className = line[c].className || 'unknown';
-        span.textContent = line[c].char;
-        p.appendChild(span);
-      }
-
-      if (r === this.cursor.row) {
-        const cursor = document.createElement('span');
-        cursor.className = 'cursor';
-        cursor.textContent = ' ';
-        p.appendChild(cursor);
-      }
-
+    for (const line of this.completed) {
+      const p = this._makeParagraph(line.cells);
+      p.className = 'completed-line';
+      p.style.bottom = `${line.distance}em`;
+      line.element = p;
       frag.appendChild(p);
     }
-
-    while (frag.childNodes.length > this.rows) frag.removeChild(frag.firstChild);
-
-    this.container.innerHTML = '';
-    this.container.appendChild(frag);
+    const active = this._makeParagraph(this.line);
+    active.className = 'active-line';
+    const cursor = document.createElement('span');
+    cursor.className = 'cursor';
+    cursor.textContent = ' ';
+    active.appendChild(cursor);
+    frag.appendChild(active);
+    this.container.replaceChildren(frag);
   }
 }
