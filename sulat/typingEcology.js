@@ -6,7 +6,7 @@ class TypingEcology {
   constructor({ random = Math.random } = {}) {
     this.random = random;
     this.forests = new Set(['forest', 'tropical_rainforest', 'temperate_forest', 'boreal_taiga', 'mangrove']);
-    this.wet = new Set(['water', 'coldwater', 'reef', 'estuary', 'swamp', 'river', 'lake', 'marsh']);
+    this.wet = new Set([...SULAT_AQUATIC, 'swamp', 'marsh', 'oasis']);
     this.open = new Set(['sand', 'plain', 'steppe', 'tropical_savanna', 'grass', 'flower', 'coast']);
     this.glyphs = SULAT_BIOMES;
   }
@@ -32,17 +32,31 @@ class TypingEcology {
   target(biome, neighbors) {
     const forest = neighbors.find(type => this.forests.has(type));
     const wet = neighbors.some(type => this.wet.has(type));
+    const cold = neighbors.some(type => ['ice', 'snow', 'glacier'].includes(type));
+    const fresh = neighbors.some(type => ['river', 'lake', 'oasis'].includes(type));
+    if (biome === 'lava' && cold) return 'rock';
+    if (biome === 'volcanic' && wet) return 'rock';
+    if (biome === 'mountain' && neighbors.includes('lava')) return 'volcanic';
+    if (biome === 'mountain' && cold) return 'alpine';
+    if (biome === 'snow' && neighbors.some(type => ['mountain', 'alpine', 'glacier'].includes(type))) return 'glacier';
+    if (biome === 'snow' && (forest || fresh)) return 'tundra';
+    if (biome === 'glacier' && neighbors.some(type => ['water', 'lava'].includes(type))) return 'coldwater';
+    if (biome === 'coldwater' && cold) return 'ice';
+    if (['desert', 'dunes'].includes(biome) && fresh) return 'oasis';
+    if (biome === 'sand' && neighbors.some(type => ['desert', 'dunes'].includes(type)) && !wet) return 'dunes';
+    if (biome === 'badlands' && fresh) return 'grass';
+    if (biome === 'reef' && neighbors.includes('coldwater')) return 'kelp';
     if (biome === 'lava' && wet) return 'rock';
     if (['forest', 'tropical_rainforest', 'temperate_forest'].includes(biome) && neighbors.some(type => ['estuary', 'coast'].includes(type))) return 'mangrove';
     if (['grass', 'plain', 'flower'].includes(biome) && neighbors.some(type => ['river', 'lake'].includes(type))) return 'marsh';
     if (['grass', 'plain'].includes(biome) && neighbors.includes('flower') && !wet) return 'flower';
-    if (biome === 'desert' && neighbors.includes('river')) return 'grass';
     if (biome === 'sand' && neighbors.some(type => ['water', 'reef'].includes(type))) return 'coast';
     if (biome === 'river' && neighbors.some(type => ['water', 'coast'].includes(type))) return 'estuary';
     if (biome === 'water' && neighbors.includes('ice')) return 'coldwater';
     if (biome === 'coldwater' && neighbors.includes('ice')) return 'ice';
     if (biome === 'ice' && (forest || neighbors.includes('water'))) return 'coldwater';
     if (biome === 'water' && forest) return 'estuary';
+    if (biome === 'water' && neighbors.includes('deepwater')) return 'deepwater';
     if (this.open.has(biome) && wet) return 'swamp';
     if (this.open.has(biome) && forest) return forest;
     if (biome === 'swamp' && forest && !neighbors.some(type => ['water', 'coldwater', 'reef', 'estuary'].includes(type))) return forest;

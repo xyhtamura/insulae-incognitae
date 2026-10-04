@@ -74,7 +74,7 @@
       position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
       width: min(90%, 680px); box-sizing: border-box; padding: 12px 16px;
       display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px;
-      max-height: 35vh; overflow: auto;
+      max-height: 55vh; overflow: auto;
       border: 1px solid #444; border-radius: 6px; color: #202020;
       background: #f1f1ecee; font-size: 12px; line-height: 1.5;
     }
@@ -89,10 +89,14 @@
     #controls input { margin: 0; }
     #typing-help, #controls details { flex-basis: 100%; }
     #controls summary { cursor: pointer; }
+    #controls details { max-height: 24vh; overflow: auto; }
     #controls details p { margin: 6px 0 0; }
     #biome-palette { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
     #biome-palette button { font: inherit; font-size: 11px; cursor: pointer; border: 1px solid #aaa; border-radius: 3px; padding: 4px 6px; background: #fff; color: #202020; }
     #biome-palette kbd { color: #666; margin-right: 5px; }
+    .biome-group { display: flex; flex-wrap: wrap; gap: 5px; flex-basis: 100%; border: 0; padding: 0; margin: 4px 0 8px; min-width: 0; }
+    .biome-group legend { padding: 0; margin-bottom: 5px; font-size: 10px; letter-spacing: 0.06em; }
+    .land-animal[data-mode="swimming"] { color: #d9f1f5; background: #224759e6; }
     [data-mutation="translation"] { text-decoration: underline dotted; text-underline-offset: 0.15em; }
     [data-mutation="ecology"] { box-shadow: inset 0 -1px currentColor; }
 
@@ -141,6 +145,16 @@
     .coast.tile     { background: #c5b998; color: #365c62; }
     .river         { color: #4689ad; }
     .lake          { color: #577fac; }
+    .snow.tile     { background: #e9eef2; color: #546b7d; }
+    .glacier.tile  { background: #b9d9e5; color: #385c73; }
+    .alpine.tile   { background: #8c9b91; color: #233b36; }
+    .oasis.tile    { background: #81a57a; color: #173b32; }
+    .badlands.tile { background: #b38365; color: #432e23; }
+    .cave.tile     { background: #393543; color: #cbc4d5; }
+    .deepwater     { color: #33557d; }
+    .kelp          { color: #427c69; }
+    .dunes.tile    { background: #dcc090; color: #795c37; }
+    .volcanic.tile { background: #62514d; color: #f1c3a1; }
 
     .unknown { color: hsl(0, 0%, 60%); }
   </style>
@@ -154,7 +168,7 @@
       <div><span class="grass tile">艸 艸</span> <span class="flower tile">花</span> <span class="river">川 流 川</span></div>
       <div><span class="sand tile">砂 岸</span> <span class="water">~ 川 ~ ~</span></div>
     </div>
-    <p>Type terrain. Complete a line, then press Play to move it through translation and biome changes. Animals move across connected land.</p>
+    <p>Type terrain. Complete a line, then press Play to move it through translation and biome changes. Animals move across connected land and water.</p>
     <button id="start-typing" type="button">Start typing</button>
     <p class="defaults" id="title-settings">Translation and Ecology are enabled. Movement starts when you press Play.</p>
   </section>
@@ -174,8 +188,8 @@
       <summary>Keys and interactions</summary>
       <p>R/Q: rainforest. L/W: temperate forest. N/K: taiga. E/T: water. J/P: cold water. U/F: reef. I/Y: estuary. O: swamp. V: ice. S/B: savanna. C/G: steppe. Z/M: tundra. A/D: sand. X: mountain. H: plain. Space leaves a gap.</p>
       <div id="biome-palette" role="group" aria-label="Biomes"></div>
-      <p>Water touching forest can become estuary. Rivers and lakes turn nearby grass into marsh. Estuaries and coasts turn nearby forest into mangrove. Flowers spread into grass; water cools lava into rock. Contact must persist across steps.</p>
-      <p>Forest patches release birds. Deer and foxes move through woodland and open ground, goats through rocky terrain, and crabs through sand, coast, marsh, and mangrove. Water, spaces, and lava break land routes. Ecology controls biome changes and animal births.</p>
+      <p>Water touching forest can become estuary. Rivers and lakes form marsh beside grass and oases beside desert or dunes. Estuaries and coasts form mangrove beside forest. Snow beside mountains becomes glacier; cold terrain changes mountain into alpine. Water or snow cools lava into rock. Cold water changes reef into kelp. Contact must persist across steps.</p>
+      <p>Forest patches release birds. Deer and foxes move through woodland and open ground, goats through rocky terrain, and crabs along shores. Hares cross snow and tundra, camels move through desert and oases, and fish swim through connected water. Land and water routes stay separate; spaces and lava break routes. Ecology controls biome changes and animal births.</p>
       <p>Translation rewrites recognized words and syllables. Dotted underlines mark rewritten text; solid underlines mark biome changes. The active line stays editable. Pause holds movement and mutations.</p>
     </details>
   </div>
@@ -218,7 +232,13 @@
       startTyping.focus({ preventScroll: true });
     });
     const palette = document.getElementById('biome-palette');
-    for (const biome of Object.keys(SULAT_BIOMES)) {
+    for (const [group, biomes] of Object.entries(SULAT_GROUPS)) {
+      const section = document.createElement('fieldset');
+      section.className = 'biome-group';
+      const legend = document.createElement('legend');
+      legend.textContent = group;
+      section.appendChild(legend);
+      for (const biome of biomes) {
       const keys = Object.keys(SULAT_KEYS).filter(key => SULAT_KEYS[key].biome === biome).join('/').toUpperCase();
       const label = SULAT_LABELS[biome] || biome[0].toUpperCase() + biome.slice(1);
       const button = document.createElement('button');
@@ -231,7 +251,9 @@
         engine.typeBiome(biome);
         if (event.detail > 0) surface.focus({ preventScroll: true });
       });
-      palette.appendChild(button);
+        section.appendChild(button);
+      }
+      palette.appendChild(section);
     }
     document.getElementById('translation-enabled').addEventListener('change', (event) => {
       engine.translationEnabled = event.target.checked;

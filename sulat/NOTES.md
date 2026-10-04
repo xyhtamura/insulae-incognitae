@@ -1,6 +1,6 @@
 # Sulat
 
-Sulat is a typing artwork derived from Insulae Incognitae. Typed keys create 26 kinds of terrain; completed lines advance in whole rows, translate across scripts, and change biomes through contact. Birds fly freely while deer, foxes, goats, and crabs follow connected land. Play and Pause control movement and mutations. A title screen opens the work, with Translation and Ecology enabled by default.
+Sulat is a typing artwork derived from Insulae Incognitae. Typed keys create 36 kinds of terrain; completed lines advance in whole rows, translate across scripts, and change biomes through contact. Birds fly freely while deer, foxes, goats, crabs, hares, and camels follow connected land, and fish swim through connected water. Play and Pause control movement and mutations. A title screen opens the work, with Translation and Ecology enabled by default.
 
 Open `index.html` through the workspace server at `/insulae-incognitae/sulat/`.
 
@@ -13,7 +13,7 @@ Tune biome contact rates and animal density against longer typed landscapes.
 - `index.html`: Sulat's page, styles, controls, and animation driver.
 - `typerEngine.js`: typing, stepped movement, translation integration, and animal rendering.
 - `biomes.js`: Sulat's palette and keys, extending the parent's biome definitions.
-- `landAnimals.js`: species habitats, connected land routes, and continuous walking.
+- `landAnimals.js`: species habitats, separate land and water routes, and continuous walking and swimming.
 - `typingEcology.js`: biome contact rules and forest birth opportunities.
 - `typingEcology.test.mjs`: palette, contact, translation, and land-route regression checks. From `F:/xyh`, run `node --test insulae-incognitae/sulat/typingEcology.test.mjs`.
 
@@ -42,3 +42,13 @@ Sulat's local URL is `/insulae-incognitae/sulat/` after the parent folder and re
 ## 2026-10-05 — Codex — Retain the earlier prototype
 
 `../index_typing.html` no longer redirects to Sulat. It restores the pre-Sulat page and uses [preserved scripts](../prototype-typing/README.md) from `f2723fa`. Verified the prototype's original URL, snapshot imports, typing, and playback in the browser; its seven regression cases passed. Sulat's implementation and development plan are unchanged.
+
+## 2026-10-05 — Codex — Cold, dry, and underwater regions
+
+Expanded Sulat from 26 to 36 biomes, adding snow, glacier, alpine, oasis, badlands, cave, deep ocean, kelp, dunes, and volcanic ground. The reference prototype includes snowflake glyphs under ice and defines desert; the combined page includes earlier lava styles. Sulat retains those earlier types and gives the added regions distinct glyphs, colors, keys, and buttons. The palette groups every biome once into water and shores, forests and grasslands, snow and mountains, or deserts and volcanic ground. Existing letter and number keys retain their mappings. Added keys are `=` for snow, `[` for glacier, `]` for alpine, `;` for oasis, `'` for badlands, `,` for cave, `.` for deep ocean, `/` for kelp, `\` for dunes, and the backtick for volcanic ground.
+
+Added authored regional rules: mountains touching cold terrain become alpine; snow beside mountains becomes glacier; forest or fresh water can turn snow into tundra. Fresh water turns desert and dunes into oasis, and badlands into grass. Snow cools lava into rock, lava changes nearby mountain into volcanic ground, and water cools volcanic ground into rock. Cold water turns reef into kelp; deep ocean spreads into adjacent water unless a forest edge takes priority and forms estuary. Contacts retain the existing two-step delay, probability, and cooldown. Caves are typed terrain; cave formation and cave animals are not implemented.
+
+Added hares, camels, and fish, and extended goat habitats to alpine and badlands. Fish use a separate water network; land animals cannot cross it, and fish cannot cross dry tiles. Spaces, lava, and missing rows still break routes. The existing path geometry, endpoint revalidation, pause clock, two animals per species, and 36-second lifespan apply to both networks. Free-flying birds retain their separate clock and cap. The scrollable palette keeps Play/Pause visible while reserving space for the actual control height. The preserved typing reference was not edited.
+
+Verified all ten added keys and their terrain classes in the browser, the 36-button palette and its four groups, cold and desert regions, and live hare, camel, and fish marks. Fish carry the swimming state and use fractional positions over the water row. Checked control clearance and the browser error log. All 18 regression cases passed, including regional mutations, palette reachability, original key mappings, fish barriers, freezing habitat loss, and cold/dry/wet animal births. The existing next step remains tuning contact rates and animal density on longer landscapes. Mobile keyboard input, paste, animal effects on terrain, and the shared lexicon's placeholder romanizations remain unfinished. No remote push was performed.

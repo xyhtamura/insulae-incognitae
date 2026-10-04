@@ -1,9 +1,12 @@
-// Routes use rendered land bounds. Water, spaces, and missing rows break paths.
+// Routes use rendered bounds. Land and water form separate habitat networks.
 const LAND_SPECIES = [
   { name: 'deer', glyph: '鹿', habitats: ['forest', 'temperate_forest', 'tropical_rainforest', 'boreal_taiga', 'plain', 'grass', 'flower', 'tropical_savanna'] },
   { name: 'fox', glyph: '狐', habitats: ['forest', 'temperate_forest', 'boreal_taiga', 'plain', 'grass', 'steppe', 'tundra', 'tropical_savanna'] },
-  { name: 'goat', glyph: '羊', habitats: ['mountain', 'rock', 'steppe', 'plain', 'tundra', 'desert'] },
-  { name: 'crab', glyph: '蟹', habitats: ['sand', 'coast', 'mangrove', 'marsh'] }
+  { name: 'goat', glyph: '羊', habitats: ['mountain', 'rock', 'steppe', 'plain', 'tundra', 'desert', 'alpine', 'badlands'] },
+  { name: 'crab', glyph: '蟹', habitats: ['sand', 'coast', 'mangrove', 'marsh'] },
+  { name: 'hare', glyph: '兔', habitats: ['snow', 'tundra', 'alpine', 'grass', 'plain'] },
+  { name: 'camel', glyph: '駱', habitats: ['desert', 'dunes', 'oasis', 'badlands'] },
+  { name: 'fish', glyph: '魚', aquatic: true, habitats: [...SULAT_AQUATIC] }
 ];
 
 class LandAnimals {
@@ -18,12 +21,13 @@ class LandAnimals {
     for (const line of lines) line.cells.forEach((cell, column) => {
       const bounds = line.bounds[column];
       const biome = cell.className?.split(' ')[0];
-      if (!cell.id || !bounds || !cell.char.trim() || /^\p{Mark}+$/u.test(cell.char) || !SULAT_LAND.has(biome) || biome === 'lava') return;
-      this.nodes.set(cell.id, { id: cell.id, biome, line, column, ...bounds, y: line.distance, neighbors: [] });
+      if (!cell.id || !bounds || !cell.char.trim() || /^\p{Mark}+$/u.test(cell.char) || (!SULAT_LAND.has(biome) && !SULAT_AQUATIC.has(biome)) || biome === 'lava') return;
+      this.nodes.set(cell.id, { id: cell.id, biome, domain: SULAT_AQUATIC.has(biome) ? 'water' : 'land', line, column, ...bounds, y: line.distance, neighbors: [] });
     });
     const nodes = [...this.nodes.values()];
     for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++) {
       const a = nodes[i], b = nodes[j];
+      if (a.domain !== b.domain) continue;
       const overlap = Math.min(a.right, b.right) - Math.max(a.left, b.left);
       const between = a.line === b.line ? a.line.cells.slice(a.column + 1, b.column) : [];
       const horizontal = a.line === b.line && between.every(cell => /^\p{Mark}+$/u.test(cell.char)) && overlap >= -0.001;

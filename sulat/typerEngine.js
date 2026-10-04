@@ -240,6 +240,7 @@ class TyperEngine {
         animal.element = document.createElement('span');
         animal.element.className = 'land-animal';
         animal.element.dataset.species = animal.species.name;
+        if (animal.species.aquatic) animal.element.dataset.mode = 'swimming';
         animal.element.textContent = animal.species.glyph;
         animal.element.animal = animal;
         this.flightLayer.appendChild(animal.element);

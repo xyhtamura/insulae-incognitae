@@ -9,7 +9,7 @@ function setup() {
   for (const name of ['../LetterMap.js', '../glyphData.js', '../lexicon.js', '../translationModule.js', 'biomes.js', 'typingEcology.js', 'landAnimals.js']) {
     vm.runInContext(readFileSync(new URL(name, import.meta.url), 'utf8'), context, { filename: name });
   }
-  return vm.runInContext('({ TypingEcology, TranslationEngine, LandAnimals, LAND_SPECIES, SULAT_KEYS, SULAT_BIOMES, LETTER_TO_BIOME })', context);
+  return vm.runInContext('({ TypingEcology, TranslationEngine, LandAnimals, LAND_SPECIES, SULAT_KEYS, SULAT_BIOMES, SULAT_GROUPS, LETTER_TO_BIOME })', context);
 }
 
 function row(types, distance = 1, bounds) {
@@ -92,10 +92,14 @@ test('existing translation changes the script while preserving the habitat', () 
   assert.ok(cells.every(cell => cell.className === 'temperate_forest tile'));
 });
 
-test('all 26 Sulat biomes are reachable without changing existing letter keys', () => {
-  const { SULAT_KEYS, SULAT_BIOMES, LETTER_TO_BIOME } = setup();
-  assert.equal(Object.keys(SULAT_BIOMES).length, 26);
-  assert.equal(new Set(Object.values(SULAT_KEYS).map(entry => entry.biome)).size, 26);
+test('all 36 Sulat biomes have keys and one palette group without changing letter keys', () => {
+  const { SULAT_KEYS, SULAT_BIOMES, SULAT_GROUPS, LETTER_TO_BIOME } = setup();
+  assert.equal(Object.keys(SULAT_BIOMES).length, 36);
+  assert.equal(new Set(Object.values(SULAT_KEYS).map(entry => entry.biome)).size, 36);
+  const grouped = Object.values(SULAT_GROUPS).flat();
+  assert.equal(grouped.length, 36);
+  assert.equal(new Set(grouped).size, 36);
+  assert.ok(grouped.every(biome => biome in SULAT_BIOMES));
   for (const [key, entry] of Object.entries(LETTER_TO_BIOME)) assert.equal(SULAT_KEYS[key], entry);
 });
 
@@ -181,4 +185,53 @@ test('combining marks remain part of the underlying land glyph', () => {
   walkers.sync([line]);
   assert.equal(walkers.nodes.size, 2);
   assert.deepEqual([...walkers.nodes.get('1:0').neighbors], ['1:2']);
+});
+
+test('cold mountain borders, dry river borders, and cool reefs acquire regional biomes', () => {
+  const { TypingEcology } = setup();
+  const ecology = new TypingEcology({ random: () => 0 });
+  const lines = [row(['snow', 'mountain', '', 'desert', 'river', '', 'reef', 'coldwater'])];
+  ecology.step(lines);
+  ecology.step(lines);
+  assert.equal(ecology.biome(lines[0].cells[0]), 'glacier');
+  assert.equal(ecology.biome(lines[0].cells[1]), 'alpine');
+  assert.equal(ecology.biome(lines[0].cells[3]), 'oasis');
+  assert.equal(ecology.biome(lines[0].cells[6]), 'kelp');
+});
+
+test('snow cools lava and forest takes priority over ocean depth at a water edge', () => {
+  const { TypingEcology } = setup();
+  const ecology = new TypingEcology({ random: () => 0 });
+  assert.equal(ecology.target('lava', ['snow']), 'rock');
+  assert.equal(ecology.target('water', ['deepwater']), 'deepwater');
+  assert.equal(ecology.target('water', ['deepwater', 'forest']), 'estuary');
+});
+
+test('hares, camels, and fish spawn in connected cold, dry, and water habitats', () => {
+  const { LandAnimals } = setup();
+  const animals = new LandAnimals({ random: () => 0 });
+  animals.sync([row(['snow', 'snow', 'water', 'deepwater', 'sand', 'desert', 'dunes'])]);
+  animals.spawn();
+  assert.deepEqual(Array.from(animals.animals, animal => animal.species.name).sort(), ['camel', 'fish', 'hare']);
+  assert.deepEqual([...animals.nodes.get('1:2').neighbors], ['1:3']);
+  animals.advance(1.6);
+  animals.advance(0.8);
+  const fish = animals.animals.find(animal => animal.species.name === 'fish');
+  assert.equal(fish.from, '1:2');
+  assert.equal(fish.to, '1:3');
+  assert.ok(animals.position(fish).x > 2 / 30 && animals.position(fish).x < 4 / 30);
+});
+
+test('fish cannot cross dry ground and disappear when their water freezes', () => {
+  const { LandAnimals, LAND_SPECIES } = setup();
+  const animals = new LandAnimals({ random: () => 0 });
+  const lines = [row(['water', 'deepwater', 'sand', 'reef', 'kelp'])];
+  animals.sync(lines);
+  const fishSpecies = LAND_SPECIES.find(species => species.name === 'fish');
+  assert.deepEqual(Array.from(animals.destinations(fishSpecies, animals.nodes.get('1:1')), node => node.id), ['1:0']);
+  animals.spawn();
+  animals.advance(1.6);
+  lines[0].cells[1].className = 'ice';
+  animals.sync(lines);
+  assert.equal(animals.animals.filter(animal => animal.species.name === 'fish').length, 0);
 });
