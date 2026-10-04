@@ -38,3 +38,7 @@ Verified all 26 biome classes through keyboard input in the Codex browser and te
 ## 2026-10-05 — Codex — Parent project rename
 
 Sulat's local URL is `/insulae-incognitae/sulat/` after the parent folder and repository rename. Updated its origin label, notes, and test command. Shared imports remain relative to the parent. Opened the renamed route in the Codex browser, started typing, submitted terrain, and toggled Play/Pause without browser errors; all 14 regression cases passed from the renamed folder. Sulat retains its name and development plan. The prior local `/insulaeincognita/sulat/` route no longer resolves, and no remote content push was performed.
+
+## 2026-10-05 — Codex — Retain the earlier prototype
+
+`../index_typing.html` no longer redirects to Sulat. It restores the pre-Sulat page and uses [preserved scripts](../prototype-typing/README.md) from `f2723fa`. Verified the prototype's original URL, snapshot imports, typing, and playback in the browser; its seven regression cases passed. Sulat's implementation and development plan are unchanged.

@@ -1,6 +1,6 @@
 # Insulae Incognitae development notes
 
-Insulae Incognitae builds scrolling terrain from multilingual glyphs. `index.html` generates terrain and translates its glyphs, and `index_combined.html` overlays typing on generated terrain. The typing artwork lives in [Sulat](sulat/NOTES.md); `index_typing.html` redirects there.
+Insulae Incognitae builds scrolling terrain from multilingual glyphs. `index.html` generates terrain and translates its glyphs, and `index_combined.html` overlays typing on generated terrain. The typing artwork develops in [Sulat](sulat/NOTES.md); `index_typing.html` preserves [the earlier typing prototype](prototype-typing/README.md).
 
 ## Next in development
 
@@ -35,3 +35,9 @@ Separated the typing artwork into `sulat/`, named Sulat by Xyh. Its engine, ecol
 Renamed the local folder from `insulaeincognita` to `insulae-incognitae` and updated the project title, documentation, cover, live links, Sulat's origin label, and test commands. Xyh renamed the GitHub repository; the GitHub connector confirmed the same repository ID under `xyhtamura/insulae-incognitae`. Updated `origin` to that URL. The repository history and Sulat folder remain intact. Archived files and the existing expanded-manual PDF retain their original names and contents; the manual's bibliography entry retains its original title.
 
 Updated the root roadmap and dependency paths, the portfolio's existing entries and slide cuts, the capture manifest and generated image map, and the CV source and exports. Portfolio IDs and asset filenames remain stable so existing images and anchors still resolve. Checked the generator's title and information panel, the documentation heading and canonical URL, the portfolio link, and Sulat typing and playback in the browser at the renamed local routes. Sulat's 14 regression cases and all six portfolio-cut audits passed. The CV PDF contains the renamed title and destination link. No commits were pushed; publishing the updated page titles and portfolio links remains pending. The previous local folder URL no longer resolves. Development plans are unchanged.
+
+## 2026-10-05 — Codex — Preserve the typing prototype
+
+Removed the redirect from `index_typing.html` and restored its last pre-Sulat version from `f2723fa`. Preserved that version's seven JavaScript files and regression suite in `prototype-typing/`; the page points to those copies rather than the active parent or Sulat scripts. Its original title and behavior remain as a record. The existing font and Google Fonts URLs remain in use. Sulat stays at `sulat/` and retains its title screen, expanded biomes, and land animals.
+
+In the browser, the URL stayed on `index_typing.html`, typing and Enter produced terrain, Play advanced the completed line from `1em` to `2em`, and Pause returned the control to Play. The DOM listed all seven snapshot script URLs, with no refresh redirect or browser errors. The snapshot's seven regression cases passed. The parent's combined-overlay repair and Sulat's development plan remain unchanged. No remote push was performed.
