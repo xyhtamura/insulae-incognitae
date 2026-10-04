@@ -15,7 +15,9 @@
   <script src="../glyphData.js"></script>
   <script src="../lexicon.js"></script>
   <script src="../translationModule.js"></script>
+  <script src="biomes.js"></script>
   <script src="typingEcology.js"></script>
+  <script src="landAnimals.js"></script>
   <script src="typerEngine.js"></script>
 
   <style>
@@ -31,6 +33,20 @@
       /* add CJK fallback */
       font-family: "IBM Plex Mono", "Noto Sans JP", "Noto Sans", "Noto Sans Tagalog Local", sans-serif;
     }
+    [hidden] { display: none !important; }
+    #title-screen {
+      width: min(100% - 48px, 640px); color: #202b28; text-align: center;
+      padding: 36px 0; max-height: 100dvh; box-sizing: border-box; overflow: auto;
+    }
+    #title-screen h1 { font-size: clamp(64px, 17vw, 116px); font-weight: 400; letter-spacing: -0.07em; margin: 20px 0; line-height: 1; }
+    #title-screen .origin { text-transform: uppercase; letter-spacing: 0.14em; font-size: 10px; }
+    #title-screen p { font-size: 13px; line-height: 1.7; max-width: 390px; margin: 18px auto; }
+    #title-terrain { font-size: clamp(15px, 4vw, 23px); line-height: 1.6; letter-spacing: 0.12em; margin: 36px auto; }
+    #title-terrain div:nth-child(2) { margin-left: 2em; }
+    #title-terrain div:nth-child(3) { margin-right: 1em; }
+    #start-typing { padding: 12px 26px; background: #202b28; color: #f4f3e9; border: 1px solid #202b28; border-radius: 3px; font: inherit; cursor: pointer; }
+    #start-typing:focus-visible { outline: 2px solid #202b28; outline-offset: 5px; }
+    #title-screen .defaults { font-size: 11px; }
     #terminal {
       font-size: clamp(12px, 2.5vmin, 18px); line-height: 1;
       text-align: left; white-space: pre-wrap; padding: 20px;
@@ -40,13 +56,14 @@
     }
     #terminal { box-sizing: border-box; }
     #typing-field {
-      position: relative; width: 95%; height: 30em; max-height: calc(100% - 140px);
+      position: relative; width: 95%; height: 30em; max-height: 100%;
       overflow: hidden;
     }
     #terminal-content, #flight-layer { position: absolute; inset: 0; }
     #terminal-content { outline: none; }
     #flight-layer { pointer-events: none; overflow: hidden; }
     .bird { position: absolute; line-height: 1; color: #202b28; text-shadow: 0 0 3px #f5f8ef; }
+    .land-animal { position: absolute; line-height: 1; color: #fdfbef; background: #202b28e6; border-radius: 3px; padding: 0 0.05em; transform-origin: bottom center; }
     #terminal-content:focus-visible { outline: 1px solid currentColor; outline-offset: 8px; }
     #terminal-content p {
       position: absolute; bottom: 0; margin: 0; height: 1em;
@@ -61,7 +78,7 @@
       border: 1px solid #444; border-radius: 6px; color: #202020;
       background: #f1f1ecee; font-size: 12px; line-height: 1.5;
     }
-    #play-pause {
+    #play-pause, #show-title {
       font: inherit; min-width: 72px; min-height: 40px; padding: 8px 14px;
       border: 1px solid #444; border-radius: 3px; background: #fff; color: #202020;
       cursor: pointer;
@@ -73,6 +90,9 @@
     #typing-help, #controls details { flex-basis: 100%; }
     #controls summary { cursor: pointer; }
     #controls details p { margin: 6px 0 0; }
+    #biome-palette { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+    #biome-palette button { font: inherit; font-size: 11px; cursor: pointer; border: 1px solid #aaa; border-radius: 3px; padding: 4px 6px; background: #fff; color: #202020; }
+    #biome-palette kbd { color: #666; margin-right: 5px; }
     [data-mutation="translation"] { text-decoration: underline dotted; text-underline-offset: 0.15em; }
     [data-mutation="ecology"] { box-shadow: inset 0 -1px currentColor; }
 
@@ -113,26 +133,49 @@
     .rock.tile      { background: hsl(0, 0%, 28%);   color: hsl(0, 0%, 95%); }
     .plain.tile     { background: hsl(90, 24%, 40%); color: #111; }
     .forest.tile    { background: hsl(120, 35%, 22%); color: hsl(137, 97%, 88%); }
+    .grass.tile     { background: #91ac69; color: #23301c; }
+    .flower.tile    { background: #dfb7c7; color: #762e52; }
+    .lava.tile      { background: #b64a2e; color: #ffe3a0; }
+    .mangrove.tile  { background: #416557; color: #e3ead3; }
+    .marsh.tile     { background: #808b53; color: #202d26; }
+    .coast.tile     { background: #c5b998; color: #365c62; }
+    .river         { color: #4689ad; }
+    .lake          { color: #577fac; }
 
     .unknown { color: hsl(0, 0%, 60%); }
   </style>
 </head>
 <body>
-  <div id="terminal">
+  <section id="title-screen" aria-labelledby="sulat-title">
+    <p class="origin">From Insulae Incognita</p>
+    <h1 id="sulat-title">Sulat</h1>
+    <div id="title-terrain" aria-hidden="true">
+      <div><span class="mountain tile">山 △</span> <span class="forest tile">林 森 木</span> <span class="bird-mark">鳥</span></div>
+      <div><span class="grass tile">艸 艸</span> <span class="flower tile">花</span> <span class="river">川 流 川</span></div>
+      <div><span class="sand tile">砂 岸</span> <span class="water">~ 川 ~ ~</span></div>
+    </div>
+    <p>Type terrain. Complete a line, then press Play to move it through translation and biome changes. Animals move across connected land.</p>
+    <button id="start-typing" type="button">Start typing</button>
+    <p class="defaults" id="title-settings">Translation and Ecology are enabled. Movement starts when you press Play.</p>
+  </section>
+  <div id="terminal" hidden>
     <div id="typing-field">
       <div id="terminal-content" tabindex="0" role="group" aria-label="Type terrain" aria-describedby="typing-help"></div>
       <div id="flight-layer" aria-hidden="true"></div>
     </div>
   </div>
-  <div id="controls">
+  <div id="controls" hidden>
     <button id="play-pause" type="button" aria-controls="terminal-content">Play</button>
     <label><input id="translation-enabled" type="checkbox" checked>Translation</label>
     <label><input id="ecology-enabled" type="checkbox" checked>Ecology</label>
-    <p id="typing-help">Enter completes a line. Play advances completed terrain one row every two seconds. Birds fly between steps.</p>
+    <button id="show-title" type="button">Title</button>
+    <p id="typing-help">Type letters or use the biome buttons. Enter completes a line. Play advances terrain one row every two seconds; animals move between steps.</p>
     <details>
       <summary>Keys and interactions</summary>
       <p>R/Q: rainforest. L/W: temperate forest. N/K: taiga. E/T: water. J/P: cold water. U/F: reef. I/Y: estuary. O: swamp. V: ice. S/B: savanna. C/G: steppe. Z/M: tundra. A/D: sand. X: mountain. H: plain. Space leaves a gap.</p>
-      <p>Water touching forest can become estuary. Open ground touching water can become swamp; beside forest, it can become forest. Ice cools nearby water. Forest patches can release birds. Contact must persist across steps.</p>
+      <div id="biome-palette" role="group" aria-label="Biomes"></div>
+      <p>Water touching forest can become estuary. Rivers and lakes turn nearby grass into marsh. Estuaries and coasts turn nearby forest into mangrove. Flowers spread into grass; water cools lava into rock. Contact must persist across steps.</p>
+      <p>Forest patches release birds. Deer and foxes move through woodland and open ground, goats through rocky terrain, and crabs through sand, coast, marsh, and mangrove. Water, spaces, and lava break land routes. Ecology controls biome changes and animal births.</p>
       <p>Translation rewrites recognized words and syllables. Dotted underlines mark rewritten text; solid underlines mark biome changes. The active line stays editable. Pause holds movement and mutations.</p>
     </details>
   </div>
@@ -150,6 +193,46 @@
 
     const surface = document.getElementById('terminal-content');
     const playback = document.getElementById('play-pause');
+    const titleScreen = document.getElementById('title-screen');
+    const startTyping = document.getElementById('start-typing');
+    function fitField() {
+      if (!titleScreen.hidden) return;
+      document.getElementById('terminal').style.paddingBottom = `${document.getElementById('controls').getBoundingClientRect().height + 48}px`;
+      engine._render();
+    }
+    startTyping.addEventListener('click', () => {
+      titleScreen.hidden = true;
+      document.getElementById('terminal').hidden = false;
+      document.getElementById('controls').hidden = false;
+      fitField();
+      surface.focus({ preventScroll: true });
+    });
+    document.getElementById('show-title').addEventListener('click', () => {
+      engine.setPlaying(false);
+      playback.textContent = 'Play';
+      document.getElementById('terminal').hidden = true;
+      document.getElementById('controls').hidden = true;
+      startTyping.textContent = 'Continue typing';
+      document.getElementById('title-settings').textContent = `Translation: ${engine.translationEnabled ? 'on' : 'off'}. Ecology: ${engine.ecologyEnabled ? 'on' : 'off'}. Movement starts when you press Play.`;
+      titleScreen.hidden = false;
+      startTyping.focus({ preventScroll: true });
+    });
+    const palette = document.getElementById('biome-palette');
+    for (const biome of Object.keys(SULAT_BIOMES)) {
+      const keys = Object.keys(SULAT_KEYS).filter(key => SULAT_KEYS[key].biome === biome).join('/').toUpperCase();
+      const label = SULAT_LABELS[biome] || biome[0].toUpperCase() + biome.slice(1);
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.setAttribute('aria-label', `Type ${label.toLowerCase()}`);
+      const key = document.createElement('kbd');
+      key.textContent = keys;
+      button.append(key, label);
+      button.addEventListener('click', event => {
+        engine.typeBiome(biome);
+        if (event.detail > 0) surface.focus({ preventScroll: true });
+      });
+      palette.appendChild(button);
+    }
     document.getElementById('translation-enabled').addEventListener('change', (event) => {
       engine.translationEnabled = event.target.checked;
     });
@@ -162,7 +245,9 @@
       // Pointer activation returns to typing; keyboard activation retains focus.
       if (event.detail > 0) surface.focus({ preventScroll: true });
     });
-    surface.focus({ preventScroll: true });
+    startTyping.focus({ preventScroll: true });
+    window.addEventListener('resize', fitField);
+    new ResizeObserver(fitField).observe(document.getElementById('controls'));
 
     let previousTime = null;
     let colorTime = 0;

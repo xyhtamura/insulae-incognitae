@@ -5,10 +5,10 @@
 class TypingEcology {
   constructor({ random = Math.random } = {}) {
     this.random = random;
-    this.forests = new Set(['forest', 'tropical_rainforest', 'temperate_forest', 'boreal_taiga']);
-    this.wet = new Set(['water', 'coldwater', 'reef', 'estuary', 'swamp']);
-    this.open = new Set(['sand', 'plain', 'steppe', 'tropical_savanna']);
-    this.glyphs = { ...WATERY, ...LAND6, ...CLASSIC };
+    this.forests = new Set(['forest', 'tropical_rainforest', 'temperate_forest', 'boreal_taiga', 'mangrove']);
+    this.wet = new Set(['water', 'coldwater', 'reef', 'estuary', 'swamp', 'river', 'lake', 'marsh']);
+    this.open = new Set(['sand', 'plain', 'steppe', 'tropical_savanna', 'grass', 'flower', 'coast']);
+    this.glyphs = SULAT_BIOMES;
   }
 
   biome(cell) { return cell?.className?.split(' ')[0] || ''; }
@@ -32,6 +32,13 @@ class TypingEcology {
   target(biome, neighbors) {
     const forest = neighbors.find(type => this.forests.has(type));
     const wet = neighbors.some(type => this.wet.has(type));
+    if (biome === 'lava' && wet) return 'rock';
+    if (['forest', 'tropical_rainforest', 'temperate_forest'].includes(biome) && neighbors.some(type => ['estuary', 'coast'].includes(type))) return 'mangrove';
+    if (['grass', 'plain', 'flower'].includes(biome) && neighbors.some(type => ['river', 'lake'].includes(type))) return 'marsh';
+    if (['grass', 'plain'].includes(biome) && neighbors.includes('flower') && !wet) return 'flower';
+    if (biome === 'desert' && neighbors.includes('river')) return 'grass';
+    if (biome === 'sand' && neighbors.some(type => ['water', 'reef'].includes(type))) return 'coast';
+    if (biome === 'river' && neighbors.some(type => ['water', 'coast'].includes(type))) return 'estuary';
     if (biome === 'water' && neighbors.includes('ice')) return 'coldwater';
     if (biome === 'coldwater' && neighbors.includes('ice')) return 'ice';
     if (biome === 'ice' && (forest || neighbors.includes('water'))) return 'coldwater';
@@ -75,8 +82,9 @@ class TypingEcology {
         if (!target || cell.contactAge < 2 || this.random() >= 0.4) continue;
         const glyphs = this.glyphs[target].glyphs;
         lines[r].cells[c] = {
+          id: before.id,
           char: glyphs[Math.floor(this.random() * glyphs.length)],
-          className: `${target}${LAND_BIOMES.has(target) ? ' tile' : ''}`,
+          className: `${target}${SULAT_LAND.has(target) ? ' tile' : ''}`,
           cooldown: 4,
           mutation: 'ecology'
         };

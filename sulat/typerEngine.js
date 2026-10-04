@@ -16,6 +16,8 @@ class TyperEngine {
     this.stepInterval = 2;
     this.stepTime = 0;
     this.birds = [];
+    this.walkers = new LandAnimals({ random });
+    this.nextCellId = 1;
     this.flightLayer = flightLayer;
     this.stats = { steps: 0, translations: 0, biomeChanges: 0, birdsReleased: 0 };
 
@@ -34,6 +36,8 @@ class TyperEngine {
       this._step();
     }
     this._fly(seconds);
+    this.walkers.advance(seconds);
+    this._drawAnimals();
   }
 
   _step() {
@@ -64,6 +68,8 @@ class TyperEngine {
       }
     }
     this._render();
+    if (this.ecologyEnabled) this.walkers.spawn();
+    this._drawAnimals();
   }
 
   _visibleRows() {
@@ -114,21 +120,22 @@ class TyperEngine {
     if (key.length > 1) return;
 
     const ch = key.toLowerCase();
-    const mapping = LETTER_TO_BIOME[ch];
+    const mapping = SULAT_KEYS[ch];
     if (!mapping) return;
     e.preventDefault();
 
-    const glyphs = mapping.glyphs;
-    const char = glyphs[Math.floor(Math.random() * glyphs.length)];
-    const biome = mapping.biome;
+    this.typeBiome(mapping.biome);
+  }
 
-    const classes = this._classesForBiome(biome);
-    this._typeCell({ char, className: classes });
+  typeBiome(biome) {
+    const glyphs = SULAT_BIOMES[biome]?.glyphs;
+    if (!glyphs) return;
+    this._typeCell({ char: glyphs[Math.floor(this.random() * glyphs.length)], className: this._classesForBiome(biome) });
   }
 
   _classesForBiome(biome) {
     const list = [biome];
-    if (LAND_BIOMES.has(biome)) list.push('tile'); // padded background
+    if (SULAT_LAND.has(biome)) list.push('tile'); // padded background
     return list.join(' ');
   }
 
@@ -186,6 +193,9 @@ class TyperEngine {
   }
 
   _render() {
+    for (const cells of [...this.completed.map(line => line.cells), this.line]) {
+      for (const cell of cells) if (!cell.id) cell.id = this.nextCellId++;
+    }
     const frag = document.createDocumentFragment();
     for (const line of this.completed) {
       const p = this._makeParagraph(line.cells);
@@ -214,6 +224,30 @@ class TyperEngine {
         const rect = span.getBoundingClientRect();
         return { left: (rect.left - field.left) / field.width, right: (rect.right - field.left) / field.width };
       });
+    }
+    this.walkers.sync(this.completed);
+    this._drawAnimals();
+  }
+
+  _drawAnimals() {
+    if (!this.flightLayer) return;
+    const alive = new Set(this.walkers.animals);
+    for (const element of this.flightLayer.querySelectorAll('.land-animal')) {
+      if (!alive.has(element.animal)) element.remove();
+    }
+    for (const animal of this.walkers.animals) {
+      if (!animal.element) {
+        animal.element = document.createElement('span');
+        animal.element.className = 'land-animal';
+        animal.element.dataset.species = animal.species.name;
+        animal.element.textContent = animal.species.glyph;
+        animal.element.animal = animal;
+        this.flightLayer.appendChild(animal.element);
+      }
+      const position = this.walkers.position(animal);
+      animal.element.style.left = `${position.x * 100}%`;
+      animal.element.style.bottom = `${position.y + 0.25}em`;
+      animal.element.style.transform = `translateX(-50%) rotate(${position.walking ? Math.sin(animal.age * 12) * 5 : 0}deg)`;
     }
   }
 }
