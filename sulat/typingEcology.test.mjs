@@ -1,4 +1,4 @@
-// Run from any directory: node --test insulaeincognita/typingEcology.test.mjs
+// From the workspace root: node --test insulaeincognita/sulat/typingEcology.test.mjs
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -6,7 +6,7 @@ import vm from 'node:vm';
 
 function setup() {
   const context = vm.createContext({ Math: Object.assign(Object.create(Math), { random: () => 0 }) });
-  for (const name of ['LetterMap.js', 'glyphData.js', 'lexicon.js', 'translationModule.js', 'typingEcology.js']) {
+  for (const name of ['../LetterMap.js', '../glyphData.js', '../lexicon.js', '../translationModule.js', 'typingEcology.js']) {
     vm.runInContext(readFileSync(new URL(name, import.meta.url), 'utf8'), context, { filename: name });
   }
   return vm.runInContext('({ TypingEcology, TranslationEngine })', context);

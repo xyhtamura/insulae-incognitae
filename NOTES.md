@@ -1,10 +1,10 @@
 # Insulae Incognita development notes
 
-Insulae Incognita builds scrolling terrain from multilingual glyphs. `index.html` generates terrain and translates its glyphs; `index_typing.html` maps typed letters to terrain, and `index_combined.html` overlays typing on generated terrain.
+Insulae Incognita builds scrolling terrain from multilingual glyphs. `index.html` generates terrain and translates its glyphs, and `index_combined.html` overlays typing on generated terrain. The typing artwork lives in [Sulat](sulat/NOTES.md); `index_typing.html` redirects there.
 
 ## Next in development
 
-Tune biome contact rates and bird density against longer typed landscapes.
+Repair the fixed cursor row and overlay advancement in the combined prototype.
 
 ## 2026-10-05 — Codex — Playback for typed lines
 
@@ -25,3 +25,7 @@ Contacts use a snapshot, so a change cannot propagate repeatedly within one step
 Verified in the Codex browser at 504 × 836: completed rows occupied integer offsets while the active row stayed at the same DOM coordinate; recognized forest glyphs became Baybayin and Thai text; wet/forest contact changed terrain; bird positions used fractional offsets. Paused observations retained identical row text, row offsets, and bird positions. With both mutation switches disabled, rows advanced while their text stayed identical. The Tagalog font reported loaded, its glyphs rendered without the missing-character boxes seen before the fallback, and fitted translated rows measured no wider than the 440.8 px field. The browser reported no JavaScript errors. `node --test typingEcology.test.mjs` passed seven cases covering isolated cells, spaces, persistent contact, snapshot updates, visual cross-row contact, empty row slots, bird habitat, and translation's preservation of terrain classes. JavaScript syntax and whitespace checks passed.
 
 The combined prototype and mobile keyboard/paste limitations remain as recorded in the preceding entry. Next: tune the contact rates and bird density after reviewing longer typed landscapes. No new linguistic entries were authored; the existing lexicon's placeholder romanizations remain unchanged.
+
+## 2026-10-05 — Codex — Sulat project folder
+
+Separated the typing artwork into `sulat/`, named Sulat by Xyh. Its engine, ecology rules, tests, page, and development notes belong to that folder. The translation engine, linguistic data, letter map, background code, and fonts remain shared in this repository. Kept `index_typing.html` as a redirect. Verified Sulat's page and keyboard controls in the browser, its seven moved tests, and the redirect. The generator and combined prototype keep their existing file paths. Sulat's next work is recorded in [its notes](sulat/NOTES.md); the parent's next step is the deferred combined-overlay repair.
