@@ -1,6 +1,6 @@
-# Insulae Incognita development notes
+# Insulae Incognitae development notes
 
-Insulae Incognita builds scrolling terrain from multilingual glyphs. `index.html` generates terrain and translates its glyphs, and `index_combined.html` overlays typing on generated terrain. The typing artwork lives in [Sulat](sulat/NOTES.md); `index_typing.html` redirects there.
+Insulae Incognitae builds scrolling terrain from multilingual glyphs. `index.html` generates terrain and translates its glyphs, and `index_combined.html` overlays typing on generated terrain. The typing artwork lives in [Sulat](sulat/NOTES.md); `index_typing.html` redirects there.
 
 ## Next in development
 
@@ -29,3 +29,9 @@ The combined prototype and mobile keyboard/paste limitations remain as recorded 
 ## 2026-10-05 — Codex — Sulat project folder
 
 Separated the typing artwork into `sulat/`, named Sulat by Xyh. Its engine, ecology rules, tests, page, and development notes belong to that folder. The translation engine, linguistic data, letter map, background code, and fonts remain shared in this repository. Kept `index_typing.html` as a redirect. Verified Sulat's page and keyboard controls in the browser, its seven moved tests, and the redirect. The generator and combined prototype keep their existing file paths. Sulat's next work is recorded in [its notes](sulat/NOTES.md); the parent's next step is the deferred combined-overlay repair.
+
+## 2026-10-05 — Codex — Rename to Insulae Incognitae
+
+Renamed the local folder from `insulaeincognita` to `insulae-incognitae` and updated the project title, documentation, cover, live links, Sulat's origin label, and test commands. Xyh renamed the GitHub repository; the GitHub connector confirmed the same repository ID under `xyhtamura/insulae-incognitae`. Updated `origin` to that URL. The repository history and Sulat folder remain intact. Archived files and the existing expanded-manual PDF retain their original names and contents; the manual's bibliography entry retains its original title.
+
+Updated the root roadmap and dependency paths, the portfolio's existing entries and slide cuts, the capture manifest and generated image map, and the CV source and exports. Portfolio IDs and asset filenames remain stable so existing images and anchors still resolve. Checked the generator's title and information panel, the documentation heading and canonical URL, the portfolio link, and Sulat typing and playback in the browser at the renamed local routes. Sulat's 14 regression cases and all six portfolio-cut audits passed. The CV PDF contains the renamed title and destination link. No commits were pushed; publishing the updated page titles and portfolio links remains pending. The previous local folder URL no longer resolves. Development plans are unchanged.

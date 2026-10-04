@@ -1,4 +1,4 @@
-// From the workspace root: node --test insulaeincognita/sulat/typingEcology.test.mjs
+// From the workspace root: node --test insulae-incognitae/sulat/typingEcology.test.mjs
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';

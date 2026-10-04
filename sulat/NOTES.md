@@ -1,8 +1,8 @@
 # Sulat
 
-Sulat is a typing artwork derived from Insulae Incognita. Typed keys create 26 kinds of terrain; completed lines advance in whole rows, translate across scripts, and change biomes through contact. Birds fly freely while deer, foxes, goats, and crabs follow connected land. Play and Pause control movement and mutations. A title screen opens the work, with Translation and Ecology enabled by default.
+Sulat is a typing artwork derived from Insulae Incognitae. Typed keys create 26 kinds of terrain; completed lines advance in whole rows, translate across scripts, and change biomes through contact. Birds fly freely while deer, foxes, goats, and crabs follow connected land. Play and Pause control movement and mutations. A title screen opens the work, with Translation and Ecology enabled by default.
 
-Open `index.html` through the workspace server at `/insulaeincognita/sulat/`.
+Open `index.html` through the workspace server at `/insulae-incognitae/sulat/`.
 
 ## Next in development
 
@@ -15,9 +15,9 @@ Tune biome contact rates and animal density against longer typed landscapes.
 - `biomes.js`: Sulat's palette and keys, extending the parent's biome definitions.
 - `landAnimals.js`: species habitats, connected land routes, and continuous walking.
 - `typingEcology.js`: biome contact rules and forest birth opportunities.
-- `typingEcology.test.mjs`: palette, contact, translation, and land-route regression checks. From `F:/xyh`, run `node --test insulaeincognita/sulat/typingEcology.test.mjs`.
+- `typingEcology.test.mjs`: palette, contact, translation, and land-route regression checks. From `F:/xyh`, run `node --test insulae-incognitae/sulat/typingEcology.test.mjs`.
 
-Sulat stays in the Insulae Incognita repository. It loads `../backgroundManager.js`, `../LetterMap.js`, `../glyphData.js`, `../lexicon.js`, and `../translationModule.js`, and uses the existing font in `../fonts/`. These are canonical same-repository files rather than independent copies. Asset provenance and the font license are recorded in [the parent asset record](../ASSETS.md). The combined prototype also uses `../LetterMap.js`.
+Sulat stays in the Insulae Incognitae repository. It loads `../backgroundManager.js`, `../LetterMap.js`, `../glyphData.js`, `../lexicon.js`, and `../translationModule.js`, and uses the existing font in `../fonts/`. These are canonical same-repository files rather than independent copies. Asset provenance and the font license are recorded in [the parent asset record](../ASSETS.md). The combined prototype also uses `../LetterMap.js`.
 
 ## 2026-10-05 — Codex — Separate project folder
 
@@ -34,3 +34,7 @@ Added deer, foxes, goats, and crabs as Unicode marks, with species-specific habi
 Added a title screen with a keyboard-accessible Start button. Translation and Ecology remain enabled on initial load, and playback starts paused. Returning to the title pauses the work, retains terrain and settings, and offers Continue typing. The typing field reserves space for the actual control height, including the expanded key guide.
 
 Verified all 26 biome classes through keyboard input in the Codex browser and tested a biome button. Observed all four land species, translation marks, and biome mutations with both defaults enabled. Two DOM samples 350 milliseconds apart showed moving animals with unchanged integer row positions; the typing-field DOM stayed identical during a 2.2-second pause. Checked keyboard start, title return, retained terrain, palette count, control clearance, and the browser error log. All 14 Node regression cases and `git diff --check` passed. Mobile software keyboard input and paste remain unfinished; biome buttons offer direct insertion but do not provide a complete mobile text input method. Animals do not yet change terrain or interact with each other. The shared lexicon's placeholder romanizations remain unchanged.
+
+## 2026-10-05 — Codex — Parent project rename
+
+Sulat's local URL is `/insulae-incognitae/sulat/` after the parent folder and repository rename. Updated its origin label, notes, and test command. Shared imports remain relative to the parent. Opened the renamed route in the Codex browser, started typing, submitted terrain, and toggled Play/Pause without browser errors; all 14 regression cases passed from the renamed folder. Sulat retains its name and development plan. The prior local `/insulaeincognita/sulat/` route no longer resolves, and no remote content push was performed.
