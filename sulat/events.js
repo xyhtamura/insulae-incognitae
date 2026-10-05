@@ -10,26 +10,30 @@ const SULAT_SILT = {
   desert: 'grass', dunes: 'grass', badlands: 'grass', sand: 'marsh',
   grass: 'marsh', plain: 'marsh', steppe: 'grass', tropical_savanna: 'marsh'
 };
+// Storms are drawn in punctuation and marks from the same scripts: commas and
+// dandas for rain, hooks for lightning, stars for snow, dots for dust, and
+// spirals for a typhoon.
+const SULAT_CLOUD = ['⌒', 'へ', 'ᜎ', 'ں', '︵'];
 // A storm type forms only over a landscape that holds enough of its terrain.
 const SULAT_STORMS = {
   rain: {
-    label: 'Rain', glyph: '雨', floods: true,
+    label: 'Rain', glyphs: [',', '،', '।', 'ヽ', '᜵', '、'], floods: true,
     changes: { lava: 'rock', volcanic: 'rock', desert: 'grass', badlands: 'grass', dunes: 'desert', snow: 'tundra' }
   },
   thunder: {
-    label: 'Thunderstorm', glyph: '雷', strikes: true,
+    label: 'Thunderstorm', glyphs: ['ऽ', 'ء', 'レ', 'ヘ', 'ᜑ', '⌁'], strikes: true,
     changes: { tropical_rainforest: 'tropical_savanna', temperate_forest: 'plain', boreal_taiga: 'tundra', forest: 'plain', mangrove: 'marsh', grass: 'steppe', flower: 'grass' }
   },
   blizzard: {
-    label: 'Blizzard', glyph: '吹', needs: ['snow', 'ice', 'glacier', 'tundra', 'alpine', 'boreal_taiga'], count: 3,
+    label: 'Blizzard', glyphs: ['*', '٭', '※', '⁂', 'ゞ', 'ॱ'], needs: ['snow', 'ice', 'glacier', 'tundra', 'alpine', 'boreal_taiga'], count: 3,
     changes: { grass: 'snow', plain: 'snow', tundra: 'snow', steppe: 'tundra', marsh: 'tundra', flower: 'grass', mountain: 'alpine', water: 'coldwater', river: 'coldwater', coldwater: 'ice', lake: 'ice' }
   },
   sandstorm: {
-    label: 'Sandstorm', glyph: '塵', needs: ['desert', 'dunes', 'badlands'], count: 3,
+    label: 'Sandstorm', glyphs: ['.', '٠', '·', '॰', '゜', '᜶'], needs: ['desert', 'dunes', 'badlands'], count: 3,
     changes: { grass: 'sand', flower: 'sand', marsh: 'sand', plain: 'steppe', steppe: 'desert', tropical_savanna: 'desert', sand: 'dunes', coast: 'dunes', oasis: 'desert' }
   },
   typhoon: {
-    label: 'Typhoon', glyph: '嵐', needs: [...SULAT_SEA], count: 6, floods: true,
+    label: 'Typhoon', glyphs: ['の', 'و', 'ᜏ', 'ゐ', '६', '@'], needs: [...SULAT_SEA], count: 6, floods: true,
     changes: { coast: 'water', sand: 'coast', reef: 'water', kelp: 'water', mangrove: 'swamp', tropical_rainforest: 'swamp', forest: 'swamp', grass: 'marsh', plain: 'marsh' }
   }
 };
@@ -89,7 +93,7 @@ class TypingEvents {
   _launch(line, column, direction) {
     const x = this._center(line, column);
     if (x === null || this.icebergs.length >= 6) return;
-    this.icebergs.push({ line, x, direction, age: 0 });
+    this.icebergs.push({ line, x, direction, age: 0, char: line.cells[column].char });
   }
 
   // Cells beside this one in its row, and overlapping cells one row away.

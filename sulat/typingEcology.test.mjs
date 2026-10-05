@@ -100,7 +100,19 @@ test('all 36 Sulat biomes have keys and one palette group without changing lette
   assert.equal(grouped.length, 36);
   assert.equal(new Set(grouped).size, 36);
   assert.ok(grouped.every(biome => biome in SULAT_BIOMES));
-  for (const [key, entry] of Object.entries(LETTER_TO_BIOME)) assert.equal(SULAT_KEYS[key], entry);
+  for (const [key, entry] of Object.entries(LETTER_TO_BIOME)) assert.equal(SULAT_KEYS[key].biome, entry.biome);
+});
+
+test('every biome draws its glyphs from several scripts, and none is only Hanzi', () => {
+  const { SULAT_BIOMES } = setup();
+  const script = glyph => [['Baybayin', /\p{Script_Extensions=Tagalog}/u], ['Kana', /[\p{Script_Extensions=Katakana}\p{Script_Extensions=Hiragana}]/u], ['Jawi', /\p{Script_Extensions=Arabic}/u], ['Devanagari', /\p{Script_Extensions=Devanagari}/u], ['Hanzi', /\p{Script_Extensions=Han}/u]].find(([, test]) => test.test(glyph))?.[0] || 'mark';
+  for (const [biome, { glyphs }] of Object.entries(SULAT_BIOMES)) {
+    const scripts = glyphs.map(script);
+    assert.ok(new Set(scripts).size >= 5, `${biome} uses ${[...new Set(scripts)]}`);
+    assert.ok(scripts.filter(name => name === 'Hanzi').length <= 2, `${biome} leans on Hanzi`);
+    assert.ok(scripts.includes('Baybayin'), `${biome} has no Baybayin`);
+    assert.ok(glyphs.every(glyph => !/^\p{Mark}+$/u.test(glyph)), `${biome} has a bare combining mark`);
+  }
 });
 
 test('persistent lava/water and river/grass contacts change their biomes', () => {

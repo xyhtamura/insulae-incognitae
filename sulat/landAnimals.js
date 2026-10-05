@@ -1,12 +1,15 @@
 // Routes use rendered bounds. Land and water form separate habitat networks.
+// Animals are short words rather than terrain glyphs, one language per species:
+// usa (Tagalog), kitsune and kani (Japanese), bakri and unt (Hindi), 兔 (Hanzi),
+// ikan (Malay, in Jawi). They are propositions, open to correction.
 const LAND_SPECIES = [
-  { name: 'deer', glyph: '鹿', habitats: ['forest', 'temperate_forest', 'tropical_rainforest', 'boreal_taiga', 'plain', 'grass', 'flower', 'tropical_savanna'] },
-  { name: 'fox', glyph: '狐', habitats: ['forest', 'temperate_forest', 'boreal_taiga', 'plain', 'grass', 'steppe', 'tundra', 'tropical_savanna'] },
-  { name: 'goat', glyph: '羊', habitats: ['mountain', 'rock', 'steppe', 'plain', 'tundra', 'desert', 'alpine', 'badlands'] },
-  { name: 'crab', glyph: '蟹', habitats: ['sand', 'coast', 'mangrove', 'marsh'] },
+  { name: 'deer', glyph: 'ᜂᜐ', habitats: ['forest', 'temperate_forest', 'tropical_rainforest', 'boreal_taiga', 'plain', 'grass', 'flower', 'tropical_savanna'] },
+  { name: 'fox', glyph: 'キツネ', habitats: ['forest', 'temperate_forest', 'boreal_taiga', 'plain', 'grass', 'steppe', 'tundra', 'tropical_savanna'] },
+  { name: 'goat', glyph: 'बकरी', habitats: ['mountain', 'rock', 'steppe', 'plain', 'tundra', 'desert', 'alpine', 'badlands'] },
+  { name: 'crab', glyph: 'カニ', habitats: ['sand', 'coast', 'mangrove', 'marsh'] },
   { name: 'hare', glyph: '兔', habitats: ['snow', 'tundra', 'alpine', 'grass', 'plain'] },
-  { name: 'camel', glyph: '駱', habitats: ['desert', 'dunes', 'oasis', 'badlands'] },
-  { name: 'fish', glyph: '魚', aquatic: true, habitats: [...SULAT_AQUATIC] }
+  { name: 'camel', glyph: 'ऊँट', habitats: ['desert', 'dunes', 'oasis', 'badlands'] },
+  { name: 'fish', glyph: 'ايکن', aquatic: true, habitats: [...SULAT_AQUATIC] }
 ];
 
 class LandAnimals {

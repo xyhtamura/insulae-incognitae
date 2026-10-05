@@ -1,6 +1,6 @@
 # Sulat
 
-Sulat is a typing artwork derived from Insulae Incognitae. Typed keys create 36 kinds of terrain; completed lines advance in whole rows, translate across scripts, and change biomes through contact. Water circulates along its row, glacier tips calve icebergs, tides and floods cover and uncover ground, storms cross the field, and rare earthquakes change terrain. Birds fly freely while deer, foxes, goats, crabs, hares, and camels follow connected land, and fish swim through connected water. Play and Pause control movement and mutations. A title screen opens the work, with Translation and Ecology enabled by default.
+Sulat is a typing artwork derived from Insulae Incognitae. Typed keys create 36 kinds of terrain, each drawn in glyphs chosen for their shape from Baybayin, Kana, Jawi, Devanagari, Hanzi, and punctuation; completed lines advance in whole rows, translate across scripts, and change biomes through contact. Water circulates along its row, glacier tips calve icebergs, tides and floods cover and uncover ground, storms cross the field, and rare earthquakes change terrain. Birds fly freely while deer, foxes, goats, crabs, hares, and camels follow connected land, and fish swim through connected water. Play and Pause control movement and mutations. A title screen opens the work, with Translation and Ecology enabled by default.
 
 Open `index.html` through the workspace server at `/insulae-incognitae/sulat/`.
 
@@ -12,7 +12,7 @@ Tune biome contact rates and animal density against longer typed landscapes.
 
 - `index.html`: Sulat's page, styles, controls, and animation driver.
 - `typerEngine.js`: typing, stepped movement, translation integration, and animal rendering.
-- `biomes.js`: Sulat's palette and keys, extending the parent's biome definitions.
+- `biomes.js`: Sulat's palette, keys, and its own glyph set for every biome.
 - `landAnimals.js`: species habitats, separate land and water routes, and continuous walking and swimming.
 - `typingEcology.js`: biome contact rules and forest birth opportunities.
 - `events.js`: water currents, glacier calving and icebergs, tides, floods, storms, and earthquakes.
@@ -86,3 +86,21 @@ Verified in the browser pane at 1100 by 900 through `engine.advance`, with chanc
 Not observed: a full unforced session at default rates, and a storm crossing the whole field in real time. The pane still reports reduced motion, so the ripple and shake animations remain unseen.
 
 Known rough edges, for the tuning step: currents rotate glyph and class along a run but `submerged` markers stay with their cell, so covered ground can come back one cell away from where its water has moved; a flood's cells count as river for contact rules, so banks turn to marsh quickly; storm glyphs 雲 雨 雷 吹 塵 嵐 depend on Noto Sans JP coverage and were checked only for rain. Fish carried by current, storms moving icebergs or birds, and wind direction shared between storms and currents were considered and left out.
+
+## 2026-10-05 — Claude Code — Glyphs by shape, across scripts
+
+Xyh's correction: Sulat had become too reliant on CJK characters and had lost the concept recorded in [the About page](../about/index.html). The biomes added on 2026-10-05, and the storms and animals after them, were Hanzi words for the thing shown (花 for flower, 湖 for lake, 雨 for rain, 鹿 for deer). The parent work does the opposite: characters are chosen for visual affinity to waves, foliage, or mountains, from scripts linked to the precolonial networks around Manila, and no set is a vocabulary list.
+
+- **Biomes.** `biomes.js` now defines all 36 glyph sets itself instead of spreading the parent's `WATERY`, `LAND6`, and `CLASSIC`. Each set has five or more of: punctuation or a geometric mark, Baybayin, Kana, Jawi, Devanagari, Hanzi, with at most two Hanzi and always one Baybayin. The original five terrain sets in `../lineGenerator.js` were the model, limited to the five scripts the About page names; its Thai, Telugu, Burmese, and Javanese glyphs were not carried over. Parent files are unchanged. Key and biome mappings are unchanged; `SULAT_KEYS` entries now point at Sulat's glyph sets.
+- **Translation.** Glyphs with a phoneme in `../glyphData.js` were preferred where the shape allowed, so loose syllables meet more often. Marsh holds ba and sa in Baybayin, Kana, and Jawi, which the lexicon can fuse into *basa*, wet. Most new glyphs have no phoneme and stay inert until someone adds them there.
+- **Storms.** Drawn in punctuation from the same scripts rather than a repeated word: commas and dandas for rain (`, ، । ヽ ᜵ 、`), hooks for lightning, stars for snow, dots for dust, spirals for a typhoon, under an arc row for cloud. Each storm draws its own arrangement.
+- **Icebergs** show the glyph that broke off the glacier.
+- **Animals** cannot be chosen by shape, so they are short words, one language per species: ᜂᜐ *usa* deer and ᜁᜊᜓᜈ᜔ *ibon* bird (Tagalog), キツネ fox and カニ crab (Japanese), बकरी goat and ऊँट camel (Hindi), ايکن *ikan* fish (Malay in Jawi), 兔 hare (Hanzi). These are my propositions and need Xyh's check, the Jawi spelling and the choice of languages most of all.
+- **Fonts.** The page now also requests Noto Sans Arabic and Noto Sans Devanagari from Google Fonts, linked and not shipped, so nothing changes in `ASSETS.md`.
+- **Copy and title.** The title screen terrain and the typing help name the scripts.
+
+A new test fails if any biome set has fewer than five script groups, more than two Hanzi, no Baybayin, or a bare combining mark. It caught sand missing Baybayin on first run. All 32 Node cases pass.
+
+Verified in the browser pane at 1100 by 900: typed all 36 biomes across five rows and read the rows back from the engine and in a screenshot, with every script present in each row and no missing-glyph boxes visible at that size; a rain storm rendered as arcs over commas and dandas; crab, camel, and fish appeared as カニ, ऊँट, ايکن; `document.fonts` reported the Arabic, Devanagari, JP, and local Tagalog faces loaded. No console errors.
+
+Not done: glyph choices were made by me from shape alone, at small size, in one sitting. Several are weak (flower, cave, badlands) and all are Xyh's to replace. Whether individual Jawi letters in isolated form read as intended next to left-to-right text was checked only in one screenshot. Phonemes for the new glyphs are not in `../glyphData.js`; adding them changes the parent's translation behavior, so it was left for a decision.

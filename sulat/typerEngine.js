@@ -113,7 +113,7 @@ class TyperEngine {
     if (!this.flightLayer || this.birds.length >= 8 || distance + 1 >= this._visibleRows()) return;
     const element = document.createElement('span');
     element.className = 'bird';
-    element.textContent = '鳥';
+    element.textContent = 'ᜁᜊᜓᜈ᜔'; // ibon
     this.flightLayer.appendChild(element);
     this.birds.push({
       element, x, origin: distance + 1, age: 0,
@@ -277,7 +277,7 @@ class TyperEngine {
       if (!berg.element) {
         berg.element = document.createElement('span');
         berg.element.className = 'iceberg';
-        berg.element.textContent = '氷';
+        berg.element.textContent = berg.char; // the glyph that broke off
         berg.element.berg = berg;
         this.flightLayer.appendChild(berg.element);
       }
@@ -291,11 +291,12 @@ class TyperEngine {
     }
     if (storm) {
       if (!storm.element) {
-        const glyph = SULAT_STORMS[storm.type].glyph;
+        const draw = set => Array.from({ length: 5 }, () => set[Math.floor(this.random() * set.length)]).join(' ');
+        const marks = SULAT_STORMS[storm.type].glyphs;
         storm.element = document.createElement('span');
         storm.element.className = 'storm';
         storm.element.dataset.type = storm.type;
-        storm.element.textContent = `雲 雲 雲 雲\n${glyph} ${glyph} ${glyph}\n ${glyph} ${glyph} ${glyph}`;
+        storm.element.textContent = `${draw(SULAT_CLOUD)}\n${draw(marks)}\n ${draw(marks)}`;
         storm.element.storm = storm;
         this.flightLayer.appendChild(storm.element);
       }

@@ -8,7 +8,7 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Noto+Sans:wght@100..900&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Noto+Sans:wght@100..900&family=Noto+Sans+JP:wght@400;700&family=Noto+Sans+Arabic:wght@400;700&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
 
   <script src="../backgroundManager.js"></script>
   <script src="../LetterMap.js"></script>
@@ -32,7 +32,7 @@
       height: 100vh; display: flex; justify-content: center; align-items: center;
       transition: background-color 1s ease;
       /* add CJK fallback */
-      font-family: "IBM Plex Mono", "Noto Sans JP", "Noto Sans", "Noto Sans Tagalog Local", sans-serif;
+      font-family: "IBM Plex Mono", "Noto Sans Tagalog Local", "Noto Sans JP", "Noto Sans Arabic", "Noto Sans Devanagari", "Noto Sans", sans-serif;
     }
     [hidden] { display: none !important; }
     #title-screen {
@@ -182,11 +182,11 @@
     <p class="origin">From Insulae Incognitae</p>
     <h1 id="sulat-title">Sulat</h1>
     <div id="title-terrain" aria-hidden="true">
-      <div><span class="mountain tile">山 △</span> <span class="forest tile">林 森 木</span> <span class="bird-mark">鳥</span></div>
-      <div><span class="grass tile">艸 艸</span> <span class="flower tile">花</span> <span class="river">川 流 川</span></div>
-      <div><span class="sand tile">砂 岸</span> <span class="water">~ 川 ~ ~</span></div>
+      <div><span class="mountain tile">△ ᜆ म</span> <span class="forest tile">林 ᜄ ق オ</span> <span class="bird-mark">ᜁᜊᜓᜈ᜔</span></div>
+      <div><span class="grass tile">ᜀ サ ए</span> <span class="flower tile">ة</span> <span class="river">ر リ । ᜇ</span></div>
+      <div><span class="sand tile">. ب 砂</span> <span class="water">~ ᜏ س ツ व</span></div>
     </div>
-    <p>Type terrain. Complete a line, then press Play to move it through translation and biome changes. Animals move across connected land and water.</p>
+    <p>Type terrain in Baybayin, Kana, Jawi, Devanagari, Hanzi, and punctuation. Complete a line, then press Play to move it through translation and biome changes. Animals move across connected land and water.</p>
     <button id="start-typing" type="button">Start typing</button>
     <p class="defaults" id="title-settings">Translation and Ecology are enabled. Movement starts when you press Play.</p>
   </section>
@@ -201,7 +201,7 @@
     <label><input id="translation-enabled" type="checkbox" checked>Translation</label>
     <label><input id="ecology-enabled" type="checkbox" checked>Ecology</label>
     <button id="show-title" type="button">Title</button>
-    <p id="typing-help">Type letters or use the biome buttons. Enter completes a line. Play advances terrain one row every two seconds; animals, water, and icebergs move between steps.</p>
+    <p id="typing-help">Type letters or use the biome buttons. Each key draws a glyph chosen for its shape from Baybayin, Kana, Jawi, Devanagari, Hanzi, or punctuation. Enter completes a line. Play advances terrain one row every two seconds; animals, water, and icebergs move between steps.</p>
     <p id="event-log" role="status"></p>
     <details>
       <summary>Keys and interactions</summary>
