@@ -1,21 +1,23 @@
 // Fliers are three-part words: the first and last parts are wings. Wings fold
 // while the animal is perched and spread in flight, so the word can be read
 // only in the air. Positions are field coordinates; heights are row units.
+// `lands` is what a species can leave where it settles: pollinators raise
+// flowers, bats drop seed, fireflies and mosquitoes follow wet ground.
 const FLIER_SPECIES = [
   // ibon (Tagalog). Birds are released by forest patches, not by habitat.
   { name: 'bird', word: ['ᜁ', 'ᜊᜓ', 'ᜈ᜔'], cap: 8, life: 18, leaves: true },
   // tutubi (Tagalog)
-  { name: 'dragonfly', word: ['ᜆᜓ', 'ᜆᜓ', 'ᜊᜒ'], habitats: ['marsh', 'lake', 'river', 'swamp', 'estuary'] },
+  { name: 'dragonfly', word: ['ᜆᜓ', 'ᜆᜓ', 'ᜊᜒ'], habitats: ['marsh', 'lake', 'river', 'swamp', 'estuary'], hunts: ['mosquito'], lands: { swamp: 'marsh' } },
   // titli (Hindi)
-  { name: 'butterfly', word: ['ति', 'त', 'ली'], habitats: ['flower', 'grass', 'tropical_savanna'] },
+  { name: 'butterfly', word: ['ति', 'त', 'ली'], habitats: ['flower', 'grass', 'tropical_savanna'], lands: { grass: 'flower', plain: 'flower', tropical_savanna: 'flower' } },
   // hotaru (Japanese)
-  { name: 'firefly', word: ['ホ', 'タ', 'ル'], habitats: ['mangrove', 'tropical_rainforest', 'swamp', 'marsh'] },
+  { name: 'firefly', word: ['ホ', 'タ', 'ル'], habitats: ['mangrove', 'tropical_rainforest', 'swamp', 'marsh'], lands: { swamp: 'mangrove', marsh: 'mangrove' } },
   // lebah (Malay, in Jawi). Joiners keep each letter in its connected form.
-  { name: 'bee', word: ['ل‍', '‍ب‍', '‍ه'], rtl: true, habitats: ['flower', 'oasis', 'forest', 'temperate_forest'] },
+  { name: 'bee', word: ['ل‍', '‍ب‍', '‍ه'], rtl: true, habitats: ['flower', 'oasis', 'forest', 'temperate_forest'], lands: { grass: 'flower', plain: 'flower' } },
   // lamok (Tagalog)
-  { name: 'mosquito', word: ['ᜎ', 'ᜋᜓ', 'ᜃ᜔'], habitats: ['swamp', 'marsh', 'lake', 'mangrove'] },
+  { name: 'mosquito', word: ['ᜎ', 'ᜋᜓ', 'ᜃ᜔'], habitats: ['swamp', 'marsh', 'lake', 'mangrove'], lands: { marsh: 'swamp', grass: 'marsh' } },
   // paniki (Tagalog). Bats hang inverted in caves.
-  { name: 'bat', word: ['ᜉ', 'ᜈᜒ', 'ᜃᜒ'], habitats: ['cave'], hangs: true }
+  { name: 'bat', word: ['ᜉ', 'ᜈᜒ', 'ᜃᜒ'], habitats: ['cave'], hangs: true, lands: { grass: 'forest', plain: 'forest', tropical_savanna: 'forest' } }
 ];
 
 class Fliers {
@@ -23,6 +25,9 @@ class Fliers {
     this.random = random;
     this.fliers = [];
     this.limit = 14;
+    this.landChance = 0.5;
+    this.changed = 0;
+    this.caught = 0;
   }
 
   biome(cell) { return cell?.className?.split(' ')[0] || ''; }
@@ -67,7 +72,7 @@ class Fliers {
     if (!line || column < 0) return null;
     const cell = line.cells[column];
     const biome = this.biome(cell);
-    return cell.char.trim() && !SULAT_AQUATIC.has(biome) && biome !== 'lava' ? line : null;
+    return cell.char.trim() && !SULAT_AQUATIC.has(biome) && biome !== 'lava' ? { line, column } : null;
   }
 
   advance(seconds, lines, maxRows = Infinity) {
@@ -91,9 +96,27 @@ class Fliers {
       flier.x += Math.cos(flier.age * 1.3 + flier.phase) * 0.05 * seconds;
       flier.y += (Math.sin(flier.age * 1.7 + flier.phase) * 0.9 + 0.05) * seconds;
       if (flier.timer > 0) continue;
-      const line = this._ground(lines, flier.x, flier.y);
-      if (line) Object.assign(flier, { line, y: line.distance, state: 'perched', timer: 2 + this.random() * 2 });
-      else flier.timer = 1;
+      const ground = this._ground(lines, flier.x, flier.y);
+      if (!ground) { flier.timer = 1; continue; }
+      const { line, column } = ground;
+      Object.assign(flier, { line, y: line.distance, state: 'perched', timer: 2 + this.random() * 2 });
+      const cell = line.cells[column];
+      const target = flier.species.lands?.[this.biome(cell)];
+      if (!target || cell.cooldown > 0 || this.random() >= this.landChance) continue;
+      const glyphs = SULAT_BIOMES[target].glyphs;
+      line.cells[column] = {
+        id: cell.id, char: glyphs[Math.floor(this.random() * glyphs.length)],
+        className: `${target}${SULAT_LAND.has(target) ? ' tile' : ''}`, cooldown: 4, mutation: 'event'
+      };
+      this.changed++;
+    }
+    // A hunter in flight removes prey flying within reach.
+    for (const hunter of this.fliers) {
+      if (!hunter.species.hunts || hunter.state !== 'flying') continue;
+      for (const prey of this.fliers) {
+        if (prey.gone || prey.state !== 'flying' || !hunter.species.hunts.includes(prey.species.name)) continue;
+        if (Math.abs(prey.x - hunter.x) < 0.04 && Math.abs(prey.y - hunter.y) < 0.8) { prey.gone = true; this.caught++; }
+      }
     }
     this.fliers = this.fliers.filter(flier => !flier.gone && flier.age < (flier.species.life || 24) &&
       flier.x > -0.05 && flier.x < 1.05 && flier.y > -1 && flier.y < maxRows + 1);

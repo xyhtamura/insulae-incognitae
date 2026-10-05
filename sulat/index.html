@@ -86,24 +86,49 @@
       border: 1px solid #444; border-radius: 6px; color: #202020;
       background: #f1f1ecee; font-size: 12px; line-height: 1.5;
     }
-    #play-pause, #show-title {
-      font: inherit; min-width: 72px; min-height: 40px; padding: 8px 14px;
+    #controls button.bar {
+      font: inherit; min-height: 40px; padding: 8px 12px;
       border: 1px solid #444; border-radius: 3px; background: #fff; color: #202020;
       cursor: pointer;
     }
-    #play-pause:focus-visible { outline: 2px solid #202020; outline-offset: 3px; }
+    #controls button.bar[aria-expanded="true"], #controls button.bar[aria-pressed="true"] { background: #202b28; color: #f4f3e9; }
+    #controls button:focus-visible, .sheet button:focus-visible { outline: 2px solid #202020; outline-offset: 2px; }
     #typing-help { margin: 0; }
-    #controls label { display: flex; align-items: center; gap: 5px; }
-    #controls input { margin: 0; }
-    #typing-help, #controls details { flex-basis: 100%; }
-    #controls summary { cursor: pointer; }
-    #controls details { max-height: 24vh; overflow: auto; }
-    #controls details p { margin: 6px 0 0; }
-    #biome-palette { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
-    #biome-palette button { font: inherit; font-size: 11px; cursor: pointer; border: 1px solid #aaa; border-radius: 3px; padding: 4px 6px; background: #fff; color: #202020; }
-    #biome-palette kbd { color: #666; margin-right: 5px; }
-    .biome-group { display: flex; flex-wrap: wrap; gap: 5px; flex-basis: 100%; border: 0; padding: 0; margin: 4px 0 8px; min-width: 0; }
-    .biome-group legend { padding: 0; margin-bottom: 5px; font-size: 10px; letter-spacing: 0.06em; }
+    #typing-help, #key-name, #keyboard { flex-basis: 100%; }
+    #key-name { margin: 0; min-height: 1.5em; font-weight: 700; }
+    #keyboard { display: flex; flex-direction: column; gap: 3px; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+    .key-row { display: flex; gap: 3px; justify-content: center; }
+    .key {
+      flex: 1 1 0; min-width: 0; max-width: 46px; height: 36px; padding: 0; box-sizing: border-box;
+      font: inherit; font-size: 17px; line-height: 1; cursor: pointer; overflow: hidden;
+      border: 1px solid #8a8a84; border-radius: 4px; background: #1d3644; -webkit-tap-highlight-color: transparent;
+    }
+    #keyboard .key:not(.tile):not(.wide) { background: #1d3644; }
+    .key.tile { display: block; padding: 0; border-radius: 4px; }
+    .key.wide { flex: 2.4 1 0; max-width: 140px; font-size: 12px; background: #fff; color: #202020; }
+    .key.pressed, .key:active { outline: 2px solid #202020; outline-offset: -2px; }
+    #keyboard span, #keyboard .key { animation: none; translate: none; }
+    .sheet {
+      position: fixed; inset: auto 0 0 0; margin: 0 auto; z-index: 5; box-sizing: border-box;
+      width: min(100%, 720px); max-height: 72dvh; overflow: auto; padding: 0 18px 22px;
+      border: 1px solid #444; border-bottom: 0; border-radius: 10px 10px 0 0;
+      background: #f6f6f1; color: #202020; font-size: 13px; line-height: 1.6;
+    }
+    .sheet header { position: sticky; top: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 12px 0 10px; background: #f6f6f1; border-bottom: 1px solid #c9c9c2; }
+    .sheet h2 { font-size: 15px; margin: 0 auto 0 0; }
+    .sheet h3 { font-size: 13px; margin: 18px 0 4px; scroll-margin-top: 96px; }
+    .sheet p { margin: 4px 0; }
+    .sheet nav { display: flex; flex-wrap: wrap; gap: 4px 12px; flex-basis: 100%; font-size: 12px; }
+    .sheet nav a { color: #202b28; }
+    .sheet header button { font: inherit; min-height: 36px; padding: 6px 12px; border: 1px solid #444; border-radius: 3px; background: #fff; color: #202020; cursor: pointer; }
+    #translation-list { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    #translation-list th, #translation-list td { text-align: left; padding: 5px 10px 5px 0; border-bottom: 1px solid #dcdcd5; vertical-align: baseline; }
+    #translation-list td:first-child { font-size: 18px; white-space: nowrap; }
+    @media (max-width: 520px) {
+      #controls { width: calc(100% - 10px); padding: 8px 6px; bottom: 5px; gap: 6px 8px; }
+      #controls button.bar { padding: 8px 9px; }
+      .key { height: 40px; font-size: 14px; }
+    }
     .land-animal[data-mode="swimming"] { color: #d9f1f5; background: #224759e6; }
     .iceberg { position: absolute; line-height: 1; color: #385c73; background: #e4f1f6e6; border-radius: 3px; padding: 0 0.05em; }
     .storm { position: absolute; height: 3em; line-height: 1; white-space: pre; text-align: center; overflow: hidden; border-radius: 0.4em; color: #f3f5f7; background: #47525ccc; }
@@ -195,7 +220,7 @@
     </div>
     <p>Type terrain in Baybayin, Kana, Jawi, Devanagari, Hanzi, Thai, Telugu, Burmese, Javanese, and punctuation. Complete a line, then press Play to move it through translation and biome changes. Animals move across connected land and water.</p>
     <button id="start-typing" type="button">Start typing</button>
-    <p class="defaults" id="title-settings">Translation and Ecology are enabled. Movement starts when you press Play.</p>
+    <p class="defaults">Movement starts when you press Play.</p>
   </section>
   <div id="terminal" hidden>
     <div id="typing-field">
@@ -204,23 +229,64 @@
     </div>
   </div>
   <div id="controls" hidden>
-    <button id="play-pause" type="button" aria-controls="terminal-content">Play</button>
-    <label><input id="translation-enabled" type="checkbox" checked>Translation</label>
-    <label><input id="ecology-enabled" type="checkbox" checked>Ecology</label>
-    <button id="show-title" type="button">Title</button>
-    <p id="typing-help">Type letters or use the biome buttons. Each key draws a glyph chosen for its shape from Baybayin, Kana, Jawi, Devanagari, Hanzi, Thai, Telugu, Burmese, Javanese, or punctuation. Enter completes a line. Play advances terrain one row every two seconds; animals, water, and icebergs move between steps.</p>
+    <button class="bar" id="play-pause" type="button" aria-controls="terminal-content">Play</button>
+    <button class="bar" id="toggle-keys" type="button" aria-pressed="true" aria-controls="keyboard">Keys</button>
+    <button class="bar" id="open-guide" type="button" aria-expanded="false" aria-controls="guide-sheet">Guide</button>
+    <button class="bar" id="open-translations" type="button" aria-expanded="false" aria-controls="translations-sheet">Translations</button>
+    <button class="bar" id="show-title" type="button">Title</button>
+    <p id="typing-help">Type on a keyboard or tap the keys. Each key draws one terrain. Hover over a key, or hold it, to see its name.</p>
+    <p id="key-name" aria-hidden="true"></p>
+    <div id="keyboard" role="group" aria-label="Terrain keys"></div>
     <p id="event-log" role="status"></p>
-    <details>
-      <summary>Keys and interactions</summary>
-      <p>R/Q: rainforest. L/W: temperate forest. N/K: taiga. E/T: water. J/P: cold water. U/F: reef. I/Y: estuary. O: swamp. V: ice. S/B: savanna. C/G: steppe. Z/M: tundra. A/D: sand. X: mountain. H: plain. Space leaves a gap.</p>
-      <div id="biome-palette" role="group" aria-label="Biomes"></div>
-      <p>Water touching forest can become estuary. Rivers and lakes form marsh beside grass and oases beside desert or dunes. Estuaries and coasts form mangrove beside forest. Snow beside mountains becomes glacier; cold terrain changes mountain into alpine. Water or snow cools lava into rock. Cold water changes reef into kelp. Contact must persist across steps.</p>
-      <p>Forest patches release birds. Dragonflies, butterflies, fireflies, bees, and mosquitoes rise from wet ground and flowers, and bats from caves. A flying animal is a three-part word whose first and last parts are wings: folded while it sits, open in flight, so its name can be read only in the air. Deer and foxes move through woodland and open ground, goats through rocky terrain, and crabs along shores. Hares cross snow and tundra, camels move through desert and oases, and fish swim through connected water. Monkeys, boars, and civets keep to forest, and bears to cold forest and tundra. Elephants, carabaos, tigers, and rhinoceroses are larger, slower, and appear one at a time; whales cross open sea and crocodiles hold rivers and estuaries. Elephants and rhinoceroses can open forest into grassland, and carabaos can turn grass into marsh. Tigers take deer, boars, and monkeys; foxes take hares; crocodiles take fish. Long names are drawn smaller. Land and water routes stay separate; spaces and lava break routes. Ecology controls biome changes, animal births, currents, and events; turning it off holds tides, floods, and storms where they are.</p>
-      <p>Water moves one cell along its row every two steps; lakes stay still. A glacier left with water, a gap, or the row end beside it for three steps can calve: the tip becomes cold water and an iceberg drifts along the row, cooling the water under it until it meets land. Earthquakes are rare. One turns nearby mountain into rock, rock and badlands into cave, cave into rock, and volcanic ground into lava, breaks glaciers, and opens a gap in the row at its center. Thick underlines mark cells changed by an event.</p>
-      <p>Tides, floods, and storms arrive on their own. Every 16 steps the tide covers sand and coast beside the sea for 8 steps, then uncovers them. A flood spreads from rivers and lakes over low ground for 3 steps, stands, and recedes after 8, leaving grass on dry ground and marsh on grassland and sand. Water that changes biome while it stands does not recede. One storm at a time crosses three rows. Rain greens desert, cools lava, and can start a flood over a river or lake. A thunderstorm strikes one cell per step and burns forest to open ground. A blizzard forms when the landscape has cold terrain, and lays snow and freezes water. A sandstorm forms when it has desert, and dries grassland into sand and dunes. A typhoon forms when it has enough sea, washes away coast and reef, and can start a flood.</p>
-      <p>Translation rewrites recognized words and syllables. Dotted underlines mark rewritten text; thin solid underlines mark biome changes. The active line stays editable. Pause holds movement and mutations.</p>
-    </details>
   </div>
+
+  <dialog class="sheet" id="guide-sheet" aria-labelledby="guide-title">
+    <header>
+      <h2 id="guide-title">Guide</h2>
+      <button type="button" data-close>Close</button>
+      <nav aria-label="Guide sections">
+        <a href="#guide-typing">Typing</a>
+        <a href="#guide-contact">Terrain contact</a>
+        <a href="#guide-water">Water and ice</a>
+        <a href="#guide-weather">Tides, floods, storms</a>
+        <a href="#guide-quakes">Earthquakes</a>
+        <a href="#guide-animals">Animals</a>
+        <a href="#guide-fliers">Fliers</a>
+        <a href="#guide-marks">Marks</a>
+      </nav>
+    </header>
+    <h3 id="guide-typing">Typing</h3>
+    <p>Each key draws one terrain, in a glyph chosen for its shape from Baybayin, Kana, Jawi, Devanagari, Hanzi, Thai, Telugu, Burmese, Javanese, or punctuation. Space leaves a gap. Enter completes a line. Delete removes the last glyph, or brings back the last completed line. Play moves the terrain up one row every two seconds; Pause holds everything. The line you are typing stays editable.</p>
+    <h3 id="guide-contact">Terrain contact</h3>
+    <p>Terrain changes when it stays in contact with other terrain across steps. Water touching forest can become estuary. Rivers and lakes form marsh beside grass, and oases beside desert or dunes. Estuaries and coasts form mangrove beside forest. Snow beside mountains becomes glacier; cold terrain changes mountain into alpine. Water or snow cools lava into rock. Cold water changes reef into kelp.</p>
+    <h3 id="guide-water">Water and ice</h3>
+    <p>Water moves one cell along its row every two steps; lakes stay still. A glacier left with water, a gap, or the row end beside it for three steps can calve: the tip becomes cold water and an iceberg drifts along the row, cooling the water under it until it meets land.</p>
+    <h3 id="guide-weather">Tides, floods, and storms</h3>
+    <p>These arrive on their own. Every 16 steps the tide covers sand and coast beside the sea for 8 steps, then uncovers them. A flood spreads from rivers and lakes over low ground for 3 steps, stands, and recedes after 8, leaving grass on dry ground and marsh on grassland and sand. Water that changes while it stands does not recede.</p>
+    <p>One storm at a time crosses three rows. Rain greens desert, cools lava, and can start a flood over a river or lake. A thunderstorm strikes one cell per step and burns forest to open ground. A blizzard needs cold terrain; it lays snow and freezes water. A sandstorm needs desert; it dries grassland into sand and dunes. A typhoon needs sea; it washes away coast and reef and can start a flood.</p>
+    <h3 id="guide-quakes">Earthquakes</h3>
+    <p>Earthquakes are rare. One turns nearby mountain into rock, rock and badlands into cave, cave into rock, and volcanic ground into lava, breaks glaciers, and opens a gap in the row at its center.</p>
+    <h3 id="guide-animals">Animals</h3>
+    <p>Animals are words. Land animals follow connected land and swimmers follow connected water; gaps and lava break routes. Deer, foxes, boars, monkeys, and civets keep to forest and open ground, bears to cold forest, goats to rock, crabs to shores, hares to snow, camels to desert, fish to any water. Long names are drawn smaller.</p>
+    <p>Elephants, carabaos, tigers, and rhinoceroses are larger, slower, and appear one at a time; whales cross open sea and crocodiles hold rivers and estuaries. Elephants and rhinoceroses can open forest into grassland, and carabaos can turn grass into marsh. Tigers take deer, boars, and monkeys; foxes take hares; crocodiles take fish.</p>
+    <h3 id="guide-fliers">Fliers</h3>
+    <p>A flying animal is a word in three parts whose first and last parts are wings: folded while it sits, open in flight, so its name can be read only in the air. Forest patches release birds. Dragonflies, butterflies, fireflies, bees, and mosquitoes rise from wet ground and flowers, and bats from caves.</p>
+    <p>Where they settle, they can change the ground. Butterflies and bees turn grass into flowers. Bats turn grass into forest. Fireflies turn swamp and marsh into mangrove. Mosquitoes turn marsh into swamp and grass into marsh; dragonflies turn swamp back into marsh and take mosquitoes in flight.</p>
+    <h3 id="guide-marks">Marks</h3>
+    <p>A dotted underline marks text rewritten by translation. A thin underline marks a change from terrain contact. A thick underline marks a change from an event or an animal.</p>
+  </dialog>
+
+  <dialog class="sheet" id="translations-sheet" aria-labelledby="translations-title">
+    <header>
+      <h2 id="translations-title">Translations</h2>
+      <button type="button" data-close>Close</button>
+    </header>
+    <p>Translation works on completed lines. A word can change into a word of the same meaning in another script. A word can be split where another word begins with the sound of one of its syllables. Loose glyphs whose sounds spell a word can join into it. These are the words it knows; the sounds are working romanizations.</p>
+    <table id="translation-list">
+      <thead><tr><th scope="col">Word</th><th scope="col">Sounds</th><th scope="col">Language</th><th scope="col">Meaning</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </dialog>
 
   <script>
     const background = new BackgroundManager();
@@ -255,41 +321,108 @@
       document.getElementById('terminal').hidden = true;
       document.getElementById('controls').hidden = true;
       startTyping.textContent = 'Continue typing';
-      document.getElementById('title-settings').textContent = `Translation: ${engine.translationEnabled ? 'on' : 'off'}. Ecology: ${engine.ecologyEnabled ? 'on' : 'off'}. Movement starts when you press Play.`;
+      for (const sheet of document.querySelectorAll('.sheet')) closeSheet(sheet);
       titleScreen.hidden = false;
       startTyping.focus({ preventScroll: true });
     });
-    const palette = document.getElementById('biome-palette');
-    for (const [group, biomes] of Object.entries(SULAT_GROUPS)) {
-      const section = document.createElement('fieldset');
-      section.className = 'biome-group';
-      const legend = document.createElement('legend');
-      legend.textContent = group;
-      section.appendChild(legend);
-      for (const biome of biomes) {
-      const keys = Object.keys(SULAT_KEYS).filter(key => SULAT_KEYS[key].biome === biome).join('/').toUpperCase();
-      const label = SULAT_LABELS[biome] || biome[0].toUpperCase() + biome.slice(1);
+    // The on-screen keyboard mirrors the physical layout. Each key shows one
+    // glyph of its terrain; two keys for one terrain show different glyphs.
+    const keyboard = document.getElementById('keyboard');
+    const keyName = document.getElementById('key-name');
+    const keyButtons = new Map();
+    const labelOf = biome => SULAT_LABELS[biome] || (biome[0].toUpperCase() + biome.slice(1)).replace('_', ' ');
+    const shown = {};
+    function addKey(rowElement, { key, label, name, biome, action, wide }) {
       const button = document.createElement('button');
       button.type = 'button';
-      button.setAttribute('aria-label', `Type ${label.toLowerCase()}`);
-      const key = document.createElement('kbd');
-      key.textContent = keys;
-      button.append(key, label);
+      button.className = `key${wide ? ' wide' : ''}${biome ? ` ${biome}${SULAT_LAND.has(biome) ? ' tile' : ''}` : ''}`;
+      button.textContent = label;
+      button.dataset.name = name;
+      button.setAttribute('aria-label', name);
+      let hold = null, held = false;
+      const show = () => { keyName.textContent = name; };
+      const clear = () => { clearTimeout(hold); if (keyName.textContent === name) keyName.textContent = ''; };
+      button.addEventListener('pointerenter', event => { if (event.pointerType === 'mouse') show(); });
+      button.addEventListener('pointerleave', clear);
+      button.addEventListener('focus', show);
+      button.addEventListener('blur', clear);
+      // A long press names the key without typing it.
+      button.addEventListener('pointerdown', () => { held = false; hold = setTimeout(() => { held = true; show(); }, 450); });
+      button.addEventListener('pointerup', () => clearTimeout(hold));
+      button.addEventListener('pointercancel', clear);
       button.addEventListener('click', event => {
-        engine.typeBiome(biome);
+        if (held) { held = false; return; }
+        action();
         if (event.detail > 0) surface.focus({ preventScroll: true });
       });
-        section.appendChild(button);
+      rowElement.appendChild(button);
+      keyButtons.set(key, button);
+    }
+    for (const keys of ['`1234567890-=', 'qwertyuiop[]\\', "asdfghjkl;'", 'zxcvbnm,./']) {
+      const rowElement = document.createElement('div');
+      rowElement.className = 'key-row';
+      for (const key of keys) {
+        const biome = SULAT_KEYS[key].biome;
+        const glyphs = SULAT_BIOMES[biome].glyphs;
+        shown[biome] = (shown[biome] ?? -1) + 1;
+        addKey(rowElement, { key, label: glyphs[shown[biome] % glyphs.length], name: `${labelOf(biome)} · ${key.toUpperCase()}`, biome, action: () => engine.typeBiome(biome) });
       }
-      palette.appendChild(section);
+      keyboard.appendChild(rowElement);
+    }
+    const lastRow = document.createElement('div');
+    lastRow.className = 'key-row';
+    addKey(lastRow, { key: 'Backspace', label: 'Delete', name: 'Delete the last glyph', wide: true, action: () => engine._backspace() });
+    addKey(lastRow, { key: ' ', label: 'Space', name: 'Leave a gap', wide: true, action: () => engine._space() });
+    addKey(lastRow, { key: 'Enter', label: 'Enter', name: 'Complete the line', wide: true, action: () => engine._newline() });
+    keyboard.appendChild(lastRow);
+    keyboard.addEventListener('contextmenu', event => event.preventDefault());
+    // A physical keystroke lights the matching key.
+    surface.addEventListener('keydown', event => {
+      const button = keyButtons.get(event.key.length === 1 ? event.key.toLowerCase() : event.key);
+      if (!button || event.ctrlKey || event.metaKey || event.altKey) return;
+      button.classList.add('pressed');
+      setTimeout(() => button.classList.remove('pressed'), 140);
+    });
+    const toggleKeys = document.getElementById('toggle-keys');
+    toggleKeys.addEventListener('click', () => {
+      const visible = keyboard.hidden;
+      keyboard.hidden = !visible;
+      document.getElementById('typing-help').hidden = !visible;
+      keyName.hidden = !visible;
+      toggleKeys.setAttribute('aria-pressed', String(visible));
+    });
+
+    // Guide and Translations open as sheets from the bottom edge, one at a time.
+    const sheets = { 'open-guide': document.getElementById('guide-sheet'), 'open-translations': document.getElementById('translations-sheet') };
+    function closeSheet(sheet) {
+      if (!sheet.open) return;
+      sheet.close();
+      const opener = document.querySelector(`[aria-controls="${sheet.id}"]`);
+      opener.setAttribute('aria-expanded', 'false');
+    }
+    for (const [id, sheet] of Object.entries(sheets)) {
+      const opener = document.getElementById(id);
+      opener.addEventListener('click', () => {
+        if (sheet.open) { closeSheet(sheet); surface.focus({ preventScroll: true }); return; }
+        for (const other of Object.values(sheets)) closeSheet(other);
+        sheet.show();
+        sheet.scrollTop = 0;
+        opener.setAttribute('aria-expanded', 'true');
+      });
+      sheet.querySelector('[data-close]').addEventListener('click', () => { closeSheet(sheet); opener.focus({ preventScroll: true }); });
+      sheet.addEventListener('keydown', event => { if (event.key === 'Escape') { closeSheet(sheet); opener.focus({ preventScroll: true }); } });
+    }
+    const translationRows = document.querySelector('#translation-list tbody');
+    for (const word of LEXICON) {
+      const tr = document.createElement('tr');
+      for (const text of [word.syllables.map(unit => unit.g.join('')).join(''), word.syllables.map(unit => unit.p).join('-'), word.lang, word.meaning]) {
+        const td = document.createElement('td');
+        td.textContent = text;
+        tr.appendChild(td);
+      }
+      translationRows.appendChild(tr);
     }
     engine.onEvent = (message) => { document.getElementById('event-log').textContent = message; };
-    document.getElementById('translation-enabled').addEventListener('change', (event) => {
-      engine.translationEnabled = event.target.checked;
-    });
-    document.getElementById('ecology-enabled').addEventListener('change', (event) => {
-      engine.ecologyEnabled = event.target.checked;
-    });
     playback.addEventListener('click', (event) => {
       engine.setPlaying(!engine.playing);
       playback.textContent = engine.playing ? 'Pause' : 'Play';

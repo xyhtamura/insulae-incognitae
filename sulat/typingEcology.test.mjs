@@ -481,3 +481,21 @@ test('an elephant can open the forest cell it leaves into grass and keep walking
   walkers.sync(lines);
   assert.equal(walkers.animals.length, 1);
 });
+
+test('insects and bats can change the ground they settle on, and dragonflies take mosquitoes', () => {
+  const { Fliers, FLIER_SPECIES } = setup();
+  const fliers = new Fliers({ random: () => 0 });
+  const find = name => FLIER_SPECIES.find(species => species.name === name);
+  const lines = [row(['grass', 'grass', 'marsh', 'rock'])];
+  const aloft = (name, column) => ({ species: find(name), x: (column + 0.5) / 30, y: 1, state: 'flying', spread: 1, age: 0, timer: 0, phase: 0, velocity: 0 });
+  fliers.fliers = [aloft('butterfly', 0), aloft('bat', 1), aloft('firefly', 2), aloft('bee', 3)];
+  fliers.advance(0.01, lines);
+  assert.deepEqual(lines[0].cells.map(cell => cell.className), ['flower tile', 'forest tile', 'mangrove tile', 'rock tile']);
+  assert.equal(fliers.changed, 3);
+  assert.ok(fliers.fliers.every(flier => flier.state === 'perched'));
+  const hunt = new Fliers({ random: () => 0 });
+  hunt.fliers = [{ ...aloft('dragonfly', 5), timer: 5 }, { ...aloft('mosquito', 5), timer: 5 }, { ...aloft('mosquito', 20), timer: 5 }];
+  hunt.advance(0.01, lines);
+  assert.deepEqual(Array.from(hunt.fliers, flier => flier.species.name), ['dragonfly', 'mosquito']);
+  assert.equal(hunt.caught, 1);
+});
