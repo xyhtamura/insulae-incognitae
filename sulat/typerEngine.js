@@ -220,7 +220,11 @@ class TyperEngine {
     const field = this.container.getBoundingClientRect();
     for (const p of this.container.children) {
       const width = p.getBoundingClientRect().width;
-      if (width > field.width) p.style.transform = `scaleX(${field.width / width})`;
+      if (width <= field.width) continue;
+      // A row wider than the field cannot be centered by its margins; it
+      // starts at the left edge, so that is the side to scale from.
+      p.style.transform = `scaleX(${field.width / width})`;
+      if (this.container.dataset.align === 'center') p.style.transformOrigin = 'left bottom';
     }
     for (const line of this.completed) {
       line.bounds = line.element.cellElements.map(span => {

@@ -78,6 +78,10 @@
       line-height: 1; letter-spacing: 0.08em; white-space: pre;
       transform-origin: left bottom;
     }
+    /* Alignment keeps each row at its own width, so an over-long row can
+       still be scaled to fit from the side it is anchored to. */
+    #terminal-content[data-align="center"] p { left: 0; right: 0; width: fit-content; margin-inline: auto; transform-origin: center bottom; }
+    #terminal-content[data-align="right"] p { right: 0; transform-origin: right bottom; }
     #controls {
       position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
       width: min(90%, 680px); box-sizing: border-box; padding: 12px 16px;
@@ -237,7 +241,7 @@
   </div>
   <div id="controls" hidden>
     <button class="bar" id="play-pause" type="button" aria-controls="terminal-content">Play</button>
-    <button class="bar" id="toggle-keys" type="button" aria-expanded="false" aria-controls="key-settings">Keys</button>
+    <button class="bar" id="toggle-keys" type="button" aria-expanded="false" aria-controls="key-settings">Settings</button>
     <button class="bar" id="open-guide" type="button" aria-expanded="false" aria-controls="guide-sheet">Guide</button>
     <button class="bar" id="open-translations" type="button" aria-expanded="false" aria-controls="translations-sheet">Translations</button>
     <button class="bar" id="show-title" type="button">Title</button>
@@ -246,6 +250,12 @@
         <legend>Keys</legend>
         <label><input type="radio" name="shown" value="yes">Shown</label>
         <label><input type="radio" name="shown" value="no">Hidden</label>
+      </fieldset>
+      <fieldset>
+        <legend>Lines</legend>
+        <label><input type="radio" name="align" value="left">Left</label>
+        <label><input type="radio" name="align" value="center">Center</label>
+        <label><input type="radio" name="align" value="right">Right</label>
       </fieldset>
       <fieldset>
         <legend>Layout</legend>
@@ -281,7 +291,7 @@
       </nav>
     </header>
     <h3 id="guide-typing">Typing</h3>
-    <p>Each key draws one terrain, in a glyph chosen for its shape from Baybayin, Kana, Jawi, Devanagari, Hanzi, Thai, Telugu, Burmese, Javanese, or punctuation. Space leaves a gap. Enter completes a line. Delete removes the last glyph, or brings back the last completed line. The Keys button opens the key settings: show or hide the on-screen keys, choose keyboard rows or five rows grouped by terrain, and set the key size. Play moves the terrain up one row every two seconds; Pause holds everything. The line you are typing stays editable.</p>
+    <p>Each key draws one terrain, in a glyph chosen for its shape from Baybayin, Kana, Jawi, Devanagari, Hanzi, Thai, Telugu, Burmese, Javanese, or punctuation. Space leaves a gap. Enter completes a line. Delete removes the last glyph, or brings back the last completed line. Settings holds the line alignment (left, center, or right) and the on-screen keys: shown or hidden, keyboard rows or five rows grouped by terrain, and three sizes. Alignment changes which cells of neighboring rows touch. Play moves the terrain up one row every two seconds; Pause holds everything. The line you are typing stays editable.</p>
     <h3 id="guide-contact">Terrain contact</h3>
     <p>Terrain changes when it stays in contact with other terrain across steps. Water touching forest can become estuary. Rivers and lakes form marsh beside grass, and oases beside desert or dunes. Estuaries and coasts form mangrove beside forest. Snow beside mountains becomes glacier; cold terrain changes mountain into alpine. Water or snow cools lava into rock. Cold water changes reef into kelp.</p>
     <h3 id="guide-water">Water and ice</h3>
@@ -422,7 +432,7 @@
     // A narrow screen starts with five rows of large keys; the choice is kept.
     const keySettings = document.getElementById('key-settings');
     const narrow = matchMedia('(max-width: 520px)').matches;
-    const keyPrefs = { shown: 'yes', layout: narrow ? 'five' : 'keyboard', size: narrow ? 'large' : 'medium' };
+    const keyPrefs = { align: 'left', shown: 'yes', layout: narrow ? 'five' : 'keyboard', size: narrow ? 'large' : 'medium' };
     try { Object.assign(keyPrefs, JSON.parse(localStorage.getItem('sulat.keys') || '{}')); } catch {}
     function applyKeyPrefs() {
       for (const [name, value] of Object.entries(keyPrefs)) {
@@ -432,6 +442,9 @@
       const visible = keyPrefs.shown !== 'no';
       keyboard.hidden = keyName.hidden = document.getElementById('typing-help').hidden = !visible;
       keyboard.dataset.size = keyPrefs.size;
+      // Rows are measured where they are drawn, so contact between rows and
+      // animal routes follow the alignment.
+      if (surface.dataset.align !== keyPrefs.align) { surface.dataset.align = keyPrefs.align; engine._render(); }
       if (keyboard.dataset.layout !== keyPrefs.layout) buildKeyboard(keyPrefs.layout);
       keyboard.dataset.layout = keyPrefs.layout;
     }
