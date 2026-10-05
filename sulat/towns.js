@@ -19,10 +19,11 @@ class Towns {
     this.random = random;
     this.towns = [];
     this.boats = [];
-    this.limit = 4;
-    this.foundChance = 0.08;
+    this.limit = 3;       // and never more than one per `spread` cells
+    this.spread = 60;
+    this.foundChance = 0.04;
     this.clearChance = 0.1;
-    this.sailChance = 0.2;
+    this.sailChance = 0.12;
     this.adoptChance = 0.5;
     this.founded = 0;
     this.arrivals = 0;
@@ -73,7 +74,7 @@ class Towns {
   step(nodes) {
     this.prune(nodes);
     const result = { founded: null, cleared: 0, sailed: 0 };
-    if (this.towns.length < this.limit && this.random() < this.foundChance) {
+    if (this.towns.length < Math.min(this.limit, Math.ceil(nodes.size / this.spread)) && this.random() < this.foundChance) {
       const taken = new Set(this.towns.map(town => town.id));
       const sites = [...nodes.values()].filter(node => node.domain === 'land' && TOWN_GROUND.has(node.biome) && !taken.has(node.id) &&
         this._beside(node, nodes).some(other => other.domain === 'water') && !this._beside(node, nodes).some(other => taken.has(other.id)));

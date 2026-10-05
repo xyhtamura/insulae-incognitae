@@ -222,6 +222,7 @@ test('snow cools lava and forest takes priority over ocean depth at a water edge
 test('hares, camels, and fish spawn in connected cold, dry, and water habitats', () => {
   const { LandAnimals } = setup();
   const animals = new LandAnimals({ random: () => 0 });
+  animals.spread = 1; // habitat rules, not density
   animals.sync([row(['snow', 'snow', 'water', 'deepwater', 'sand', 'desert', 'dunes'])]);
   animals.spawn();
   assert.deepEqual(Array.from(animals.animals, animal => animal.species.name).sort(), ['camel', 'fish', 'hare', 'whale']);
@@ -445,6 +446,7 @@ test('bats rise only from caves and birds only from forest births', () => {
   const { Fliers } = setup();
   const fliers = new Fliers({ random: () => 0 });
   const lines = [row(['cave', 'rock', 'rock'])];
+  fliers.spread = 1;
   assert.equal(fliers.spawn(lines, [{ x: 0.05, distance: 1 }]), 1);
   assert.deepEqual(Array.from(fliers.fliers, flier => flier.species.name).sort(), ['bat', 'bird']);
 });
@@ -453,6 +455,7 @@ test('megafauna appear singly, and a tiger removes the deer it meets', () => {
   const { LandAnimals, LAND_SPECIES } = setup();
   const walkers = new LandAnimals({ random: () => 0 });
   const lines = [row(Array(30).fill('forest'))];
+  walkers.spread = 1; walkers.limit = 99;
   walkers.sync(lines);
   const tiger = LAND_SPECIES.find(species => species.name === 'tiger');
   const deer = LAND_SPECIES.find(species => species.name === 'deer');
@@ -505,6 +508,7 @@ test('swimmers have their own limit and each keeps to its water', () => {
   const walkers = new LandAnimals({ random: () => 0 });
   const lines = [row(Array(30).fill('deepwater')), row(Array(30).fill('forest'), 2)];
   walkers.sync(lines);
+  walkers.spread = 1;
   for (let i = 0; i < 6; i++) walkers.spawn();
   const swimmers = walkers.animals.filter(animal => animal.species.aquatic);
   assert.equal(swimmers.length, walkers.waterLimit);
@@ -593,4 +597,26 @@ test('a circling flier stays with its row as the row moves, and goes when the ro
   assert.ok(Math.abs(flier.y - 7.6) < 1.2);
   fliers.advance(0.1, []);
   assert.equal(fliers.fliers.length, 0);
+});
+
+test('the number of animals follows the amount of terrain', () => {
+  const { LandAnimals, Fliers, Towns } = setup();
+  const count = (land, water) => {
+    const walkers = new LandAnimals({ random: () => 0 });
+    walkers.sync([row(Array(land).fill('grass').concat(Array(water).fill('water')), 1, Array(land + water).fill(0).map((_, i) => ({ left: i / 200, right: (i + 1) / 200 })))]);
+    for (let i = 0; i < 20; i++) walkers.spawn();
+    return [walkers.animals.filter(animal => !animal.species.aquatic).length, walkers.animals.filter(animal => animal.species.aquatic).length];
+  };
+  assert.deepEqual(count(20, 10), [1, 1]);
+  assert.deepEqual(count(70, 50), [3, 2]);
+  assert.deepEqual(count(190, 0), [6, 0]); // the limit, not one per thirty cells
+  const fliers = new Fliers({ random: () => 0 });
+  const meadow = [row(Array(50).fill('flower'))];
+  for (let i = 0; i < 20; i++) fliers.spawn(meadow);
+  assert.equal(fliers.fliers.length, 2);
+  const towns = new Towns({ random: () => 0 });
+  const walkers = new LandAnimals({ random: () => 0 });
+  walkers.sync([row(['grass', 'water', 'grass', 'water', 'grass', 'water', 'grass'])]);
+  for (let i = 0; i < 5; i++) towns.step(walkers.nodes);
+  assert.equal(towns.towns.length, 1);
 });

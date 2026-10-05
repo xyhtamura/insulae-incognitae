@@ -6,7 +6,7 @@ Open `index.html` through the workspace server at `/insulae-incognitae/sulat/`.
 
 ## Next in development
 
-Tune biome contact rates and animal density against longer typed landscapes.
+Tune biome contact and event rates against longer typed landscapes, and watch the 2026-10-05 density settings on a display.
 
 ## Files and shared code
 
@@ -181,3 +181,23 @@ Verified in the browser pane at 1100 by 900 through `engine.advance`. With defau
 Needs Xyh's check: whether towns belong in the work at all, and the words. *Nagar* and *bandar* are loanwords with long regional histories, which may be the point or may not. The Jawi spelling of *perahu* and the Baybayin spellings are mine. At forced rates the field is crowded past reading; default density with 12 walkers, 8 swimmers, 14 fliers, 4 towns, and their boats has not been watched on a long landscape, so it joins the tuning step.
 
 Left out: town size or growth, towns affected by storms other than through their ground, boats caught by typhoons or sharks, and fishing.
+
+## 2026-10-05 — Claude Code — Density tuned down and tied to terrain size
+
+Xyh asked for lower density now that there are many sources of activity. The caps were fixed numbers, so a four-row landscape carried as many animals as a thirty-row one. They now follow the terrain.
+
+| | Before | After |
+| --- | --- | --- |
+| Walkers on land | 12, two per species | one per 30 land cells, at most 6, one per species |
+| Swimmers | 8, two per species | one per 30 water cells, at most 4, one per species |
+| Spawn chance per step | 0.55, megafauna 0.25 | 0.2, megafauna 0.08 |
+| Fliers | 14, eight birds, two per other species | one per 40 terrain cells, at most 5, two birds, one per other species |
+| Flier spawn chance | 0.3 | 0.12 |
+| Bird release per forest patch | 0.35 | 0.15 |
+| Towns | 4, founding 0.08, sailing 0.2 | one per 60 cells, at most 3, founding 0.04, sailing 0.12 |
+
+The values are `limit` and `spread` fields on `LandAnimals`, `Fliers`, and `Towns`. Event rates (storms, floods, tides, earthquakes, calving) were not changed.
+
+Measured in the browser pane at 1100 by 900 with the same eight typed rows, averaging counts over simulated seconds 10 to 40, two runs each. Before: 32.4 and 32.5 animals, towns, and boats on about 150 cells, with every cap pinned. After: 11.1 and 10.6, peaks of 13 and 12, with 22 and 21 different species still appearing in 40 seconds. Two rows held 4.7 on average and one row 2.9. No console errors. All 46 Node cases pass; four older cases now set `spread = 1` so they keep testing habitat rules, and one new case checks that counts follow terrain size.
+
+This completes the density half of the standing next step. Biome contact rates are the remaining half and are unchanged. Not checked: how the new density reads on a display, which is the judgement that matters, and a long session on thirty rows.

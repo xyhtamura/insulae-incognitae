@@ -69,8 +69,11 @@ class LandAnimals {
     this.random = random;
     this.nodes = new Map();
     this.animals = [];
-    this.limit = 12;      // walkers on land
-    this.waterLimit = 8;  // swimmers
+    // Density follows the terrain: one walker per `spread` land cells and one
+    // swimmer per `spread` water cells, never more than the limits.
+    this.limit = 6;       // walkers on land
+    this.waterLimit = 4;  // swimmers
+    this.spread = 30;
     this.caught = 0;
     this.trampled = 0;
   }
@@ -113,8 +116,9 @@ class LandAnimals {
     for (let i = 0; i < LAND_SPECIES.length; i++) {
       const species = LAND_SPECIES[(first + i) % LAND_SPECIES.length];
       const domain = this.animals.filter(animal => !!animal.species.aquatic === !!species.aquatic).length;
-      if (domain >= (species.aquatic ? this.waterLimit : this.limit)) continue;
-      if (this.animals.filter(animal => animal.species === species).length >= (species.mega ? 1 : 2) || this.random() >= (species.mega ? 0.25 : 0.55)) continue;
+      const room = [...this.nodes.values()].filter(node => (node.domain === 'water') === !!species.aquatic).length;
+      if (domain >= Math.min(species.aquatic ? this.waterLimit : this.limit, Math.ceil(room / this.spread))) continue;
+      if (this.animals.some(animal => animal.species === species) || this.random() >= (species.mega ? 0.08 : 0.2)) continue;
       const occupied = new Set(this.animals.flatMap(animal => [animal.from, animal.to]));
       const candidates = [...this.nodes.values()].filter(node => !occupied.has(node.id) && this.allowed(species, node) && this.destinations(species, node).length);
       if (!candidates.length) continue;

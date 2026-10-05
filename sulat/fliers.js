@@ -5,7 +5,7 @@
 // flowers, bats drop seed, fireflies and mosquitoes follow wet ground.
 const FLIER_SPECIES = [
   // ibon (Tagalog). Birds are released by forest patches, not by habitat.
-  { name: 'bird', word: ['ᜁ', 'ᜊᜓ', 'ᜈ᜔'], cap: 8, life: 18, leaves: true },
+  { name: 'bird', word: ['ᜁ', 'ᜊᜓ', 'ᜈ᜔'], cap: 2, life: 18, leaves: true },
   // tutubi (Tagalog)
   { name: 'dragonfly', word: ['ᜆᜓ', 'ᜆᜓ', 'ᜊᜒ'], habitats: ['marsh', 'lake', 'river', 'swamp', 'estuary'], hunts: ['mosquito'], lands: { swamp: 'marsh' } },
   // titli (Hindi)
@@ -24,7 +24,9 @@ class Fliers {
   constructor({ random = Math.random } = {}) {
     this.random = random;
     this.fliers = [];
-    this.limit = 14;
+    // One flier per `spread` terrain cells, never more than the limit.
+    this.limit = 5;
+    this.spread = 40;
     this.landChance = 0.5;
     this.changed = 0;
     this.caught = 0;
@@ -46,14 +48,16 @@ class Fliers {
   spawn(lines, births = [], maxRows = Infinity) {
     let birds = 0;
     const bird = FLIER_SPECIES[0];
+    const cells = lines.reduce((sum, line) => sum + line.cells.filter(cell => cell.char.trim()).length, 0);
+    const room = Math.min(this.limit, Math.ceil(cells / this.spread));
     for (const birth of births) {
       const line = lines.find(candidate => candidate.distance === birth.distance);
-      if (!line || this.count(bird) >= bird.cap || birth.distance + 1 >= maxRows) continue;
+      if (!line || this.fliers.length >= room || this.count(bird) >= bird.cap || birth.distance + 1 >= maxRows) continue;
       this._perch(bird, line, birth.x);
       birds++;
     }
     for (const species of FLIER_SPECIES) {
-      if (!species.habitats || this.fliers.length >= this.limit || this.count(species) >= 2 || this.random() >= 0.3) continue;
+      if (!species.habitats || this.fliers.length >= room || this.count(species) >= 1 || this.random() >= 0.12) continue;
       const homes = [];
       for (const line of lines) line.cells.forEach((cell, column) => {
         if (species.habitats.includes(this.biome(cell)) && line.bounds?.[column]) homes.push([line, column]);

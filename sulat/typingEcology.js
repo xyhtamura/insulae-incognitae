@@ -76,7 +76,7 @@ class TypingEcology {
       let forestRun = [];
       const release = () => {
         // One birth opportunity per contiguous forest patch, not per tree.
-        if (forestRun.length >= 3 && this.random() < 0.35) {
+        if (forestRun.length >= 3 && this.random() < 0.15) {
           const center = source.bounds[forestRun[Math.floor(forestRun.length / 2)]];
           if (center) births.push({ x: (center.left + center.right) / 2, distance: source.distance });
         }
