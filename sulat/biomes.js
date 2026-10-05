@@ -1,11 +1,13 @@
 // Sulat extends the parent's palette without changing its other pages.
 // Glyphs are chosen for their shape, as in the parent work, and each biome
 // draws on Baybayin, Kana, Jawi, Devanagari, punctuation, and at most a few
-// Hanzi. No set is a list of words for its biome. Several glyphs carry a
+// Hanzi. Water, sand, grass, and forest also keep the Thai, Telugu, Burmese,
+// and Javanese glyphs of ../lineGenerator.js; the two Thai words the lexicon
+// knows sit in the forests. No set is a list of words for its biome. Several glyphs carry a
 // phoneme in ../glyphData.js, so loose syllables can still fuse into words.
 const SULAT_BIOMES = {
   // water: waves, strokes, and rings
-  water:     { glyphs: ['~', 'ᜏ', 'ツ', '川', 'و', 'س', 'व'] },
+  water:     { glyphs: ['~', 'ᜏ', 'ツ', '川', 'و', 'س', 'व', 'ల', 'น', 'ရေ', 'ꦮ'] },
   coldwater: { glyphs: ['﹌', '〰', 'ᜐ', 'シ', 'ش', 'श'] },
   reef:      { glyphs: ['⋰', 'ᜑ', 'ミ', 'ڠ', 'झ', '珊'] },
   estuary:   { glyphs: ['≋', 'ᜎ', 'ン', 'ى', 'ल', '入'] },
@@ -16,21 +18,21 @@ const SULAT_BIOMES = {
   swamp:     { glyphs: ['≈', 'ᜅ', 'ぬ', 'ڽ', 'ञ', '沼'] },
   ice:       { glyphs: ['❄', 'ᜃ', 'キ', 'ث', 'क', '冰'] },
   // forests: dense and branching forms
-  tropical_rainforest: { glyphs: ['▓', '林', '森', 'ᜋ', 'ホ', 'ڠ', 'क्ष'] },
-  temperate_forest:    { glyphs: ['†', '木', 'ᜉ', 'ホ', 'چ', 'फ'] },
+  tropical_rainforest: { glyphs: ['▓', '林', '森', 'ᜋ', 'ホ', 'ڠ', 'क्ष', 'ป่า'] },
+  temperate_forest:    { glyphs: ['†', '木', 'ᜉ', 'ホ', 'چ', 'फ', 'ไม้'] },
   boreal_taiga:        { glyphs: ['↟', '杉', 'ᜆ', 'イ', 'ا', 'त'] },
-  forest:              { glyphs: ['木', '林', 'ᜄ', 'オ', 'ق', 'ज्ञ'] },
+  forest:              { glyphs: ['木', '林', 'ᜄ', 'オ', 'ق', 'ज्ञ', 'ꦒ'] },
   mangrove:            { glyphs: ['⌿', 'ᜈ', 'ネ', 'ڤ', 'म', '根'] },
   // open ground: tufts, bars, and dots
   tropical_savanna: { glyphs: ['"', '艹', 'ᜀ', 'サ', 'ٮ', 'ए'] },
-  grass:    { glyphs: ['*', '艹', 'ᜀ', 'サ', 'ت', 'ए'] },
+  grass:    { glyphs: ['*', '艹', 'ᜀ', 'サ', 'ت', 'ए', 'ꦱ'] },
   flower:   { glyphs: ['✿', 'ᜁ', 'ゑ', 'ة', 'ई'] },
   steppe:   { glyphs: ['‒', '═', 'ᜎ', 'ー', 'ـ', 'र'] },
   plain:    { glyphs: ['⎽', '⎼', 'ᜂ', 'コ', 'ب', 'उ'] },
   tundra:   { glyphs: ['·', 'ᜌ', 'ヾ', 'ن', 'ङ', '苔'] },
   // marsh carries ba and sa in three scripts; they can fuse into basa, "wet".
   marsh:    { glyphs: ['ⸯ', 'ᜊ', 'ᜐ', 'サ', 'ب', 'स'] },
-  sand:     { glyphs: ['.', '٠', 'ᜈ', 'ノ', 'ث', 'ब', '砂'] },
+  sand:     { glyphs: ['.', '٠', 'ᜈ', 'ノ', 'ث', 'ब', '砂', 'อ', 'ဝ'] },
   coast:    { glyphs: ['⌒', 'ᜎ', 'つ', 'ں', 'ट'] },
   desert:   { glyphs: ['⋱', 'ᜇ', 'ハ', 'د', 'द'] },
   dunes:    { glyphs: ['⌢', 'ᜈ', 'へ', 'ٮ', 'न', '沙'] },

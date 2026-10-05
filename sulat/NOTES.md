@@ -104,3 +104,9 @@ A new test fails if any biome set has fewer than five script groups, more than t
 Verified in the browser pane at 1100 by 900: typed all 36 biomes across five rows and read the rows back from the engine and in a screenshot, with every script present in each row and no missing-glyph boxes visible at that size; a rain storm rendered as arcs over commas and dandas; crab, camel, and fish appeared as カニ, ऊँट, ايکن; `document.fonts` reported the Arabic, Devanagari, JP, and local Tagalog faces loaded. No console errors.
 
 Not done: glyph choices were made by me from shape alone, at small size, in one sitting. Several are weak (flower, cave, badlands) and all are Xyh's to replace. Whether individual Jawi letters in isolated form read as intended next to left-to-right text was checked only in one screenshot. Phonemes for the new glyphs are not in `../glyphData.js`; adding them changes the parent's translation behavior, so it was left for a decision.
+
+## 2026-10-05 — Claude Code — Thai, Telugu, Burmese, and Javanese glyphs restored
+
+At Xyh's request, the glyphs from `../lineGenerator.js` that the previous entry left out are back in the biomes they came from: ల น ရေ ꦮ in water, อ ဝ in sand, ꦱ in grass, ꦒ in forest. The two Thai words the lexicon recognizes were also placed, ป่า in rainforest and ไม้ in temperate forest, so the woods translation chain can start from typed terrain. The other 30 biomes have none of these four scripts yet. The page requests Noto Sans Thai, Telugu, Myanmar, and Javanese from Google Fonts, linked and not shipped.
+
+Verified in the browser pane at 1100 by 900: typed 28 cells of each of the six biomes and found all ten restored glyphs in the engine's rows under the right biome, each rendered with a nonzero width and visible in a screenshot; `document.fonts` reported one loaded face each for Thai, Telugu, Myanmar, and Javanese. No console errors. All 32 Node cases pass. The title and help copy now name the four scripts.
