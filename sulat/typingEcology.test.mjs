@@ -6,10 +6,10 @@ import vm from 'node:vm';
 
 function setup() {
   const context = vm.createContext({ Math: Object.assign(Object.create(Math), { random: () => 0 }) });
-  for (const name of ['../LetterMap.js', '../glyphData.js', '../lexicon.js', '../translationModule.js', 'biomes.js', 'typingEcology.js', 'landAnimals.js', 'fliers.js', 'events.js']) {
+  for (const name of ['../LetterMap.js', '../glyphData.js', '../lexicon.js', '../translationModule.js', 'biomes.js', 'typingEcology.js', 'landAnimals.js', 'fliers.js', 'towns.js', 'events.js']) {
     vm.runInContext(readFileSync(new URL(name, import.meta.url), 'utf8'), context, { filename: name });
   }
-  return vm.runInContext('({ Fliers, FLIER_SPECIES, TypingEvents, SULAT_STORMS, TypingEcology, TranslationEngine, LandAnimals, LAND_SPECIES, SULAT_KEYS, SULAT_BIOMES, SULAT_GROUPS, LETTER_TO_BIOME })', context);
+  return vm.runInContext('({ Towns, TOWN_KINDS, Fliers, FLIER_SPECIES, TypingEvents, SULAT_STORMS, TypingEcology, TranslationEngine, LandAnimals, LAND_SPECIES, SULAT_KEYS, SULAT_BIOMES, SULAT_GROUPS, LETTER_TO_BIOME })', context);
 }
 
 function row(types, distance = 1, bounds) {
@@ -417,7 +417,7 @@ test('a flier sits folded, opens in flight, and folds again on dry ground', () =
   for (let i = 0; i < 12; i++) fliers.advance(0.1, lines);
   assert.equal(flier.state, 'flying');
   assert.equal(flier.spread, 1);
-  flier.x = 0.5 / 30; flier.y = 1; flier.timer = 0;
+  flier.x = 0.5 / 30; flier.age = 0; flier.phase = -1; flier.timer = 0; // low in its circle, over row 1
   fliers.advance(0.01, lines);
   assert.equal(flier.state, 'perched');
   for (let i = 0; i < 5; i++) fliers.advance(0.1, lines);
@@ -432,7 +432,7 @@ test('fliers do not land on water, and leave with their row', () => {
   fliers.spawn(lines);
   const flier = fliers.fliers[0];
   for (let i = 0; i < 12; i++) fliers.advance(0.1, lines);
-  flier.x = 1.5 / 30; flier.y = 1; flier.timer = 0;
+  flier.x = 1.5 / 30; flier.age = 0; flier.phase = -1; flier.timer = 0;
   fliers.advance(0.01, lines);
   assert.equal(flier.state, 'flying');
   const other = new Fliers({ random: () => 0 });
@@ -487,7 +487,7 @@ test('insects and bats can change the ground they settle on, and dragonflies tak
   const fliers = new Fliers({ random: () => 0 });
   const find = name => FLIER_SPECIES.find(species => species.name === name);
   const lines = [row(['grass', 'grass', 'marsh', 'rock'])];
-  const aloft = (name, column) => ({ species: find(name), x: (column + 0.5) / 30, y: 1, state: 'flying', spread: 1, age: 0, timer: 0, phase: 0, velocity: 0 });
+  const aloft = (name, column) => ({ species: find(name), x: (column + 0.5) / 30, y: 1, line: lines[0], state: 'flying', spread: 1, age: 0, timer: 0, phase: -1, velocity: 0 });
   fliers.fliers = [aloft('butterfly', 0), aloft('bat', 1), aloft('firefly', 2), aloft('bee', 3)];
   fliers.advance(0.01, lines);
   assert.deepEqual(lines[0].cells.map(cell => cell.className), ['flower tile', 'forest tile', 'mangrove tile', 'rock tile']);
@@ -498,4 +498,99 @@ test('insects and bats can change the ground they settle on, and dragonflies tak
   hunt.advance(0.01, lines);
   assert.deepEqual(Array.from(hunt.fliers, flier => flier.species.name), ['dragonfly', 'mosquito']);
   assert.equal(hunt.caught, 1);
+});
+
+test('swimmers have their own limit and each keeps to its water', () => {
+  const { LandAnimals } = setup();
+  const walkers = new LandAnimals({ random: () => 0 });
+  const lines = [row(Array(30).fill('deepwater')), row(Array(30).fill('forest'), 2)];
+  walkers.sync(lines);
+  for (let i = 0; i < 6; i++) walkers.spawn();
+  const swimmers = walkers.animals.filter(animal => animal.species.aquatic);
+  assert.equal(swimmers.length, walkers.waterLimit);
+  assert.ok(swimmers.every(animal => animal.species.habitats.includes('deepwater')));
+  assert.ok(!swimmers.some(animal => ['koi', 'octopus', 'shrimp'].includes(animal.species.name)));
+  assert.ok(walkers.animals.filter(animal => !animal.species.aquatic).length <= walkers.limit);
+});
+
+test('a town founds itself beside water, clears forest, and is lost when its ground floods', () => {
+  const { Towns, LandAnimals, TOWN_KINDS } = setup();
+  const walkers = new LandAnimals({ random: () => 0 });
+  const towns = new Towns({ random: () => 0 });
+  const lines = [row(['forest', 'grass', 'water', 'water', 'rock', 'grass'])];
+  walkers.sync(lines);
+  const result = towns.step(walkers.nodes);
+  assert.equal(result.founded.id, '1:1');
+  assert.ok(TOWN_KINDS.includes(result.founded.kind));
+  assert.equal(lines[0].cells[1].settled, true);
+  assert.equal(result.cleared, 1);
+  assert.equal(lines[0].cells[0].className, 'grass tile');
+  lines[0].cells[1] = { id: '1:1', char: '~', className: 'river' };
+  walkers.sync(lines);
+  towns.prune(walkers.nodes);
+  assert.equal(towns.towns.length, 0);
+});
+
+test('no town is founded away from water', () => {
+  const { Towns, LandAnimals } = setup();
+  const walkers = new LandAnimals({ random: () => 0 });
+  const towns = new Towns({ random: () => 0 });
+  walkers.sync([row(['grass', 'grass', 'rock', 'water'])]);
+  assert.equal(towns.step(walkers.nodes).founded, null);
+});
+
+test('a boat crosses connected water and can leave its word at the other town', () => {
+  const { Towns, LandAnimals, TOWN_KINDS } = setup();
+  const walkers = new LandAnimals({ random: () => 0 });
+  const towns = new Towns({ random: () => 0 });
+  const lines = [row(['grass', 'water', 'water', 'water', 'grass', 'rock', 'water', 'grass'])];
+  walkers.sync(lines);
+  towns.towns = [{ id: '1:0', kind: TOWN_KINDS[0], age: 0 }, { id: '1:4', kind: TOWN_KINDS[2], age: 0 }, { id: '1:7', kind: TOWN_KINDS[3], age: 0 }];
+  towns.foundChance = 0;
+  assert.equal(towns.step(walkers.nodes).sailed, 2);
+  const boat = towns.boats.find(entry => entry.from === towns.towns[0]);
+  assert.deepEqual(Array.from(boat.path), ['1:1', '1:2', '1:3']);
+  assert.equal(boat.to, towns.towns[1]);
+  assert.ok(!towns.boats.some(entry => entry.from === towns.towns[2]), 'the town on the far pond has no route');
+  const middle = towns.boatPosition(boat, walkers.nodes);
+  assert.equal(middle.y, 1);
+  towns.boats = [boat];
+  towns.advance(2.3, walkers.nodes);
+  assert.equal(towns.arrivals, 1);
+  assert.equal(towns.towns[1].kind, TOWN_KINDS[0]);
+  assert.equal(towns.boats.length, 0);
+});
+
+test('the tide leaves settled ground, and pruning drops what lost its row', () => {
+  const { TypingEvents, Fliers } = setup();
+  const events = new TypingEvents({ random: () => 0 });
+  const lines = [row(['water', 'sand', 'water', 'sand'])];
+  lines[0].cells[1].settled = true;
+  events.tideAge = 7;
+  assert.equal(events.tide(lines), 'high');
+  assert.deepEqual(lines[0].cells.map(cell => events.biome(cell)), ['water', 'sand', 'water', 'water']);
+  events.icebergs.push({ line: {}, x: 0.5, direction: 1, age: 0 });
+  events.storm = { type: 'rain', anchor: {}, direction: 1, x: 0.5, age: 0 };
+  events.prune(lines);
+  assert.equal(events.icebergs.length, 0);
+  assert.equal(events.storm, null);
+  const fliers = new Fliers({ random: () => 0 });
+  fliers.fliers = [{ state: 'perched', line: {} }, { state: 'flying', line: {} }];
+  fliers.prune(lines);
+  assert.equal(fliers.fliers.length, 1);
+  fliers.prune([]);
+  assert.equal(fliers.fliers.length, 0);
+});
+
+test('a circling flier stays with its row as the row moves, and goes when the row goes', () => {
+  const { Fliers, FLIER_SPECIES } = setup();
+  const fliers = new Fliers({ random: () => 0 });
+  const lines = [row(['flower', 'flower'])];
+  const flier = { species: FLIER_SPECIES.find(species => species.name === 'butterfly'), line: lines[0], x: 0.02, y: 1, state: 'flying', spread: 1, age: 0, timer: 9, phase: 0, velocity: 0 };
+  fliers.fliers = [flier];
+  lines[0].distance = 7;
+  fliers.advance(0.1, lines);
+  assert.ok(Math.abs(flier.y - 7.6) < 1.2);
+  fliers.advance(0.1, []);
+  assert.equal(fliers.fliers.length, 0);
 });

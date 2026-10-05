@@ -147,7 +147,7 @@ class TypingEvents {
     if (phase !== this.tidePeriod / 2) return null;
     const shore = [];
     this._each(lines, (line, c, cell, biome) => {
-      if ((biome === 'sand' || biome === 'coast') && this._touching(lines, line, c).some(next => SULAT_SEA.has(this.biome(next.line.cells[next.column])))) shore.push([line, c]);
+      if ((biome === 'sand' || biome === 'coast') && !cell.settled && this._touching(lines, line, c).some(next => SULAT_SEA.has(this.biome(next.line.cells[next.column])))) shore.push([line, c]);
     });
     for (const [line, c] of shore) this._submerge(line, c, 'water', 'tide');
     return shore.length ? 'high' : null;
@@ -316,6 +316,12 @@ class TypingEvents {
     // The fault opens a gap in the epicenter row, which breaks routes there.
     if (origin.line.cells.length < 90) origin.line.cells.splice(origin.column, 0, { char: ' ', className: '' });
     return { x, distance: origin.line.distance, rows, changes };
+  }
+
+  // Drop icebergs and a storm whose row is gone.
+  prune(lines) {
+    this.icebergs = this.icebergs.filter(berg => lines.includes(berg.line));
+    if (this.storm && !lines.includes(this.storm.anchor)) this.storm = null;
   }
 
   // Icebergs cool the water they pass over and stop at land or a row end.

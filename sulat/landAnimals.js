@@ -37,9 +37,31 @@ const LAND_SPECIES = [
   { name: 'rhinoceros', glyph: 'ꦧꦝꦏ꧀', mega: true, habitats: ['tropical_rainforest', 'tropical_savanna', 'grass', 'marsh'],
     tramples: { tropical_rainforest: 'tropical_savanna' } },
   // kujira (Japanese)
-  { name: 'whale', glyph: 'クジラ', mega: true, aquatic: true, habitats: ['deepwater', 'water', 'coldwater'] },
+  { name: 'whale', glyph: 'クジラ', mega: true, aquatic: true, hunts: ['squid'], habitats: ['deepwater', 'water', 'coldwater'] },
   // buwaya (Tagalog; buaya in Malay)
-  { name: 'crocodile', glyph: 'ᜊᜓᜏᜌ', mega: true, aquatic: true, hunts: ['fish'], habitats: ['estuary', 'river', 'lake', 'water'] }
+  { name: 'crocodile', glyph: 'ᜊᜓᜏᜌ', mega: true, aquatic: true, hunts: ['fish', 'koi', 'milkfish'], habitats: ['estuary', 'river', 'lake', 'water'] },
+  // bangus (Tagalog)
+  { name: 'milkfish', glyph: 'ᜊᜅᜓᜐ᜔', aquatic: true, habitats: ['estuary', 'water', 'river'] },
+  // pating (Tagalog)
+  { name: 'shark', glyph: 'ᜉᜆᜒᜅ᜔', aquatic: true, hunts: ['fish', 'milkfish', 'squid'], habitats: ['deepwater', 'water', 'reef'] },
+  // pawikan (Tagalog), the sea turtle
+  { name: 'turtle', glyph: 'ᜉᜏᜒᜃᜈ᜔', aquatic: true, hunts: ['jellyfish'], habitats: ['reef', 'water', 'kelp', 'estuary'] },
+  // dugong (Tagalog; duyung in Malay). It grazes kelp down to open water.
+  { name: 'dugong', glyph: 'ᜇᜓᜄᜓᜅ᜔', mega: true, aquatic: true, habitats: ['kelp', 'reef', 'estuary', 'water'], tramples: { kelp: 'water' } },
+  // tako (Japanese)
+  { name: 'octopus', glyph: 'タコ', aquatic: true, hunts: ['shrimp'], habitats: ['reef', 'kelp'] },
+  // iruka (Japanese)
+  { name: 'dolphin', glyph: 'イルカ', aquatic: true, hunts: ['squid', 'milkfish'], habitats: ['water', 'deepwater', 'estuary'] },
+  // pusit (Tagalog)
+  { name: 'squid', glyph: 'ᜉᜓᜐᜒᜆ᜔', aquatic: true, hunts: ['shrimp'], habitats: ['deepwater', 'water'] },
+  // kurage (Japanese)
+  { name: 'jellyfish', glyph: 'クラゲ', aquatic: true, habitats: ['water', 'coldwater', 'deepwater'] },
+  // jhinga (Hindi)
+  { name: 'shrimp', glyph: 'झींगा', aquatic: true, habitats: ['estuary', 'river', 'kelp', 'reef'] },
+  // koi (Japanese)
+  { name: 'koi', glyph: 'コイ', aquatic: true, habitats: ['lake', 'river'] },
+  // pla (Thai), a river fish
+  { name: 'riverfish', glyph: 'ปลา', aquatic: true, habitats: ['river', 'lake', 'estuary'] }
 ];
 
 class LandAnimals {
@@ -47,7 +69,8 @@ class LandAnimals {
     this.random = random;
     this.nodes = new Map();
     this.animals = [];
-    this.limit = 12;
+    this.limit = 12;      // walkers on land
+    this.waterLimit = 8;  // swimmers
     this.caught = 0;
     this.trampled = 0;
   }
@@ -89,7 +112,8 @@ class LandAnimals {
     const first = Math.floor(this.random() * LAND_SPECIES.length);
     for (let i = 0; i < LAND_SPECIES.length; i++) {
       const species = LAND_SPECIES[(first + i) % LAND_SPECIES.length];
-      if (this.animals.length >= this.limit) break;
+      const domain = this.animals.filter(animal => !!animal.species.aquatic === !!species.aquatic).length;
+      if (domain >= (species.aquatic ? this.waterLimit : this.limit)) continue;
       if (this.animals.filter(animal => animal.species === species).length >= (species.mega ? 1 : 2) || this.random() >= (species.mega ? 0.25 : 0.55)) continue;
       const occupied = new Set(this.animals.flatMap(animal => [animal.from, animal.to]));
       const candidates = [...this.nodes.values()].filter(node => !occupied.has(node.id) && this.allowed(species, node) && this.destinations(species, node).length);

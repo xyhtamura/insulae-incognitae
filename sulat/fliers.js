@@ -65,6 +65,12 @@ class Fliers {
     return birds;
   }
 
+  // Drop what has lost its place: a perched flier whose row is gone, and
+  // everything once no terrain is left.
+  prune(lines) {
+    this.fliers = lines.length ? this.fliers.filter(flier => flier.state !== 'perched' || lines.includes(flier.line)) : [];
+  }
+
   // Dry terrain under a point, if any.
   _ground(lines, x, y) {
     const line = lines.find(candidate => candidate.distance === Math.round(y));
@@ -92,9 +98,11 @@ class Fliers {
         flier.y += (0.45 + Math.cos(flier.age * 2 + flier.phase) * 0.8) * seconds;
         continue;
       }
-      // Other fliers loiter near where they rose, then look for ground.
+      // Other fliers stay with the row they rose from, which moves with the
+      // terrain, and circle over it until they look for ground.
+      if (!lines.includes(flier.line)) { flier.gone = true; continue; }
       flier.x += Math.cos(flier.age * 1.3 + flier.phase) * 0.05 * seconds;
-      flier.y += (Math.sin(flier.age * 1.7 + flier.phase) * 0.9 + 0.05) * seconds;
+      flier.y = flier.line.distance + 0.6 + Math.sin(flier.age * 1.7 + flier.phase) * 1.1;
       if (flier.timer > 0) continue;
       const ground = this._ground(lines, flier.x, flier.y);
       if (!ground) { flier.timer = 1; continue; }

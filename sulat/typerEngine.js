@@ -19,6 +19,7 @@ class TyperEngine {
     this.stepInterval = 2;
     this.stepTime = 0;
     this.fliers = new Fliers({ random });
+    this.towns = new Towns({ random });
     this.stillWings = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.walkers = new LandAnimals({ random });
     this.nextCellId = 1;
@@ -46,6 +47,7 @@ class TyperEngine {
     this.fliers.advance(seconds, this.completed, this._visibleRows());
     if (this.ecologyEnabled) this.events.drift(seconds);
     this.walkers.advance(seconds);
+    this.towns.advance(seconds, this.walkers.nodes);
     this._drawAnimals();
   }
 
@@ -101,8 +103,25 @@ class TyperEngine {
       }
     }
     this._render();
-    if (this.ecologyEnabled) this.walkers.spawn();
+    if (this.ecologyEnabled) {
+      this.walkers.spawn();
+      const towns = this.towns.step(this.walkers.nodes);
+      if (towns.founded && this.onEvent) this.onEvent(`A town was founded: ${towns.founded.kind.town}.`);
+    }
     this._drawAnimals();
+  }
+
+  // Remove all terrain and everything living on it.
+  reset() {
+    this.line = [];
+    this.completed = [];
+    this.stepTime = 0;
+    this.events = new TypingEvents({ random: this.random });
+    this.fliers = new Fliers({ random: this.random });
+    this.towns = new Towns({ random: this.random });
+    this.walkers.animals = [];
+    for (const key of Object.keys(this.stats)) this.stats[key] = 0;
+    this._render();
   }
 
   _visibleRows() {
@@ -233,11 +252,52 @@ class TyperEngine {
       });
     }
     this.walkers.sync(this.completed);
+    this.fliers.prune(this.completed);
+    this.events.prune(this.completed);
+    this.towns.prune(this.walkers.nodes);
     this._drawAnimals();
+  }
+
+  // A long word is scaled down to about two cells.
+  _wordScale(word) {
+    return Math.min(1, 2 / [...new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(word)].length);
+  }
+
+  // Keep one element per item in the flight layer, and return it.
+  _mark(item, className, text) {
+    if (!item.element) {
+      item.element = document.createElement('span');
+      item.element.className = className;
+      item.element.owner = item;
+      this.flightLayer.appendChild(item.element);
+    }
+    if (item.element.textContent !== text) item.element.textContent = text;
+    return item.element;
   }
 
   _drawAnimals() {
     if (!this.flightLayer) return;
+    const kept = new Set([...this.towns.towns, ...this.towns.boats]);
+    for (const element of this.flightLayer.querySelectorAll('.town, .boat')) {
+      if (!kept.has(element.owner)) element.remove();
+    }
+    for (const town of this.towns.towns) {
+      const node = this.walkers.nodes.get(town.id);
+      if (!node) continue;
+      const element = this._mark(town, 'town', town.kind.town);
+      element.dir = 'auto';
+      element.style.left = `${(node.left + node.right) * 50}%`;
+      element.style.bottom = `${node.y + 0.1}em`;
+      element.style.transform = `translateX(-50%) scale(${this._wordScale(town.kind.town) * 1.15})`;
+    }
+    for (const boat of this.towns.boats) {
+      const position = this.towns.boatPosition(boat, this.walkers.nodes);
+      const element = this._mark(boat, 'boat', boat.kind.boat);
+      element.dir = 'auto';
+      element.style.left = `${position.x * 100}%`;
+      element.style.bottom = `${position.y + 0.2}em`;
+      element.style.transform = `translateX(-50%) rotate(${Math.sin(boat.age * 3) * 6}deg) scale(${this._wordScale(boat.kind.boat)})`;
+    }
     const alive = new Set(this.walkers.animals);
     for (const element of this.flightLayer.querySelectorAll('.land-animal')) {
       if (!alive.has(element.animal)) element.remove();
@@ -320,10 +380,9 @@ class TyperEngine {
         animal.element.dataset.species = animal.species.name;
         if (animal.species.aquatic) animal.element.dataset.mode = 'swimming';
         animal.element.textContent = animal.species.glyph;
-        // A long word is scaled down to about two cells; megafauna are larger.
-        const letters = [...new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(animal.species.glyph)].length;
+        // Megafauna are drawn larger.
         if (animal.species.mega) animal.element.dataset.size = 'mega';
-        animal.scale = Math.min(1, 2 / letters) * (animal.species.mega ? 1.6 : 1);
+        animal.scale = this._wordScale(animal.species.glyph) * (animal.species.mega ? 1.6 : 1);
         animal.element.animal = animal;
         this.flightLayer.appendChild(animal.element);
       }

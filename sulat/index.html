@@ -19,6 +19,7 @@
   <script src="typingEcology.js"></script>
   <script src="landAnimals.js"></script>
   <script src="fliers.js"></script>
+  <script src="towns.js"></script>
   <script src="events.js"></script>
   <script src="typerEngine.js"></script>
 
@@ -140,6 +141,8 @@
       #controls { width: calc(100% - 10px); padding: 8px 6px; bottom: 5px; gap: 6px 8px; max-height: 80dvh; }
       #controls button.bar { padding: 8px 9px; }
     }
+    .town { position: absolute; line-height: 1; white-space: nowrap; color: #2a2118; background: #f7efdcf2; border: 1px solid #2a2118; border-radius: 2px; padding: 0 0.1em; transform-origin: bottom center; }
+    .boat { position: absolute; line-height: 1; white-space: nowrap; color: #2a2118; background: #f7efdcd9; border-bottom: 2px solid #2a2118; border-radius: 0 0 0.5em 0.5em; padding: 0 0.15em; transform-origin: bottom center; }
     .land-animal[data-mode="swimming"] { color: #d9f1f5; background: #224759e6; }
     .iceberg { position: absolute; line-height: 1; color: #385c73; background: #e4f1f6e6; border-radius: 3px; padding: 0 0.05em; }
     .storm { position: absolute; height: 3em; line-height: 1; white-space: pre; text-align: center; overflow: hidden; border-radius: 0.4em; color: #f3f5f7; background: #47525ccc; }
@@ -245,6 +248,7 @@
     <button class="bar" id="open-guide" type="button" aria-expanded="false" aria-controls="guide-sheet">Guide</button>
     <button class="bar" id="open-translations" type="button" aria-expanded="false" aria-controls="translations-sheet">Translations</button>
     <button class="bar" id="show-title" type="button">Title</button>
+    <button class="bar" id="clear-all" type="button">Clear</button>
     <form id="key-settings" hidden>
       <fieldset>
         <legend>Keys</legend>
@@ -287,11 +291,12 @@
         <a href="#guide-quakes">Earthquakes</a>
         <a href="#guide-animals">Animals</a>
         <a href="#guide-fliers">Fliers</a>
+        <a href="#guide-towns">Towns</a>
         <a href="#guide-marks">Marks</a>
       </nav>
     </header>
     <h3 id="guide-typing">Typing</h3>
-    <p>Each key draws one terrain, in a glyph chosen for its shape from Baybayin, Kana, Jawi, Devanagari, Hanzi, Thai, Telugu, Burmese, Javanese, or punctuation. Space leaves a gap. Enter completes a line. Delete removes the last glyph, or brings back the last completed line. Settings holds the line alignment (left, center, or right) and the on-screen keys: shown or hidden, keyboard rows or five rows grouped by terrain, and three sizes. Alignment changes which cells of neighboring rows touch. Play moves the terrain up one row every two seconds; Pause holds everything. The line you are typing stays editable.</p>
+    <p>Each key draws one terrain, in a glyph chosen for its shape from Baybayin, Kana, Jawi, Devanagari, Hanzi, Thai, Telugu, Burmese, Javanese, or punctuation. Space leaves a gap. Enter completes a line. Delete removes the last glyph, or brings back the last completed line. Clear removes all terrain and everything on it; it asks once before it does. Settings holds the line alignment (left, center, or right) and the on-screen keys: shown or hidden, keyboard rows or five rows grouped by terrain, and three sizes. Alignment changes which cells of neighboring rows touch. Play moves the terrain up one row every two seconds; Pause holds everything. The line you are typing stays editable.</p>
     <h3 id="guide-contact">Terrain contact</h3>
     <p>Terrain changes when it stays in contact with other terrain across steps. Water touching forest can become estuary. Rivers and lakes form marsh beside grass, and oases beside desert or dunes. Estuaries and coasts form mangrove beside forest. Snow beside mountains becomes glacier; cold terrain changes mountain into alpine. Water or snow cools lava into rock. Cold water changes reef into kelp.</p>
     <h3 id="guide-water">Water and ice</h3>
@@ -304,9 +309,12 @@
     <h3 id="guide-animals">Animals</h3>
     <p>Animals are words. Land animals follow connected land and swimmers follow connected water; gaps and lava break routes. Deer, foxes, boars, monkeys, and civets keep to forest and open ground, bears to cold forest, goats to rock, crabs to shores, hares to snow, camels to desert, fish to any water. Long names are drawn smaller.</p>
     <p>Elephants, carabaos, tigers, and rhinoceroses are larger, slower, and appear one at a time; whales cross open sea and crocodiles hold rivers and estuaries. Elephants and rhinoceroses can open forest into grassland, and carabaos can turn grass into marsh. Tigers take deer, boars, and monkeys; foxes take hares; crocodiles take fish.</p>
+    <p>Water holds more than fish. Milkfish keep to estuaries, koi and river fish to lakes and rivers, shrimp to shallows, octopuses to reef and kelp, squid and jellyfish to open water. Sharks, dolphins, and turtles hunt among them. Dugongs graze kelp down to open water.</p>
     <h3 id="guide-fliers">Fliers</h3>
     <p>A flying animal is a word in three parts whose first and last parts are wings: folded while it sits, open in flight, so its name can be read only in the air. Forest patches release birds. Dragonflies, butterflies, fireflies, bees, and mosquitoes rise from wet ground and flowers, and bats from caves.</p>
     <p>Where they settle, they can change the ground. Butterflies and bees turn grass into flowers. Bats turn grass into forest. Fireflies turn swamp and marsh into mangrove. Mosquitoes turn marsh into swamp and grass into marsh; dragonflies turn swamp back into marsh and take mosquitoes in flight.</p>
+    <h3 id="guide-towns">Towns</h3>
+    <p>Towns are not typed. One can found itself on open ground beside water, up to four at a time, each named with the word for town or village in one language. A town clears neighboring forest into fields, and the tide does not cover its ground. When two towns share connected water, boats sail between them; a boat that arrives can leave its own word behind, so a town's name can change language. A town ends when its ground is flooded, burned, buried, deleted, or rewritten by translation.</p>
     <h3 id="guide-marks">Marks</h3>
     <p>A dotted underline marks text rewritten by translation. A thin underline marks a change from terrain contact. A thick underline marks a change from an event or an animal.</p>
   </dialog>
@@ -491,6 +499,22 @@
       }
       translationRows.appendChild(tr);
     }
+    // Clear asks once: the first press arms it, the second within four seconds clears.
+    const clearAll = document.getElementById('clear-all');
+    let clearArmed = null;
+    const disarmClear = () => { clearTimeout(clearArmed); clearArmed = null; clearAll.textContent = 'Clear'; };
+    clearAll.addEventListener('click', event => {
+      if (!clearArmed) {
+        clearAll.textContent = 'Clear all?';
+        clearArmed = setTimeout(disarmClear, 4000);
+        return;
+      }
+      disarmClear();
+      engine.reset();
+      document.getElementById('event-log').textContent = 'Cleared.';
+      if (event.detail > 0) surface.focus({ preventScroll: true });
+    });
+    clearAll.addEventListener('blur', disarmClear);
     engine.onEvent = (message) => { document.getElementById('event-log').textContent = message; };
     playback.addEventListener('click', (event) => {
       engine.setPlaying(!engine.playing);
