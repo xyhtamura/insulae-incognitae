@@ -1,4 +1,4 @@
-// Completed terrain advances in whole rows; birds have a continuous clock.
+// Completed terrain advances in whole rows; animals have a continuous clock.
 class TyperEngine {
   constructor({ container, flightLayer, cols = 30, rows = 30, random = Math.random }) {
     this.container = container;
@@ -18,7 +18,8 @@ class TyperEngine {
     this.ecologyEnabled = true;
     this.stepInterval = 2;
     this.stepTime = 0;
-    this.birds = [];
+    this.fliers = new Fliers({ random });
+    this.stillWings = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.walkers = new LandAnimals({ random });
     this.nextCellId = 1;
     this.flightLayer = flightLayer;
@@ -42,7 +43,7 @@ class TyperEngine {
       this.stepTime -= this.stepInterval;
       this._step();
     }
-    this._fly(seconds);
+    this.fliers.advance(seconds, this.completed, this._visibleRows());
     if (this.ecologyEnabled) this.events.drift(seconds);
     this.walkers.advance(seconds);
     this._drawAnimals();
@@ -59,7 +60,7 @@ class TyperEngine {
     if (this.ecologyEnabled) {
       const result = this.ecology.step(this.completed);
       this.stats.biomeChanges += result.mutations;
-      for (const birth of result.births) this._releaseBird(birth);
+      this.stats.birdsReleased += this.fliers.spawn(this.completed, result.births, this._visibleRows());
       const events = this.events.step(this.completed);
       this.stats.biomeChanges += events.mutations;
       this.stats.calvings += events.calved;
@@ -107,38 +108,6 @@ class TyperEngine {
   _visibleRows() {
     const size = parseFloat(getComputedStyle(this.container).fontSize);
     return Math.min(this.rows, this.container.clientHeight / size);
-  }
-
-  _releaseBird({ x, distance }) {
-    if (!this.flightLayer || this.birds.length >= 8 || distance + 1 >= this._visibleRows()) return;
-    const element = document.createElement('span');
-    element.className = 'bird';
-    element.textContent = 'ᜁᜊᜓᜈ᜔'; // ibon
-    this.flightLayer.appendChild(element);
-    this.birds.push({
-      element, x, origin: distance + 1, age: 0,
-      velocity: (this.random() < 0.5 ? -1 : 1) * (0.04 + this.random() * 0.035),
-      phase: this.random() * Math.PI * 2
-    });
-    this.stats.birdsReleased++;
-  }
-
-  _fly(seconds) {
-    const visibleRows = this._visibleRows();
-    for (const bird of this.birds) {
-      bird.age += seconds;
-      bird.x += bird.velocity * seconds;
-      const height = bird.origin + bird.age * 0.45 + Math.sin(bird.age * 2 + bird.phase) * 0.4;
-      bird.height = height;
-      bird.element.style.left = `${bird.x * 100}%`;
-      bird.element.style.bottom = `${height}em`;
-      bird.element.style.transform = `rotate(${Math.sin(bird.age * 6 + bird.phase) * 12}deg)`;
-    }
-    this.birds = this.birds.filter(bird => {
-      const alive = bird.age < 18 && bird.x > -0.05 && bird.x < 1.05 && bird.height < visibleRows + 1;
-      if (!alive) bird.element.remove();
-      return alive;
-    });
   }
 
   _onKey(e) {
@@ -269,6 +238,40 @@ class TyperEngine {
     for (const element of this.flightLayer.querySelectorAll('.land-animal')) {
       if (!alive.has(element.animal)) element.remove();
     }
+    const aloft = new Set(this.fliers.fliers);
+    for (const element of this.flightLayer.querySelectorAll('.flier')) {
+      if (!aloft.has(element.flier)) element.remove();
+    }
+    for (const flier of this.fliers.fliers) {
+      if (!flier.element) {
+        flier.element = document.createElement('span');
+        flier.element.className = 'flier';
+        flier.element.dataset.species = flier.species.name;
+        if (flier.species.rtl) flier.element.dir = 'rtl';
+        flier.species.word.forEach((part, i) => {
+          const span = document.createElement('span');
+          span.className = i === 1 ? 'body' : 'wing';
+          span.textContent = part;
+          flier.element.appendChild(span);
+        });
+        flier.element.flier = flier;
+        this.flightLayer.appendChild(flier.element);
+      }
+      // Folded wings are narrow and turned in over the body, so the word
+      // cannot be read; in flight they open and beat.
+      const open = flier.spread;
+      const beat = flier.state === 'flying' && !this.stillWings ? 0.8 + 0.2 * Math.sin(flier.age * 16) : 1;
+      const side = flier.species.rtl ? -1 : 1;
+      const [first, , last] = flier.element.children;
+      first.style.transform = `rotate(${side * (1 - open) * 75}deg) scaleX(${0.15 + 0.85 * open * beat})`;
+      last.style.transform = `rotate(${-side * (1 - open) * 75}deg) scaleX(${0.15 + 0.85 * open * beat})`;
+      first.style.margin = last.style.margin = `0 ${-(1 - open) * 0.3}em`;
+      flier.element.dataset.state = flier.state;
+      flier.element.style.left = `${flier.x * 100}%`;
+      flier.element.style.bottom = `${flier.y + 0.2}em`;
+      const hang = flier.species.hangs && flier.state === 'perched' ? 180 : Math.sin(flier.age * 6 + flier.phase) * 10 * open;
+      flier.element.style.transform = `translateX(-50%) rotate(${hang}deg) scale(0.7)`;
+    }
     const afloat = new Set(this.events.icebergs);
     for (const element of this.flightLayer.querySelectorAll('.iceberg')) {
       if (!afloat.has(element.berg)) element.remove();
@@ -313,13 +316,17 @@ class TyperEngine {
         animal.element.dataset.species = animal.species.name;
         if (animal.species.aquatic) animal.element.dataset.mode = 'swimming';
         animal.element.textContent = animal.species.glyph;
+        // A long word is scaled down to about two cells; megafauna are larger.
+        const letters = [...new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(animal.species.glyph)].length;
+        if (animal.species.mega) animal.element.dataset.size = 'mega';
+        animal.scale = Math.min(1, 2 / letters) * (animal.species.mega ? 1.6 : 1);
         animal.element.animal = animal;
         this.flightLayer.appendChild(animal.element);
       }
       const position = this.walkers.position(animal);
       animal.element.style.left = `${position.x * 100}%`;
       animal.element.style.bottom = `${position.y + 0.25}em`;
-      animal.element.style.transform = `translateX(-50%) rotate(${position.walking ? Math.sin(animal.age * 12) * 5 : 0}deg)`;
+      animal.element.style.transform = `translateX(-50%) rotate(${position.walking ? Math.sin(animal.age * 12) * 5 : 0}deg) scale(${animal.scale})`;
     }
   }
 }

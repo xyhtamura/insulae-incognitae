@@ -1,15 +1,45 @@
 // Routes use rendered bounds. Land and water form separate habitat networks.
-// Animals are short words rather than terrain glyphs, one language per species:
-// usa (Tagalog), kitsune and kani (Japanese), bakri and unt (Hindi), 兔 (Hanzi),
-// ikan (Malay, in Jawi). They are propositions, open to correction.
+// Animals are short words rather than terrain glyphs, one language per
+// species. They are propositions, open to correction. `mega` animals are
+// drawn larger, walk slower, and appear one at a time; `tramples` is what
+// they can leave behind; `hunts` names the species they remove on contact.
 const LAND_SPECIES = [
+  // usa (Tagalog)
   { name: 'deer', glyph: 'ᜂᜐ', habitats: ['forest', 'temperate_forest', 'tropical_rainforest', 'boreal_taiga', 'plain', 'grass', 'flower', 'tropical_savanna'] },
-  { name: 'fox', glyph: 'キツネ', habitats: ['forest', 'temperate_forest', 'boreal_taiga', 'plain', 'grass', 'steppe', 'tundra', 'tropical_savanna'] },
+  // kitsune (Japanese)
+  { name: 'fox', glyph: 'キツネ', hunts: ['hare'], habitats: ['forest', 'temperate_forest', 'boreal_taiga', 'plain', 'grass', 'steppe', 'tundra', 'tropical_savanna'] },
+  // bakri (Hindi)
   { name: 'goat', glyph: 'बकरी', habitats: ['mountain', 'rock', 'steppe', 'plain', 'tundra', 'desert', 'alpine', 'badlands'] },
+  // kani (Japanese)
   { name: 'crab', glyph: 'カニ', habitats: ['sand', 'coast', 'mangrove', 'marsh'] },
   { name: 'hare', glyph: '兔', habitats: ['snow', 'tundra', 'alpine', 'grass', 'plain'] },
+  // unt (Hindi)
   { name: 'camel', glyph: 'ऊँट', habitats: ['desert', 'dunes', 'oasis', 'badlands'] },
-  { name: 'fish', glyph: 'ايکن', aquatic: true, habitats: [...SULAT_AQUATIC] }
+  // ikan (Malay, in Jawi)
+  { name: 'fish', glyph: 'ايکن', aquatic: true, habitats: [...SULAT_AQUATIC] },
+  // ling (Thai)
+  { name: 'monkey', glyph: 'ลิง', habitats: ['tropical_rainforest', 'forest', 'mangrove'] },
+  // baboy (Tagalog)
+  { name: 'boar', glyph: 'ᜊᜊᜓᜌ᜔', habitats: ['forest', 'tropical_rainforest', 'temperate_forest', 'grass', 'marsh'] },
+  // musang (Tagalog and Malay), the palm civet
+  { name: 'civet', glyph: 'ᜋᜓᜐᜅ᜔', habitats: ['tropical_rainforest', 'forest', 'temperate_forest', 'mangrove'] },
+  // kuma (Japanese)
+  { name: 'bear', glyph: 'クマ', habitats: ['boreal_taiga', 'temperate_forest', 'tundra'] },
+  // chang (Thai)
+  { name: 'elephant', glyph: 'ช้าง', mega: true, habitats: ['tropical_rainforest', 'forest', 'tropical_savanna', 'grass', 'plain'],
+    tramples: { tropical_rainforest: 'tropical_savanna', forest: 'grass' } },
+  // kalabaw (Tagalog), the water buffalo
+  { name: 'carabao', glyph: 'ᜃᜎᜊᜏ᜔', mega: true, habitats: ['grass', 'plain', 'marsh', 'tropical_savanna', 'flower'],
+    tramples: { grass: 'marsh', plain: 'marsh', flower: 'grass' } },
+  // puli (Telugu)
+  { name: 'tiger', glyph: 'పులి', mega: true, hunts: ['deer', 'boar', 'monkey'], habitats: ['tropical_rainforest', 'forest', 'mangrove', 'tropical_savanna', 'grass'] },
+  // badhak (Javanese)
+  { name: 'rhinoceros', glyph: 'ꦧꦝꦏ꧀', mega: true, habitats: ['tropical_rainforest', 'tropical_savanna', 'grass', 'marsh'],
+    tramples: { tropical_rainforest: 'tropical_savanna' } },
+  // kujira (Japanese)
+  { name: 'whale', glyph: 'クジラ', mega: true, aquatic: true, habitats: ['deepwater', 'water', 'coldwater'] },
+  // buwaya (Tagalog; buaya in Malay)
+  { name: 'crocodile', glyph: 'ᜊᜓᜏᜌ', mega: true, aquatic: true, hunts: ['fish'], habitats: ['estuary', 'river', 'lake', 'water'] }
 ];
 
 class LandAnimals {
@@ -17,6 +47,9 @@ class LandAnimals {
     this.random = random;
     this.nodes = new Map();
     this.animals = [];
+    this.limit = 12;
+    this.caught = 0;
+    this.trampled = 0;
   }
 
   sync(lines) {
@@ -52,8 +85,12 @@ class LandAnimals {
   }
 
   spawn() {
-    for (const species of LAND_SPECIES) {
-      if (this.animals.filter(animal => animal.species === species).length >= 2 || this.random() >= 0.55) continue;
+    // Start at a different species each step, so the cap favors none.
+    const first = Math.floor(this.random() * LAND_SPECIES.length);
+    for (let i = 0; i < LAND_SPECIES.length; i++) {
+      const species = LAND_SPECIES[(first + i) % LAND_SPECIES.length];
+      if (this.animals.length >= this.limit) break;
+      if (this.animals.filter(animal => animal.species === species).length >= (species.mega ? 1 : 2) || this.random() >= (species.mega ? 0.25 : 0.55)) continue;
       const occupied = new Set(this.animals.flatMap(animal => [animal.from, animal.to]));
       const candidates = [...this.nodes.values()].filter(node => !occupied.has(node.id) && this.allowed(species, node) && this.destinations(species, node).length);
       if (!candidates.length) continue;
@@ -65,13 +102,14 @@ class LandAnimals {
   advance(seconds) {
     for (const animal of this.animals) {
       animal.age += seconds;
-      animal.progress += seconds / 1.6;
+      animal.progress += seconds / (animal.species.mega ? 3.2 : 1.6);
       // Complete routes even when a test or caller supplies a long frame.
       while (animal.progress >= 1) {
         animal.progress--;
         const last = animal.from;
         animal.from = animal.to;
         const node = this.nodes.get(animal.from);
+        this._trample(animal.species, this.nodes.get(last));
         const choices = this.destinations(animal.species, node);
         const onward = choices.filter(next => next.id !== last && next.id !== animal.previous);
         const pool = onward.length ? onward : choices;
@@ -79,7 +117,29 @@ class LandAnimals {
         animal.to = pool.length ? pool[Math.floor(this.random() * pool.length)].id : animal.from;
       }
     }
-    this.animals = this.animals.filter(animal => animal.age < 36);
+    // A hunter removes prey that stands on the cell it stands on.
+    for (const hunter of this.animals) {
+      if (!hunter.species.hunts) continue;
+      for (const prey of this.animals) {
+        if (!prey.caught && hunter.species.hunts.includes(prey.species.name) && [prey.from, prey.to].includes(hunter.from)) { prey.caught = true; this.caught++; }
+      }
+    }
+    this.animals = this.animals.filter(animal => !animal.caught && animal.age < (animal.species.mega ? 48 : 36));
+  }
+
+  // Heavy animals can change the cell they leave. Targets stay inside the
+  // animal's own habitats, so its route survives the change.
+  _trample(species, node) {
+    const target = species.tramples?.[node?.biome];
+    const cell = node?.line.cells[node.column];
+    if (!target || cell?.id !== node.id || cell.cooldown > 0 || this.random() >= 0.25) return;
+    const glyphs = SULAT_BIOMES[target].glyphs;
+    node.line.cells[node.column] = {
+      id: cell.id, char: glyphs[Math.floor(this.random() * glyphs.length)],
+      className: `${target}${SULAT_LAND.has(target) ? ' tile' : ''}`, cooldown: 4, mutation: 'event'
+    };
+    node.biome = target;
+    this.trampled++;
   }
 
   position(animal) {

@@ -6,10 +6,10 @@ import vm from 'node:vm';
 
 function setup() {
   const context = vm.createContext({ Math: Object.assign(Object.create(Math), { random: () => 0 }) });
-  for (const name of ['../LetterMap.js', '../glyphData.js', '../lexicon.js', '../translationModule.js', 'biomes.js', 'typingEcology.js', 'landAnimals.js', 'events.js']) {
+  for (const name of ['../LetterMap.js', '../glyphData.js', '../lexicon.js', '../translationModule.js', 'biomes.js', 'typingEcology.js', 'landAnimals.js', 'fliers.js', 'events.js']) {
     vm.runInContext(readFileSync(new URL(name, import.meta.url), 'utf8'), context, { filename: name });
   }
-  return vm.runInContext('({ TypingEvents, SULAT_STORMS, TypingEcology, TranslationEngine, LandAnimals, LAND_SPECIES, SULAT_KEYS, SULAT_BIOMES, SULAT_GROUPS, LETTER_TO_BIOME })', context);
+  return vm.runInContext('({ Fliers, FLIER_SPECIES, TypingEvents, SULAT_STORMS, TypingEcology, TranslationEngine, LandAnimals, LAND_SPECIES, SULAT_KEYS, SULAT_BIOMES, SULAT_GROUPS, LETTER_TO_BIOME })', context);
 }
 
 function row(types, distance = 1, bounds) {
@@ -224,7 +224,7 @@ test('hares, camels, and fish spawn in connected cold, dry, and water habitats',
   const animals = new LandAnimals({ random: () => 0 });
   animals.sync([row(['snow', 'snow', 'water', 'deepwater', 'sand', 'desert', 'dunes'])]);
   animals.spawn();
-  assert.deepEqual(Array.from(animals.animals, animal => animal.species.name).sort(), ['camel', 'fish', 'hare']);
+  assert.deepEqual(Array.from(animals.animals, animal => animal.species.name).sort(), ['camel', 'fish', 'hare', 'whale']);
   assert.deepEqual([...animals.nodes.get('1:2').neighbors], ['1:3']);
   animals.advance(1.6);
   animals.advance(0.8);
@@ -398,4 +398,86 @@ test('a storm forms on its own once the landscape is large enough', () => {
   const started = events.storming([row(Array(14).fill('grass'))]).started;
   assert.ok(SULAT_STORMS[started]);
   assert.equal(events.storm.x < 0, true);
+});
+
+test('every flier is a three-part word', () => {
+  const { FLIER_SPECIES } = setup();
+  for (const species of FLIER_SPECIES) assert.equal(species.word.length, 3, species.name);
+});
+
+test('a flier sits folded, opens in flight, and folds again on dry ground', () => {
+  const { Fliers, FLIER_SPECIES } = setup();
+  const fliers = new Fliers({ random: () => 0 });
+  const lines = [row(['flower', 'flower', 'flower', 'water'])];
+  fliers.spawn(lines);
+  const flier = fliers.fliers.find(entry => entry.species.name === 'butterfly');
+  assert.ok(flier);
+  assert.equal(flier.state, 'perched');
+  assert.equal(flier.spread, 0);
+  for (let i = 0; i < 12; i++) fliers.advance(0.1, lines);
+  assert.equal(flier.state, 'flying');
+  assert.equal(flier.spread, 1);
+  flier.x = 0.5 / 30; flier.y = 1; flier.timer = 0;
+  fliers.advance(0.01, lines);
+  assert.equal(flier.state, 'perched');
+  for (let i = 0; i < 5; i++) fliers.advance(0.1, lines);
+  assert.equal(flier.spread, 0);
+  assert.ok(FLIER_SPECIES.length >= 6);
+});
+
+test('fliers do not land on water, and leave with their row', () => {
+  const { Fliers } = setup();
+  const fliers = new Fliers({ random: () => 0 });
+  const lines = [row(['flower', 'water', 'water'])];
+  fliers.spawn(lines);
+  const flier = fliers.fliers[0];
+  for (let i = 0; i < 12; i++) fliers.advance(0.1, lines);
+  flier.x = 1.5 / 30; flier.y = 1; flier.timer = 0;
+  fliers.advance(0.01, lines);
+  assert.equal(flier.state, 'flying');
+  const other = new Fliers({ random: () => 0 });
+  other.spawn(lines);
+  other.advance(0.1, []);
+  assert.equal(other.fliers.length, 0);
+});
+
+test('bats rise only from caves and birds only from forest births', () => {
+  const { Fliers } = setup();
+  const fliers = new Fliers({ random: () => 0 });
+  const lines = [row(['cave', 'rock', 'rock'])];
+  assert.equal(fliers.spawn(lines, [{ x: 0.05, distance: 1 }]), 1);
+  assert.deepEqual(Array.from(fliers.fliers, flier => flier.species.name).sort(), ['bat', 'bird']);
+});
+
+test('megafauna appear singly, and a tiger removes the deer it meets', () => {
+  const { LandAnimals, LAND_SPECIES } = setup();
+  const walkers = new LandAnimals({ random: () => 0 });
+  const lines = [row(Array(30).fill('forest'))];
+  walkers.sync(lines);
+  const tiger = LAND_SPECIES.find(species => species.name === 'tiger');
+  const deer = LAND_SPECIES.find(species => species.name === 'deer');
+  walkers.animals = [
+    { species: tiger, from: '1:0', to: '1:0', previous: null, progress: 0, age: 0 },
+    { species: deer, from: '1:0', to: '1:1', previous: null, progress: 0, age: 0 }
+  ];
+  walkers.advance(0.1);
+  assert.deepEqual(Array.from(walkers.animals, animal => animal.species.name), ['tiger']);
+  assert.equal(walkers.caught, 1);
+  for (let i = 0; i < 4; i++) walkers.spawn();
+  assert.equal(walkers.animals.filter(animal => animal.species.mega && animal.species.name === 'elephant').length, 1);
+  assert.ok(walkers.animals.length <= walkers.limit);
+});
+
+test('an elephant can open the forest cell it leaves into grass and keep walking', () => {
+  const { LandAnimals, LAND_SPECIES } = setup();
+  const walkers = new LandAnimals({ random: () => 0 });
+  const lines = [row(['forest', 'forest', 'forest'])];
+  walkers.sync(lines);
+  const elephant = LAND_SPECIES.find(species => species.name === 'elephant');
+  walkers.animals = [{ species: elephant, from: '1:0', to: '1:1', previous: null, progress: 0, age: 0 }];
+  walkers.advance(3.3);
+  assert.equal(lines[0].cells[0].className, 'grass tile');
+  assert.equal(walkers.trampled, 1);
+  walkers.sync(lines);
+  assert.equal(walkers.animals.length, 1);
 });

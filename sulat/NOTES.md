@@ -13,7 +13,8 @@ Tune biome contact rates and animal density against longer typed landscapes.
 - `index.html`: Sulat's page, styles, controls, and animation driver.
 - `typerEngine.js`: typing, stepped movement, translation integration, and animal rendering.
 - `biomes.js`: Sulat's palette, keys, and its own glyph set for every biome.
-- `landAnimals.js`: species habitats, separate land and water routes, and continuous walking and swimming.
+- `landAnimals.js`: species habitats, separate land and water routes, continuous walking and swimming, megafauna, trampling, and hunting.
+- `fliers.js`: birds, insects, and bats as three-part words with folding wings.
 - `typingEcology.js`: biome contact rules and forest birth opportunities.
 - `events.js`: water currents, glacier calving and icebergs, tides, floods, storms, and earthquakes.
 - `typingEcology.test.mjs`: palette, contact, translation, land-route, and event regression checks. From `F:/xyh`, run `node --test insulae-incognitae/sulat/typingEcology.test.mjs`.
@@ -110,3 +111,20 @@ Not done: glyph choices were made by me from shape alone, at small size, in one 
 At Xyh's request, the glyphs from `../lineGenerator.js` that the previous entry left out are back in the biomes they came from: ల น ရေ ꦮ in water, อ ဝ in sand, ꦱ in grass, ꦒ in forest. The two Thai words the lexicon recognizes were also placed, ป่า in rainforest and ไม้ in temperate forest, so the woods translation chain can start from typed terrain. The other 30 biomes have none of these four scripts yet. The page requests Noto Sans Thai, Telugu, Myanmar, and Javanese from Google Fonts, linked and not shipped.
 
 Verified in the browser pane at 1100 by 900: typed 28 cells of each of the six biomes and found all ten restored glyphs in the engine's rows under the right biome, each rendered with a nonzero width and visible in a screenshot; `document.fonts` reported one loaded face each for Thai, Telugu, Myanmar, and Javanese. No console errors. All 32 Node cases pass. The title and help copy now name the four scripts.
+
+## 2026-10-05 — Claude Code — Folding wings, insects, mammals, and megafauna
+
+Xyh's direction: a long animal word can be scaled down; a three-part word can use its first and last parts as wings that fold, readable only in flight; add insects, megafauna, and mammals.
+
+- **Fliers** (`fliers.js`, replacing the engine's bird code). Every flier is a word in three parts. The outer parts are wings: perched, they are narrowed to 15% and turned 75° in over the body, so the word cannot be read; in flight they open over a quarter second and beat. A flier starts perched on a cell, takes off after 0.6 to 1.8 seconds, and moves with its row while it sits. Birds (ᜁ ᜊᜓ ᜈ᜔, *ibon*) still come from forest patches and leave the field. The others rise from their habitat, loiter for 3 to 6 seconds, and fold again on any dry cell under them; over water or a gap they keep flying. Dragonfly ᜆᜓᜆᜓᜊᜒ *tutubi* and mosquito ᜎᜋᜓᜃ᜔ *lamok* (Tagalog), butterfly तितली *titli* (Hindi), firefly ホタル (Japanese), bee لبه *lebah* (Malay in Jawi, with joiners so each separated letter keeps its connected form), bat ᜉᜈᜒᜃᜒ *paniki* (Tagalog), which rises from caves and hangs inverted while perched. Two per species, eight birds, fourteen fliers in all. Fireflies glow in flight.
+- **Mammals.** Monkey ลิง (Thai), boar ᜊᜊᜓᜌ᜔ *baboy*, civet ᜋᜓᜐᜅ᜔ *musang* (Tagalog), bear クマ (Japanese).
+- **Megafauna.** Drawn at 1.6 times, walking at half speed, one per species, 48 seconds: elephant ช้าง (Thai), carabao ᜃᜎᜊᜏ᜔ *kalabaw* and crocodile ᜊᜓᜏᜌ *buwaya* (Tagalog), tiger పులి *puli* (Telugu), rhinoceros ꦧꦝꦏ꧀ *badhak* (Javanese), whale クジラ (Japanese). Whales and crocodiles use the water network.
+- **Animals now change terrain and each other**, which earlier entries listed as unfinished. A megafauna leaving a cell has a 25% chance to change it: elephants and rhinoceroses open forest into grass or savanna, carabaos turn grass and plain into marsh. Targets are always inside the animal's own habitats so its route survives. A hunter removes prey standing on its cell: tigers take deer, boars, and monkeys; foxes take hares; crocodiles take fish.
+- **Scale.** A walking animal's word is scaled to `min(1, 2 / letters)` by grapheme count, times 1.6 for megafauna; fliers are drawn at 0.7. Scaling is a CSS transform. A first attempt used `font-size`, which also scaled the `em` offsets and drew animals up to several rows below their cells; the browser check caught it.
+- **Density.** Walkers are capped at 12 overall and the spawn loop starts at a random species each step.
+
+Verified in the browser pane at 1100 by 900 through `engine.advance` over 40 simulated seconds on four typed rows: all seven fliers appeared and each was seen both perched and flying; a perched bird measured 19 px wide with wings at `rotate(75deg) scaleX(0.15)`, a flying one 36 px with `rotate(0deg) scaleX(1)`; 13 walking and swimming species appeared including tiger, elephant, rhinoceros, and whale; after the scaling fix every walker's drawn height was within 0.25 em of its row and every flier within 0.35 em of its `y`; hunting removed two animals in one run and trampling changed one cell in another. No console errors. All 38 Node cases pass, six of them new.
+
+Not observed: the fold and beat as motion on a display, the bee's joined Jawi letters at reading size, and bats hanging. The pane reports reduced motion, under which the wingbeat is disabled and only the fold remains.
+
+Needs Xyh's check: every word here is my proposition. Least certain are the Javanese *badhak*, the Telugu *puli*, the Jawi spellings of *ikan* and *lebah*, and the Baybayin spellings with virama. Twelve walkers on four rows looks crowded in the screenshot, so density belongs with the tuning step. Insects have no effect on terrain yet; pollination and mosquitoes following animals were considered and left out.
