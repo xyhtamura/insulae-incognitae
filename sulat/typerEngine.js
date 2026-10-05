@@ -11,6 +11,9 @@ class TyperEngine {
     this.random = random;
     this.translator = new TranslationEngine();
     this.ecology = new TypingEcology({ random });
+    this.events = new TypingEvents({ random });
+    this.onEvent = null;
+    this.clock = 0;
     this.translationEnabled = true;
     this.ecologyEnabled = true;
     this.stepInterval = 2;
@@ -19,23 +22,28 @@ class TyperEngine {
     this.walkers = new LandAnimals({ random });
     this.nextCellId = 1;
     this.flightLayer = flightLayer;
-    this.stats = { steps: 0, translations: 0, biomeChanges: 0, birdsReleased: 0 };
+    this.stats = { steps: 0, translations: 0, biomeChanges: 0, birdsReleased: 0, calvings: 0, quakes: 0 };
 
     this._render();
     // Controls keep their native keys; typing belongs to this surface.
     this.container.addEventListener('keydown', (e) => this._onKey(e));
   }
 
-  setPlaying(playing) { this.playing = playing; }
+  setPlaying(playing) {
+    this.playing = playing;
+    this.container.classList.toggle('playing', playing);
+  }
 
   advance(seconds) {
     if (!this.playing || seconds <= 0) return;
+    this.clock += seconds;
     this.stepTime += seconds;
     while (this.stepTime >= this.stepInterval) {
       this.stepTime -= this.stepInterval;
       this._step();
     }
     this._fly(seconds);
+    this.events.drift(seconds);
     this.walkers.advance(seconds);
     this._drawAnimals();
   }
@@ -52,6 +60,18 @@ class TyperEngine {
       const result = this.ecology.step(this.completed);
       this.stats.biomeChanges += result.mutations;
       for (const birth of result.births) this._releaseBird(birth);
+      const events = this.events.step(this.completed);
+      this.stats.biomeChanges += events.mutations;
+      this.stats.calvings += events.calved;
+      if (events.quake) {
+        this.stats.quakes++;
+        for (const line of events.quake.rows) line.quakeUntil = this.clock + 0.9;
+      }
+      const report = [
+        events.quake && `Earthquake: ${events.quake.changes} ${events.quake.changes === 1 ? 'cell' : 'cells'} changed and a gap opened.`,
+        events.calved && `Glacier calved: ${events.calved} ${events.calved === 1 ? 'iceberg' : 'icebergs'}.`
+      ].filter(Boolean).join(' ');
+      if (report && this.onEvent) this.onEvent(report);
     }
     if (this.translationEnabled) {
       for (const line of this.completed) {
@@ -185,6 +205,8 @@ class TyperEngine {
       const span = document.createElement('span');
       span.className = cell.className || 'unknown';
       span.textContent = cell.char;
+      // Phase comes from the play clock, so a rebuilt row keeps its ripple.
+      if (SULAT_AQUATIC.has(cell.className?.split(' ')[0])) span.style.animationDelay = `-${((this.clock + p.cellElements.length * 0.35) % 2.4).toFixed(2)}s`;
       if (cell.mutation) span.dataset.mutation = cell.mutation;
       p.appendChild(span);
       p.cellElements.push(span);
@@ -199,7 +221,7 @@ class TyperEngine {
     const frag = document.createDocumentFragment();
     for (const line of this.completed) {
       const p = this._makeParagraph(line.cells);
-      p.className = 'completed-line';
+      p.className = line.quakeUntil > this.clock ? 'completed-line quake' : 'completed-line';
       p.style.bottom = `${line.distance}em`;
       line.element = p;
       frag.appendChild(p);
@@ -234,6 +256,22 @@ class TyperEngine {
     const alive = new Set(this.walkers.animals);
     for (const element of this.flightLayer.querySelectorAll('.land-animal')) {
       if (!alive.has(element.animal)) element.remove();
+    }
+    const afloat = new Set(this.events.icebergs);
+    for (const element of this.flightLayer.querySelectorAll('.iceberg')) {
+      if (!afloat.has(element.berg)) element.remove();
+    }
+    for (const berg of this.events.icebergs) {
+      if (!berg.element) {
+        berg.element = document.createElement('span');
+        berg.element.className = 'iceberg';
+        berg.element.textContent = '氷';
+        berg.element.berg = berg;
+        this.flightLayer.appendChild(berg.element);
+      }
+      berg.element.style.left = `${berg.x * 100}%`;
+      berg.element.style.bottom = `${berg.line.distance + Math.sin(berg.age * 1.7) * 0.06}em`;
+      berg.element.style.transform = `translateX(-50%) rotate(${Math.sin(berg.age * 1.1) * 7}deg)`;
     }
     for (const animal of this.walkers.animals) {
       if (!animal.element) {

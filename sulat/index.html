@@ -18,6 +18,7 @@
   <script src="biomes.js"></script>
   <script src="typingEcology.js"></script>
   <script src="landAnimals.js"></script>
+  <script src="events.js"></script>
   <script src="typerEngine.js"></script>
 
   <style>
@@ -97,6 +98,17 @@
     .biome-group { display: flex; flex-wrap: wrap; gap: 5px; flex-basis: 100%; border: 0; padding: 0; margin: 4px 0 8px; min-width: 0; }
     .biome-group legend { padding: 0; margin-bottom: 5px; font-size: 10px; letter-spacing: 0.06em; }
     .land-animal[data-mode="swimming"] { color: #d9f1f5; background: #224759e6; }
+    .iceberg { position: absolute; line-height: 1; color: #385c73; background: #e4f1f6e6; border-radius: 3px; padding: 0 0.05em; }
+    .water, .coldwater, .reef, .estuary, .river, .deepwater, .kelp { display: inline-block; animation: ripple 2.4s ease-in-out infinite; }
+    #terminal-content:not(.playing) span { animation-play-state: paused; }
+    @keyframes ripple { 0%, 100% { translate: 0 0.05em; } 50% { translate: 0 -0.05em; } }
+    .completed-line.quake { animation: quake 0.15s linear 6; }
+    @keyframes quake { 0%, 100% { translate: 0 0; } 25% { translate: -0.18em 0.05em; } 75% { translate: 0.18em -0.05em; } }
+    @media (prefers-reduced-motion: reduce) {
+      .water, .coldwater, .reef, .estuary, .river, .deepwater, .kelp, .completed-line.quake { animation: none; }
+    }
+    [data-mutation="event"] { box-shadow: inset 0 -2px currentColor; }
+    #event-log { flex-basis: 100%; margin: 0; min-height: 1.5em; }
     [data-mutation="translation"] { text-decoration: underline dotted; text-underline-offset: 0.15em; }
     [data-mutation="ecology"] { box-shadow: inset 0 -1px currentColor; }
 
@@ -183,14 +195,16 @@
     <label><input id="translation-enabled" type="checkbox" checked>Translation</label>
     <label><input id="ecology-enabled" type="checkbox" checked>Ecology</label>
     <button id="show-title" type="button">Title</button>
-    <p id="typing-help">Type letters or use the biome buttons. Enter completes a line. Play advances terrain one row every two seconds; animals move between steps.</p>
+    <p id="typing-help">Type letters or use the biome buttons. Enter completes a line. Play advances terrain one row every two seconds; animals, water, and icebergs move between steps.</p>
+    <p id="event-log" role="status"></p>
     <details>
       <summary>Keys and interactions</summary>
       <p>R/Q: rainforest. L/W: temperate forest. N/K: taiga. E/T: water. J/P: cold water. U/F: reef. I/Y: estuary. O: swamp. V: ice. S/B: savanna. C/G: steppe. Z/M: tundra. A/D: sand. X: mountain. H: plain. Space leaves a gap.</p>
       <div id="biome-palette" role="group" aria-label="Biomes"></div>
       <p>Water touching forest can become estuary. Rivers and lakes form marsh beside grass and oases beside desert or dunes. Estuaries and coasts form mangrove beside forest. Snow beside mountains becomes glacier; cold terrain changes mountain into alpine. Water or snow cools lava into rock. Cold water changes reef into kelp. Contact must persist across steps.</p>
-      <p>Forest patches release birds. Deer and foxes move through woodland and open ground, goats through rocky terrain, and crabs along shores. Hares cross snow and tundra, camels move through desert and oases, and fish swim through connected water. Land and water routes stay separate; spaces and lava break routes. Ecology controls biome changes and animal births.</p>
-      <p>Translation rewrites recognized words and syllables. Dotted underlines mark rewritten text; solid underlines mark biome changes. The active line stays editable. Pause holds movement and mutations.</p>
+      <p>Forest patches release birds. Deer and foxes move through woodland and open ground, goats through rocky terrain, and crabs along shores. Hares cross snow and tundra, camels move through desert and oases, and fish swim through connected water. Land and water routes stay separate; spaces and lava break routes. Ecology controls biome changes, animal births, currents, and events.</p>
+      <p>Water moves one cell along its row every two steps; lakes stay still. A glacier left with water, a gap, or the row end beside it for three steps can calve: the tip becomes cold water and an iceberg drifts along the row, cooling the water under it until it meets land. Earthquakes are rare. One turns nearby mountain into rock, rock and badlands into cave, cave into rock, and volcanic ground into lava, breaks glaciers, and opens a gap in the row at its center. Thick underlines mark cells changed by an event.</p>
+      <p>Translation rewrites recognized words and syllables. Dotted underlines mark rewritten text; thin solid underlines mark biome changes. The active line stays editable. Pause holds movement and mutations.</p>
     </details>
   </div>
 
@@ -255,6 +269,7 @@
       }
       palette.appendChild(section);
     }
+    engine.onEvent = (message) => { document.getElementById('event-log').textContent = message; };
     document.getElementById('translation-enabled').addEventListener('change', (event) => {
       engine.translationEnabled = event.target.checked;
     });

@@ -1,6 +1,6 @@
 # Sulat
 
-Sulat is a typing artwork derived from Insulae Incognitae. Typed keys create 36 kinds of terrain; completed lines advance in whole rows, translate across scripts, and change biomes through contact. Birds fly freely while deer, foxes, goats, crabs, hares, and camels follow connected land, and fish swim through connected water. Play and Pause control movement and mutations. A title screen opens the work, with Translation and Ecology enabled by default.
+Sulat is a typing artwork derived from Insulae Incognitae. Typed keys create 36 kinds of terrain; completed lines advance in whole rows, translate across scripts, and change biomes through contact. Water circulates along its row, glacier tips calve icebergs, and rare earthquakes change terrain. Birds fly freely while deer, foxes, goats, crabs, hares, and camels follow connected land, and fish swim through connected water. Play and Pause control movement and mutations. A title screen opens the work, with Translation and Ecology enabled by default.
 
 Open `index.html` through the workspace server at `/insulae-incognitae/sulat/`.
 
@@ -15,7 +15,8 @@ Tune biome contact rates and animal density against longer typed landscapes.
 - `biomes.js`: Sulat's palette and keys, extending the parent's biome definitions.
 - `landAnimals.js`: species habitats, separate land and water routes, and continuous walking and swimming.
 - `typingEcology.js`: biome contact rules and forest birth opportunities.
-- `typingEcology.test.mjs`: palette, contact, translation, and land-route regression checks. From `F:/xyh`, run `node --test insulae-incognitae/sulat/typingEcology.test.mjs`.
+- `events.js`: water currents, glacier calving and icebergs, and earthquakes.
+- `typingEcology.test.mjs`: palette, contact, translation, land-route, and event regression checks. From `F:/xyh`, run `node --test insulae-incognitae/sulat/typingEcology.test.mjs`.
 
 Sulat stays in the Insulae Incognitae repository. It loads `../backgroundManager.js`, `../LetterMap.js`, `../glyphData.js`, `../lexicon.js`, and `../translationModule.js`, and uses the existing font in `../fonts/`. These are canonical same-repository files rather than independent copies. Asset provenance and the font license are recorded in [the parent asset record](../ASSETS.md). The combined prototype also uses `../LetterMap.js`.
 
@@ -52,3 +53,19 @@ Added authored regional rules: mountains touching cold terrain become alpine; sn
 Added hares, camels, and fish, and extended goat habitats to alpine and badlands. Fish use a separate water network; land animals cannot cross it, and fish cannot cross dry tiles. Spaces, lava, and missing rows still break routes. The existing path geometry, endpoint revalidation, pause clock, two animals per species, and 36-second lifespan apply to both networks. Free-flying birds retain their separate clock and cap. The scrollable palette keeps Play/Pause visible while reserving space for the actual control height. The preserved typing reference was not edited.
 
 Verified all ten added keys and their terrain classes in the browser, the 36-button palette and its four groups, cold and desert regions, and live hare, camel, and fish marks. Fish carry the swimming state and use fractional positions over the water row. Checked control clearance and the browser error log. All 18 regression cases passed, including regional mutations, palette reachability, original key mappings, fish barriers, freezing habitat loss, and cold/dry/wet animal births. The existing next step remains tuning contact rates and animal density on longer landscapes. Mobile keyboard input, paste, animal effects on terrain, and the shared lexicon's placeholder romanizations remain unfinished. No remote push was performed.
+
+## 2026-10-05 — Claude Code — Currents, calving, and earthquakes
+
+Added `events.js` with three authored behaviors, run once per step after biome contact and gated by the Ecology toggle. They are rules for the artwork, not physical models.
+
+- **Currents.** Each row draws a direction once. Every second step, each run of connected water in the row moves one cell that way and re-enters at the run's other end. Glyph and biome move together; cell ids stay in place, so fish routes are unaffected. Lakes do not move and divide a row's water into separate runs. A run of identical cells is skipped. Water glyphs also carry a CSS ripple whose phase comes from the engine's play clock, so rebuilding a row does not restart it, and Pause holds it.
+- **Calving.** A glacier cell with water, a gap, or the row end beside it is a tip. After three steps as a tip, each step has a 25% chance that it becomes cold water and launches an iceberg toward the open side. Icebergs live in the flight layer, drift 1.2% of the field width per second, turn water, river, and estuary under them into cold water and reef into kelp, and are removed at land, at the field edge, after 24 seconds, or when their row leaves the field. At most six exist.
+- **Earthquakes.** With at least 12 terrain cells and 15 steps since the previous one, each step has a 3% chance. A random cell is the epicenter. Within 18% of the field width and two rows, each affected cell has a 50% chance to change: mountain and alpine to rock, rock and badlands to cave, cave to rock, volcanic ground to lava, glacier to cold water with an iceberg. A gap is inserted in the epicenter row at the epicenter, which shifts that row and breaks animal routes there. The affected rows shake for 0.9 seconds. This is the first way caves form without being typed.
+
+Event changes carry a thick underline (`data-mutation="event"`), and a status line in the controls reports each calving and earthquake. `engine.stats` gained `calvings` and `quakes`. The rates are constructor fields on `TypingEvents`.
+
+Verified in the browser pane at 1100 by 900 through `engine.advance`, with `calveChance` and `quakeChance` forced to 1: a typed glacier tip became cold water (later estuary by contact) with one iceberg element at 18.4% on its row, the water run rotated between steps while the lake stayed, the earthquake changed three cells, inserted the gap, marked three rows, and wrote the status line; Pause set the water animation to `paused`; no console errors. All 24 Node cases pass, six of them new.
+
+Not observed: the ripple and shake animations themselves. The pane reports `prefers-reduced-motion: reduce`, so what was confirmed is that both are disabled under that setting. Their look, and the event rates at default values over a long session, need a look on a normal display.
+
+Considered and left out: fish carried by the current, floods, and tides. Quake and calving rates are first guesses and belong to the existing tuning step. Mobile keyboard input, paste, and the lexicon's placeholder romanizations remain unfinished.

@@ -6,10 +6,10 @@ import vm from 'node:vm';
 
 function setup() {
   const context = vm.createContext({ Math: Object.assign(Object.create(Math), { random: () => 0 }) });
-  for (const name of ['../LetterMap.js', '../glyphData.js', '../lexicon.js', '../translationModule.js', 'biomes.js', 'typingEcology.js', 'landAnimals.js']) {
+  for (const name of ['../LetterMap.js', '../glyphData.js', '../lexicon.js', '../translationModule.js', 'biomes.js', 'typingEcology.js', 'landAnimals.js', 'events.js']) {
     vm.runInContext(readFileSync(new URL(name, import.meta.url), 'utf8'), context, { filename: name });
   }
-  return vm.runInContext('({ TypingEcology, TranslationEngine, LandAnimals, LAND_SPECIES, SULAT_KEYS, SULAT_BIOMES, SULAT_GROUPS, LETTER_TO_BIOME })', context);
+  return vm.runInContext('({ TypingEvents, TypingEcology, TranslationEngine, LandAnimals, LAND_SPECIES, SULAT_KEYS, SULAT_BIOMES, SULAT_GROUPS, LETTER_TO_BIOME })', context);
 }
 
 function row(types, distance = 1, bounds) {
@@ -234,4 +234,73 @@ test('fish cannot cross dry ground and disappear when their water freezes', () =
   lines[0].cells[1].className = 'ice';
   animals.sync(lines);
   assert.equal(animals.animals.filter(animal => animal.species.name === 'fish').length, 0);
+});
+
+test('a glacier left as a tip calves into cold water and launches an iceberg', () => {
+  const { TypingEvents } = setup();
+  const events = new TypingEvents({ random: () => 0 });
+  const lines = [row(['mountain', 'glacier', 'glacier', 'water', 'water'])];
+  assert.equal(events.calve(lines), 0);
+  assert.equal(events.calve(lines), 0);
+  assert.equal(events.calve(lines), 1);
+  assert.equal(events.biome(lines[0].cells[1]), 'glacier');
+  assert.equal(events.biome(lines[0].cells[2]), 'coldwater');
+  assert.equal(events.icebergs.length, 1);
+  assert.equal(events.icebergs[0].direction, 1);
+});
+
+test('an enclosed glacier does not calve', () => {
+  const { TypingEvents } = setup();
+  const events = new TypingEvents({ random: () => 0 });
+  const lines = [row(['mountain', 'glacier', 'mountain'])];
+  for (let i = 0; i < 8; i++) assert.equal(events.calve(lines), 0);
+});
+
+test('an iceberg cools water under it and stops at land', () => {
+  const { TypingEvents } = setup();
+  const events = new TypingEvents({ random: () => 0 });
+  const lines = [row(['water', 'reef', 'sand'])];
+  events.icebergs.push({ line: lines[0], x: 0.5 / 30, direction: 1, age: 0 });
+  assert.equal(events.chill(lines), 1);
+  assert.equal(events.biome(lines[0].cells[0]), 'coldwater');
+  events.icebergs[0].x = 1.5 / 30;
+  events.chill(lines);
+  assert.equal(events.biome(lines[0].cells[1]), 'kelp');
+  events.icebergs[0].x = 2.5 / 30;
+  events.chill(lines);
+  assert.equal(events.icebergs.length, 0);
+  assert.equal(events.biome(lines[0].cells[2]), 'sand');
+});
+
+test('water circulates within its run, keeps cell ids, and leaves lakes and land still', () => {
+  const { TypingEvents } = setup();
+  const events = new TypingEvents({ random: () => 0.9 });
+  const lines = [row(['river', 'water', 'water', 'lake', 'sand'])];
+  const ids = lines[0].cells.map(cell => cell.id);
+  assert.equal(events.flow(lines), 0);
+  assert.equal(events.flow(lines), 1);
+  assert.deepEqual(lines[0].cells.map(cell => events.biome(cell)), ['water', 'river', 'water', 'lake', 'sand']);
+  assert.deepEqual(lines[0].cells.map(cell => cell.id), ids);
+});
+
+test('an earthquake changes terrain near its epicenter, opens a gap, and then rests', () => {
+  const { TypingEvents } = setup();
+  const events = new TypingEvents({ random: () => 0 });
+  events.sinceQuake = events.quakeRest;
+  const far = Array(20).fill('sand').concat(['mountain']);
+  const lines = [row(['mountain', 'rock', 'volcanic', 'sand', 'cave', 'glacier', ...far.slice(6)], 1), row(far, 2), row(far, 9)];
+  const quake = events.quake(lines);
+  assert.equal(quake.rows.length, 2);
+  assert.equal(lines[0].cells[0].char, ' ');
+  assert.deepEqual(lines[0].cells.slice(1, 7).map(cell => events.biome(cell)), ['rock', 'cave', 'lava', 'sand', 'rock', 'coldwater']);
+  assert.equal(events.biome(lines[0].cells[21]), 'mountain');
+  assert.equal(events.icebergs.length, 1);
+  assert.equal(events.quake(lines), null);
+});
+
+test('small landscapes do not have earthquakes', () => {
+  const { TypingEvents } = setup();
+  const events = new TypingEvents({ random: () => 0 });
+  events.sinceQuake = 99;
+  assert.equal(events.quake([row(['mountain', 'rock'])]), null);
 });
