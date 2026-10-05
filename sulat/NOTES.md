@@ -1,6 +1,6 @@
 # Sulat
 
-Sulat is a typing artwork derived from Insulae Incognitae. Typed keys create 36 kinds of terrain; completed lines advance in whole rows, translate across scripts, and change biomes through contact. Water circulates along its row, glacier tips calve icebergs, and rare earthquakes change terrain. Birds fly freely while deer, foxes, goats, crabs, hares, and camels follow connected land, and fish swim through connected water. Play and Pause control movement and mutations. A title screen opens the work, with Translation and Ecology enabled by default.
+Sulat is a typing artwork derived from Insulae Incognitae. Typed keys create 36 kinds of terrain; completed lines advance in whole rows, translate across scripts, and change biomes through contact. Water circulates along its row, glacier tips calve icebergs, tides and floods cover and uncover ground, storms cross the field, and rare earthquakes change terrain. Birds fly freely while deer, foxes, goats, crabs, hares, and camels follow connected land, and fish swim through connected water. Play and Pause control movement and mutations. A title screen opens the work, with Translation and Ecology enabled by default.
 
 Open `index.html` through the workspace server at `/insulae-incognitae/sulat/`.
 
@@ -15,7 +15,7 @@ Tune biome contact rates and animal density against longer typed landscapes.
 - `biomes.js`: Sulat's palette and keys, extending the parent's biome definitions.
 - `landAnimals.js`: species habitats, separate land and water routes, and continuous walking and swimming.
 - `typingEcology.js`: biome contact rules and forest birth opportunities.
-- `events.js`: water currents, glacier calving and icebergs, and earthquakes.
+- `events.js`: water currents, glacier calving and icebergs, tides, floods, storms, and earthquakes.
 - `typingEcology.test.mjs`: palette, contact, translation, land-route, and event regression checks. From `F:/xyh`, run `node --test insulae-incognitae/sulat/typingEcology.test.mjs`.
 
 Sulat stays in the Insulae Incognitae repository. It loads `../backgroundManager.js`, `../LetterMap.js`, `../glyphData.js`, `../lexicon.js`, and `../translationModule.js`, and uses the existing font in `../fonts/`. These are canonical same-repository files rather than independent copies. Asset provenance and the font license are recorded in [the parent asset record](../ASSETS.md). The combined prototype also uses `../LetterMap.js`.
@@ -69,3 +69,20 @@ Verified in the browser pane at 1100 by 900 through `engine.advance`, with `calv
 Not observed: the ripple and shake animations themselves. The pane reports `prefers-reduced-motion: reduce`, so what was confirmed is that both are disabled under that setting. Their look, and the event rates at default values over a long session, need a look on a normal display.
 
 Considered and left out: fish carried by the current, floods, and tides. Quake and calving rates are first guesses and belong to the existing tuning step. Mobile keyboard input, paste, and the lexicon's placeholder romanizations remain unfinished.
+
+## 2026-10-05 — Claude Code — Tides, floods, and storms
+
+Extended `events.js` with three more authored behaviors. None has a control: they start on their own, and the Ecology toggle only holds them in place. Step order is currents, calving, iceberg cooling, tide, storm, flood, earthquake; the earthquake stays last because its gap shifts a row's columns.
+
+- **Covered ground.** Tides and floods share one mechanism. A covered cell becomes water and keeps its previous glyph and class in `cell.submerged`, tagged `tide` or `flood`. Uncovering restores it only if the cell is still water; if contact has changed it in the meantime (to estuary, for example), the marker is dropped and the change stays. In the browser run most tidal cells were kept by contact rather than returned, so tides currently erode shores more than they cycle them.
+- **Tides.** Period 16 steps. At step 8, sand and coast touching sea water, in the row or by overlap one row away, become water. At step 16 they return.
+- **Floods.** Need a river or lake. Start at 2% per step after a 20-step rest, or from rain or a typhoon passing over fresh water. For 3 steps the water spreads one cell per step from rivers, lakes, and flooded cells over grass, plain, flower, steppe, savanna, sand, coast, marsh, desert, dunes, badlands, and oasis; other terrain stops it. At step 8 it recedes and leaves silt: desert, dunes, badlands, and steppe become grass; grass, plain, savanna, and sand become marsh; the rest return unchanged.
+- **Storms.** One at a time, 6% per step after an 8-step rest, with at least 12 terrain cells. A storm enters from a random side on a random row, covers 24% of the field width and three rows, and crosses at 4% of the width per second. Each step, each covered cell with a rule for that storm has a 25% chance to change. Types and their conditions are in `SULAT_STORMS`: rain and thunderstorm always qualify; blizzard needs three cold cells, sandstorm three dry ones, typhoon six sea cells. A thunderstorm instead strikes exactly one covered cell per step and flashes. The storm ends past the far edge or when its row leaves the field.
+
+Status-line messages and `stats.storms` / `stats.floods` were added. Iceberg and storm drift now also stop when Ecology is off.
+
+Verified in the browser pane at 1100 by 900 through `engine.advance`, with chances set to 0 and each event forced in turn: high tide covered one sand cell beside sea in each of two rows and low tide returned one as sand; a placed rain storm rendered as a 169 by 54 px element at the expected position, started a flood, the flood reached nine cells in one row by its third step and receded from 10 cells leaving grass and marsh; a placed thunderstorm changed one forest cell and set the flash class; with `stormChance` at 1 a typhoon formed on its own at x = −0.12 and wrote its status line. No console errors. All 31 Node cases pass, seven of them new.
+
+Not observed: a full unforced session at default rates, and a storm crossing the whole field in real time. The pane still reports reduced motion, so the ripple and shake animations remain unseen.
+
+Known rough edges, for the tuning step: currents rotate glyph and class along a run but `submerged` markers stay with their cell, so covered ground can come back one cell away from where its water has moved; a flood's cells count as river for contact rules, so banks turn to marsh quickly; storm glyphs 雲 雨 雷 吹 塵 嵐 depend on Noto Sans JP coverage and were checked only for rain. Fish carried by current, storms moving icebergs or birds, and wind direction shared between storms and currents were considered and left out.

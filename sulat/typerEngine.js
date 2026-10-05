@@ -22,7 +22,7 @@ class TyperEngine {
     this.walkers = new LandAnimals({ random });
     this.nextCellId = 1;
     this.flightLayer = flightLayer;
-    this.stats = { steps: 0, translations: 0, biomeChanges: 0, birdsReleased: 0, calvings: 0, quakes: 0 };
+    this.stats = { steps: 0, translations: 0, biomeChanges: 0, birdsReleased: 0, calvings: 0, quakes: 0, storms: 0, floods: 0 };
 
     this._render();
     // Controls keep their native keys; typing belongs to this surface.
@@ -43,7 +43,7 @@ class TyperEngine {
       this._step();
     }
     this._fly(seconds);
-    this.events.drift(seconds);
+    if (this.ecologyEnabled) this.events.drift(seconds);
     this.walkers.advance(seconds);
     this._drawAnimals();
   }
@@ -67,7 +67,19 @@ class TyperEngine {
         this.stats.quakes++;
         for (const line of events.quake.rows) line.quakeUntil = this.clock + 0.9;
       }
+      if (events.storm.started) this.stats.storms++;
+      if (events.flood.started) this.stats.floods++;
+      if (this.events.storm?.strike !== undefined) {
+        this.events.storm.flashUntil = this.clock + 0.5;
+        this.events.storm.flashAt = this.events.storm.strike;
+        delete this.events.storm.strike;
+      }
       const report = [
+        events.storm.started && `${SULAT_STORMS[events.storm.started].label} entering from the ${this.events.storm.direction > 0 ? 'left' : 'right'}.`,
+        events.flood.started && 'Flood: rivers and lakes are rising.',
+        events.flood.receded && `Flood receded from ${events.flood.receded} ${events.flood.receded === 1 ? 'cell' : 'cells'}.`,
+        events.tide === 'high' && 'High tide.',
+        events.tide === 'low' && 'Low tide.',
         events.quake && `Earthquake: ${events.quake.changes} ${events.quake.changes === 1 ? 'cell' : 'cells'} changed and a gap opened.`,
         events.calved && `Glacier calved: ${events.calved} ${events.calved === 1 ? 'iceberg' : 'icebergs'}.`
       ].filter(Boolean).join(' ');
@@ -272,6 +284,26 @@ class TyperEngine {
       berg.element.style.left = `${berg.x * 100}%`;
       berg.element.style.bottom = `${berg.line.distance + Math.sin(berg.age * 1.7) * 0.06}em`;
       berg.element.style.transform = `translateX(-50%) rotate(${Math.sin(berg.age * 1.1) * 7}deg)`;
+    }
+    const storm = this.events.storm;
+    for (const element of this.flightLayer.querySelectorAll('.storm')) {
+      if (element.storm !== storm) element.remove();
+    }
+    if (storm) {
+      if (!storm.element) {
+        const glyph = SULAT_STORMS[storm.type].glyph;
+        storm.element = document.createElement('span');
+        storm.element.className = 'storm';
+        storm.element.dataset.type = storm.type;
+        storm.element.textContent = `雲 雲 雲 雲\n${glyph} ${glyph} ${glyph}\n ${glyph} ${glyph} ${glyph}`;
+        storm.element.storm = storm;
+        this.flightLayer.appendChild(storm.element);
+      }
+      const width = this.events.stormWidth;
+      storm.element.style.left = `${(storm.x - width / 2) * 100}%`;
+      storm.element.style.width = `${width * 100}%`;
+      storm.element.style.bottom = `${storm.anchor.distance - 1}em`;
+      storm.element.classList.toggle('flash', storm.flashUntil > this.clock);
     }
     for (const animal of this.walkers.animals) {
       if (!animal.element) {

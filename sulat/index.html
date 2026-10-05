@@ -99,6 +99,12 @@
     .biome-group legend { padding: 0; margin-bottom: 5px; font-size: 10px; letter-spacing: 0.06em; }
     .land-animal[data-mode="swimming"] { color: #d9f1f5; background: #224759e6; }
     .iceberg { position: absolute; line-height: 1; color: #385c73; background: #e4f1f6e6; border-radius: 3px; padding: 0 0.05em; }
+    .storm { position: absolute; height: 3em; line-height: 1; white-space: pre; text-align: center; overflow: hidden; border-radius: 0.4em; color: #f3f5f7; background: #47525ccc; }
+    .storm[data-type="thunder"] { background: #2c2d3fd9; }
+    .storm[data-type="thunder"].flash { background: #f6f0b4; color: #2c2d3f; }
+    .storm[data-type="blizzard"] { background: #e6eef3cc; color: #4b6272; }
+    .storm[data-type="sandstorm"] { background: #c9a56bcc; color: #4d3a1e; }
+    .storm[data-type="typhoon"] { background: #24424fd9; }
     .water, .coldwater, .reef, .estuary, .river, .deepwater, .kelp { display: inline-block; animation: ripple 2.4s ease-in-out infinite; }
     #terminal-content:not(.playing) span { animation-play-state: paused; }
     @keyframes ripple { 0%, 100% { translate: 0 0.05em; } 50% { translate: 0 -0.05em; } }
@@ -202,8 +208,9 @@
       <p>R/Q: rainforest. L/W: temperate forest. N/K: taiga. E/T: water. J/P: cold water. U/F: reef. I/Y: estuary. O: swamp. V: ice. S/B: savanna. C/G: steppe. Z/M: tundra. A/D: sand. X: mountain. H: plain. Space leaves a gap.</p>
       <div id="biome-palette" role="group" aria-label="Biomes"></div>
       <p>Water touching forest can become estuary. Rivers and lakes form marsh beside grass and oases beside desert or dunes. Estuaries and coasts form mangrove beside forest. Snow beside mountains becomes glacier; cold terrain changes mountain into alpine. Water or snow cools lava into rock. Cold water changes reef into kelp. Contact must persist across steps.</p>
-      <p>Forest patches release birds. Deer and foxes move through woodland and open ground, goats through rocky terrain, and crabs along shores. Hares cross snow and tundra, camels move through desert and oases, and fish swim through connected water. Land and water routes stay separate; spaces and lava break routes. Ecology controls biome changes, animal births, currents, and events.</p>
+      <p>Forest patches release birds. Deer and foxes move through woodland and open ground, goats through rocky terrain, and crabs along shores. Hares cross snow and tundra, camels move through desert and oases, and fish swim through connected water. Land and water routes stay separate; spaces and lava break routes. Ecology controls biome changes, animal births, currents, and events; turning it off holds tides, floods, and storms where they are.</p>
       <p>Water moves one cell along its row every two steps; lakes stay still. A glacier left with water, a gap, or the row end beside it for three steps can calve: the tip becomes cold water and an iceberg drifts along the row, cooling the water under it until it meets land. Earthquakes are rare. One turns nearby mountain into rock, rock and badlands into cave, cave into rock, and volcanic ground into lava, breaks glaciers, and opens a gap in the row at its center. Thick underlines mark cells changed by an event.</p>
+      <p>Tides, floods, and storms arrive on their own. Every 16 steps the tide covers sand and coast beside the sea for 8 steps, then uncovers them. A flood spreads from rivers and lakes over low ground for 3 steps, stands, and recedes after 8, leaving grass on dry ground and marsh on grassland and sand. Water that changes biome while it stands does not recede. One storm at a time crosses three rows. Rain greens desert, cools lava, and can start a flood over a river or lake. A thunderstorm strikes one cell per step and burns forest to open ground. A blizzard forms when the landscape has cold terrain, and lays snow and freezes water. A sandstorm forms when it has desert, and dries grassland into sand and dunes. A typhoon forms when it has enough sea, washes away coast and reef, and can start a flood.</p>
       <p>Translation rewrites recognized words and syllables. Dotted underlines mark rewritten text; thin solid underlines mark biome changes. The active line stays editable. Pause holds movement and mutations.</p>
     </details>
   </div>

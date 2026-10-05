@@ -9,7 +9,7 @@ function setup() {
   for (const name of ['../LetterMap.js', '../glyphData.js', '../lexicon.js', '../translationModule.js', 'biomes.js', 'typingEcology.js', 'landAnimals.js', 'events.js']) {
     vm.runInContext(readFileSync(new URL(name, import.meta.url), 'utf8'), context, { filename: name });
   }
-  return vm.runInContext('({ TypingEvents, TypingEcology, TranslationEngine, LandAnimals, LAND_SPECIES, SULAT_KEYS, SULAT_BIOMES, SULAT_GROUPS, LETTER_TO_BIOME })', context);
+  return vm.runInContext('({ TypingEvents, SULAT_STORMS, TypingEcology, TranslationEngine, LandAnimals, LAND_SPECIES, SULAT_KEYS, SULAT_BIOMES, SULAT_GROUPS, LETTER_TO_BIOME })', context);
 }
 
 function row(types, distance = 1, bounds) {
@@ -303,4 +303,87 @@ test('small landscapes do not have earthquakes', () => {
   const events = new TypingEvents({ random: () => 0 });
   events.sinceQuake = 99;
   assert.equal(events.quake([row(['mountain', 'rock'])]), null);
+});
+
+const biomes = (events, line) => line.cells.map(cell => events.biome(cell));
+
+test('the tide covers shore beside the sea, then returns the same ground', () => {
+  const { TypingEvents } = setup();
+  const events = new TypingEvents({ random: () => 0 });
+  const lines = [row(['water', 'sand', 'sand', 'grass']), row(['coast', 'rock', 'lake', 'sand'], 2)];
+  const before = lines.map(line => line.cells.map(cell => cell.char + cell.className));
+  for (let i = 1; i < 8; i++) assert.equal(events.tide(lines), null);
+  assert.equal(events.tide(lines), 'high');
+  assert.deepEqual(biomes(events, lines[0]), ['water', 'water', 'sand', 'grass']);
+  assert.deepEqual(biomes(events, lines[1]), ['water', 'rock', 'lake', 'sand']);
+  for (let i = 9; i < 16; i++) assert.equal(events.tide(lines), null);
+  assert.equal(events.tide(lines), 'low');
+  assert.deepEqual(lines.map(line => line.cells.map(cell => cell.char + cell.className)), before);
+});
+
+test('a flood spreads one cell per step from fresh water, stops at high ground, and leaves silt', () => {
+  const { TypingEvents } = setup();
+  const events = new TypingEvents({ random: () => 0.99 });
+  const lines = [row(['river', 'desert', 'grass', 'sand', 'flower', 'flower', 'mountain', 'grass', 'water', 'sand'])];
+  assert.equal(events.startFlood(lines), true);
+  assert.equal(events.flooding(lines).spread, 1);
+  assert.deepEqual(biomes(events, lines[0]).slice(0, 3), ['river', 'river', 'grass']);
+  events.flooding(lines);
+  events.flooding(lines);
+  assert.equal(events.flooding(lines).spread, 0);
+  assert.deepEqual(biomes(events, lines[0]), ['river', 'river', 'river', 'river', 'flower', 'flower', 'mountain', 'grass', 'water', 'sand']);
+  for (let i = 0; i < 3; i++) events.flooding(lines);
+  assert.equal(events.flooding(lines).receded, 3);
+  assert.deepEqual(biomes(events, lines[0]).slice(0, 5), ['river', 'grass', 'marsh', 'marsh', 'flower']);
+  assert.equal(events.flood, null);
+});
+
+test('a flood needs a river or lake', () => {
+  const { TypingEvents } = setup();
+  const events = new TypingEvents({ random: () => 0 });
+  assert.equal(events.startFlood([row(['water', 'sand', 'grass'])]), false);
+});
+
+test('storm types depend on the terrain that is present', () => {
+  const { TypingEvents } = setup();
+  const events = new TypingEvents({ random: () => 0 });
+  assert.deepEqual([...events._stormTypes([row(['grass', 'grass', 'forest'])])], ['rain', 'thunder']);
+  assert.deepEqual([...events._stormTypes([row(['snow', 'ice', 'tundra', 'desert', 'dunes', 'badlands'])])], ['rain', 'thunder', 'blizzard', 'sandstorm']);
+  assert.deepEqual([...events._stormTypes([row(Array(6).fill('water'))])], ['rain', 'thunder', 'typhoon']);
+});
+
+test('a storm changes only cells under it in its three rows, and rain over a river starts a flood', () => {
+  const { TypingEvents } = setup();
+  const events = new TypingEvents({ random: () => 0 });
+  const strip = ['desert', 'lava', 'river', 'grass'].concat(Array(20).fill('desert'));
+  const lines = [row(strip, 1), row(strip, 2), row(strip, 4)];
+  events.storm = { type: 'rain', anchor: lines[0], direction: 1, x: 2 / 30, age: 0 };
+  const result = events.storming(lines);
+  assert.equal(result.flooded, true);
+  assert.deepEqual(biomes(events, lines[0]).slice(0, 4), ['grass', 'rock', 'river', 'grass']);
+  assert.deepEqual(biomes(events, lines[1]).slice(0, 2), ['grass', 'rock']);
+  assert.equal(events.biome(lines[0].cells[20]), 'desert');
+  assert.deepEqual(biomes(events, lines[2]).slice(0, 2), ['desert', 'lava']);
+});
+
+test('a thunderstorm strikes one cell per step and a storm ends past the field edge', () => {
+  const { TypingEvents } = setup();
+  const events = new TypingEvents({ random: () => 0 });
+  const lines = [row(['forest', 'forest', 'forest', 'forest'])];
+  events.storm = { type: 'thunder', anchor: lines[0], direction: 1, x: 2 / 30, age: 0 };
+  assert.equal(events.storming(lines).changes, 1);
+  assert.deepEqual(biomes(events, lines[0]), ['plain', 'forest', 'forest', 'forest']);
+  assert.equal(typeof events.storm.strike, 'number');
+  events.drift(60);
+  assert.equal(events.storm, null);
+});
+
+test('a storm forms on its own once the landscape is large enough', () => {
+  const { TypingEvents, SULAT_STORMS } = setup();
+  const events = new TypingEvents({ random: () => 0 });
+  events.sinceStorm = events.stormRest;
+  assert.equal(events.storming([row(['grass', 'grass'])]).started, null);
+  const started = events.storming([row(Array(14).fill('grass'))]).started;
+  assert.ok(SULAT_STORMS[started]);
+  assert.equal(events.storm.x < 0, true);
 });
