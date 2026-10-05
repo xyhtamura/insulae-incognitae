@@ -96,16 +96,24 @@
     #typing-help { margin: 0; }
     #typing-help, #key-name, #keyboard { flex-basis: 100%; }
     #key-name { margin: 0; min-height: 1.5em; font-weight: 700; }
+    #keyboard { --key-height: 36px; --key-width: 46px; --key-glyph: 17px; }
+    #keyboard[data-size="small"] { --key-height: 28px; --key-width: 34px; --key-glyph: 14px; }
+    #keyboard[data-size="large"] { --key-height: 46px; --key-width: 62px; --key-glyph: 21px; }
+    #key-settings { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 6px 0 2px; }
+    #key-settings fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+    #key-settings legend { float: left; padding: 0; margin-right: 10px; font-weight: 700; }
+    #key-settings label { display: flex; align-items: center; gap: 4px; min-height: 28px; }
+    #key-settings input { margin: 0; }
     #keyboard { display: flex; flex-direction: column; gap: 3px; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
     .key-row { display: flex; gap: 3px; justify-content: center; }
     .key {
-      flex: 1 1 0; min-width: 0; max-width: 46px; height: 36px; padding: 0; box-sizing: border-box;
-      font: inherit; font-size: 17px; line-height: 1; cursor: pointer; overflow: hidden;
+      flex: 1 1 0; min-width: 0; max-width: var(--key-width); height: var(--key-height); padding: 0; box-sizing: border-box;
+      font: inherit; font-size: var(--key-glyph); line-height: 1; cursor: pointer; overflow: hidden;
       border: 1px solid #8a8a84; border-radius: 4px; background: #1d3644; -webkit-tap-highlight-color: transparent;
     }
     #keyboard .key:not(.tile):not(.wide) { background: #1d3644; }
     .key.tile { display: block; padding: 0; border-radius: 4px; }
-    .key.wide { flex: 2.4 1 0; max-width: 140px; font-size: 12px; background: #fff; color: #202020; }
+    .key.wide { flex: 2.4 1 0; max-width: calc(var(--key-width) * 3); font-size: 12px; background: #fff; color: #202020; }
     .key.pressed, .key:active { outline: 2px solid #202020; outline-offset: -2px; }
     #keyboard span, #keyboard .key { animation: none; translate: none; }
     .sheet {
@@ -125,9 +133,8 @@
     #translation-list th, #translation-list td { text-align: left; padding: 5px 10px 5px 0; border-bottom: 1px solid #dcdcd5; vertical-align: baseline; }
     #translation-list td:first-child { font-size: 18px; white-space: nowrap; }
     @media (max-width: 520px) {
-      #controls { width: calc(100% - 10px); padding: 8px 6px; bottom: 5px; gap: 6px 8px; }
+      #controls { width: calc(100% - 10px); padding: 8px 6px; bottom: 5px; gap: 6px 8px; max-height: 80dvh; }
       #controls button.bar { padding: 8px 9px; }
-      .key { height: 40px; font-size: 14px; }
     }
     .land-animal[data-mode="swimming"] { color: #d9f1f5; background: #224759e6; }
     .iceberg { position: absolute; line-height: 1; color: #385c73; background: #e4f1f6e6; border-radius: 3px; padding: 0 0.05em; }
@@ -230,10 +237,28 @@
   </div>
   <div id="controls" hidden>
     <button class="bar" id="play-pause" type="button" aria-controls="terminal-content">Play</button>
-    <button class="bar" id="toggle-keys" type="button" aria-pressed="true" aria-controls="keyboard">Keys</button>
+    <button class="bar" id="toggle-keys" type="button" aria-expanded="false" aria-controls="key-settings">Keys</button>
     <button class="bar" id="open-guide" type="button" aria-expanded="false" aria-controls="guide-sheet">Guide</button>
     <button class="bar" id="open-translations" type="button" aria-expanded="false" aria-controls="translations-sheet">Translations</button>
     <button class="bar" id="show-title" type="button">Title</button>
+    <form id="key-settings" hidden>
+      <fieldset>
+        <legend>Keys</legend>
+        <label><input type="radio" name="shown" value="yes">Shown</label>
+        <label><input type="radio" name="shown" value="no">Hidden</label>
+      </fieldset>
+      <fieldset>
+        <legend>Layout</legend>
+        <label><input type="radio" name="layout" value="keyboard">Keyboard rows</label>
+        <label><input type="radio" name="layout" value="five">Five rows by terrain</label>
+      </fieldset>
+      <fieldset>
+        <legend>Size</legend>
+        <label><input type="radio" name="size" value="small">Small</label>
+        <label><input type="radio" name="size" value="medium">Medium</label>
+        <label><input type="radio" name="size" value="large">Large</label>
+      </fieldset>
+    </form>
     <p id="typing-help">Type on a keyboard or tap the keys. Each key draws one terrain. Hover over a key, or hold it, to see its name.</p>
     <p id="key-name" aria-hidden="true"></p>
     <div id="keyboard" role="group" aria-label="Terrain keys"></div>
@@ -256,7 +281,7 @@
       </nav>
     </header>
     <h3 id="guide-typing">Typing</h3>
-    <p>Each key draws one terrain, in a glyph chosen for its shape from Baybayin, Kana, Jawi, Devanagari, Hanzi, Thai, Telugu, Burmese, Javanese, or punctuation. Space leaves a gap. Enter completes a line. Delete removes the last glyph, or brings back the last completed line. Play moves the terrain up one row every two seconds; Pause holds everything. The line you are typing stays editable.</p>
+    <p>Each key draws one terrain, in a glyph chosen for its shape from Baybayin, Kana, Jawi, Devanagari, Hanzi, Thai, Telugu, Burmese, Javanese, or punctuation. Space leaves a gap. Enter completes a line. Delete removes the last glyph, or brings back the last completed line. The Keys button opens the key settings: show or hide the on-screen keys, choose keyboard rows or five rows grouped by terrain, and set the key size. Play moves the terrain up one row every two seconds; Pause holds everything. The line you are typing stays editable.</p>
     <h3 id="guide-contact">Terrain contact</h3>
     <p>Terrain changes when it stays in contact with other terrain across steps. Water touching forest can become estuary. Rivers and lakes form marsh beside grass, and oases beside desert or dunes. Estuaries and coasts form mangrove beside forest. Snow beside mountains becomes glacier; cold terrain changes mountain into alpine. Water or snow cools lava into rock. Cold water changes reef into kelp.</p>
     <h3 id="guide-water">Water and ice</h3>
@@ -325,13 +350,13 @@
       titleScreen.hidden = false;
       startTyping.focus({ preventScroll: true });
     });
-    // The on-screen keyboard mirrors the physical layout. Each key shows one
-    // glyph of its terrain; two keys for one terrain show different glyphs.
+    // Each on-screen key shows one glyph of its terrain. "Keyboard rows" mirrors
+    // the physical layout, so two keys for one terrain show different glyphs.
+    // "Five rows by terrain" has one wider key per terrain, in palette order.
     const keyboard = document.getElementById('keyboard');
     const keyName = document.getElementById('key-name');
     const keyButtons = new Map();
     const labelOf = biome => SULAT_LABELS[biome] || (biome[0].toUpperCase() + biome.slice(1)).replace('_', ' ');
-    const shown = {};
     function addKey(rowElement, { key, label, name, biome, action, wide }) {
       const button = document.createElement('button');
       button.type = 'button';
@@ -356,25 +381,35 @@
         if (event.detail > 0) surface.focus({ preventScroll: true });
       });
       rowElement.appendChild(button);
-      keyButtons.set(key, button);
+      for (const one of [].concat(key)) keyButtons.set(one, button);
     }
-    for (const keys of ['`1234567890-=', 'qwertyuiop[]\\', "asdfghjkl;'", 'zxcvbnm,./']) {
-      const rowElement = document.createElement('div');
-      rowElement.className = 'key-row';
-      for (const key of keys) {
-        const biome = SULAT_KEYS[key].biome;
-        const glyphs = SULAT_BIOMES[biome].glyphs;
-        shown[biome] = (shown[biome] ?? -1) + 1;
-        addKey(rowElement, { key, label: glyphs[shown[biome] % glyphs.length], name: `${labelOf(biome)} · ${key.toUpperCase()}`, biome, action: () => engine.typeBiome(biome) });
+    const keysOf = biome => Object.keys(SULAT_KEYS).filter(key => SULAT_KEYS[key].biome === biome);
+    function buildKeyboard(layout) {
+      keyboard.replaceChildren();
+      keyButtons.clear();
+      const shown = {};
+      const rows = layout === 'five'
+        ? [8, 7, 7, 7, 7].map((length, i, lengths) => Object.values(SULAT_GROUPS).flat().slice(lengths.slice(0, i).reduce((a, b) => a + b, 0)).slice(0, length))
+        : ['`1234567890-=', 'qwertyuiop[]\\', "asdfghjkl;'", 'zxcvbnm,./'].map(keys => [...keys]);
+      for (const entries of rows) {
+        const rowElement = document.createElement('div');
+        rowElement.className = 'key-row';
+        for (const entry of entries) {
+          const biome = layout === 'five' ? entry : SULAT_KEYS[entry].biome;
+          const keys = layout === 'five' ? keysOf(biome) : [entry];
+          const glyphs = SULAT_BIOMES[biome].glyphs;
+          shown[biome] = (shown[biome] ?? -1) + 1;
+          addKey(rowElement, { key: keys, label: glyphs[shown[biome] % glyphs.length], name: `${labelOf(biome)} · ${keys.join(' / ').toUpperCase()}`, biome, action: () => engine.typeBiome(biome) });
+        }
+        keyboard.appendChild(rowElement);
       }
-      keyboard.appendChild(rowElement);
+      const lastRow = document.createElement('div');
+      lastRow.className = 'key-row';
+      addKey(lastRow, { key: 'Backspace', label: 'Delete', name: 'Delete the last glyph', wide: true, action: () => engine._backspace() });
+      addKey(lastRow, { key: ' ', label: 'Space', name: 'Leave a gap', wide: true, action: () => engine._space() });
+      addKey(lastRow, { key: 'Enter', label: 'Enter', name: 'Complete the line', wide: true, action: () => engine._newline() });
+      keyboard.appendChild(lastRow);
     }
-    const lastRow = document.createElement('div');
-    lastRow.className = 'key-row';
-    addKey(lastRow, { key: 'Backspace', label: 'Delete', name: 'Delete the last glyph', wide: true, action: () => engine._backspace() });
-    addKey(lastRow, { key: ' ', label: 'Space', name: 'Leave a gap', wide: true, action: () => engine._space() });
-    addKey(lastRow, { key: 'Enter', label: 'Enter', name: 'Complete the line', wide: true, action: () => engine._newline() });
-    keyboard.appendChild(lastRow);
     keyboard.addEventListener('contextmenu', event => event.preventDefault());
     // A physical keystroke lights the matching key.
     surface.addEventListener('keydown', event => {
@@ -383,13 +418,34 @@
       button.classList.add('pressed');
       setTimeout(() => button.classList.remove('pressed'), 140);
     });
+    // Key settings sit above the keyboard so a change is seen as it is made.
+    // A narrow screen starts with five rows of large keys; the choice is kept.
+    const keySettings = document.getElementById('key-settings');
+    const narrow = matchMedia('(max-width: 520px)').matches;
+    const keyPrefs = { shown: 'yes', layout: narrow ? 'five' : 'keyboard', size: narrow ? 'large' : 'medium' };
+    try { Object.assign(keyPrefs, JSON.parse(localStorage.getItem('sulat.keys') || '{}')); } catch {}
+    function applyKeyPrefs() {
+      for (const [name, value] of Object.entries(keyPrefs)) {
+        const input = keySettings.elements[name] && [...keySettings.elements[name]].find(option => option.value === value);
+        if (input) input.checked = true;
+      }
+      const visible = keyPrefs.shown !== 'no';
+      keyboard.hidden = keyName.hidden = document.getElementById('typing-help').hidden = !visible;
+      keyboard.dataset.size = keyPrefs.size;
+      if (keyboard.dataset.layout !== keyPrefs.layout) buildKeyboard(keyPrefs.layout);
+      keyboard.dataset.layout = keyPrefs.layout;
+    }
+    keySettings.addEventListener('change', event => {
+      keyPrefs[event.target.name] = event.target.value;
+      try { localStorage.setItem('sulat.keys', JSON.stringify(keyPrefs)); } catch {}
+      applyKeyPrefs();
+    });
+    keySettings.addEventListener('submit', event => event.preventDefault());
+    applyKeyPrefs();
     const toggleKeys = document.getElementById('toggle-keys');
     toggleKeys.addEventListener('click', () => {
-      const visible = keyboard.hidden;
-      keyboard.hidden = !visible;
-      document.getElementById('typing-help').hidden = !visible;
-      keyName.hidden = !visible;
-      toggleKeys.setAttribute('aria-pressed', String(visible));
+      keySettings.hidden = !keySettings.hidden;
+      toggleKeys.setAttribute('aria-expanded', String(!keySettings.hidden));
     });
 
     // Guide and Translations open as sheets from the bottom edge, one at a time.
