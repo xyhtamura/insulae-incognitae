@@ -7,11 +7,52 @@ is in [SPEC.md](SPEC.md). Step 1 is built: a playable board with no mutation.
 
 ## Next step
 
-Xyh auditions the tuning, registers, beat band, and voice on the step 1 page
-and says which to keep. Step 2 of [SPEC.md](SPEC.md) section 10, sympathetic
-ringing, follows that.
+Xyh auditions the envelopes, the shoal drawing, and the seed-drawn tunings on
+the step 1 page. Step 2 of [SPEC.md](SPEC.md) section 10, sympathetic ringing,
+follows that.
 
 ## Log
+
+2026-10-09 — Claude Code — Three changes after Xyh played step 1: envelopes
+that follow the glyph, a board drawn as shoals, and tuning drawn by the
+reshuffle.
+
+What changed:
+- `data/envelopes.js` and `src/voice.js`: each key has an attack, decay,
+  sustain, and release set by the script its glyph is written in (mark,
+  Baybayin, kana, Jawi, Devanagari, Hanzi, other). The habitat still gives the
+  pitch and the partial balance. Notes start on key-down and release on
+  key-up, so a script with a sustain level holds while the key is held. A
+  mark is a plain strike that rings out. Xyh said "based on the character";
+  reading that as the glyph's script is the agent's interpretation.
+- `src/shape.js`, `src/main.js`, `style.css`: the board is an SVG. Each key
+  is an irregular closed outline on a row that follows two overlaid waves,
+  both seeded. Outlines overlap their neighbours, and same-habitat keys share
+  a fill, so a patch draws as one shoal. Faint lines on the water follow the
+  same wave. A sounding key gets a dark outline drawn on top.
+- `data/tuning.js` `drawSettings`: a reshuffle draws the tuning, registers,
+  and beat band from the seed. The Audition panel shows what was drawn;
+  choosing a value there pins it across reshuffles until Unpin. Xyh's ruling:
+  the panel is exposed for this test and hidden in the final page, where the
+  player takes what the reshuffle gives.
+
+Verified in the Browser pane through the root server: 40 outlines; one
+screenshot of board 5 at a 577 px pane, where the patches read as shoals in
+four wavy rows and every glyph drew; pressing e then r gave "r  tide line
+625.50 Hz  kana: attack 0.002 s, sustain 0, release 0.08 s   1.33 Hz from e";
+a pointer press added one outline mark and lifting removed it; a reshuffle
+changed registers and band with the seed; pinning the tuning kept it across a
+reshuffle and wrote it to the address; no console errors or overflow.
+`node scripts/check_board.mjs` passes.
+
+Not verified: the sound, again. No agent has heard the envelopes, and the
+release path (`cancelAndHoldAtTime`) has only been run, not listened to.
+Water habitats (creek mouth, shallows) are close to the water colour and are
+faint in the screenshot. Touch was not tried on a device.
+
+Changed from the spec: colour and habitat now carry the note, and the glyph
+within a habitat carries the envelope, where the spec said the glyph is the
+note. SPEC.md sections 4, 6, and 8 are updated to match.
 
 2026-10-09 — Claude Code — Built step 1 at Xyh's request, to audition the
 tuning. Open `http://localhost:8000/insulae-incognitae/bahura/`.

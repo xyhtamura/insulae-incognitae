@@ -5,13 +5,11 @@
 }
 
 :root {
-  /* Ten keys plus the bottom row's stagger of one and a half keys. */
-  --key: min(64px, calc((100vw - 32px) / 11.9));
-  --gap: calc(var(--key) * 0.08);
   --page: #f1f1ec;
   --ink: #202b28;
   --dim: #5b6763;
   --line: #b9beb6;
+  --water: #c3dae0;
 }
 
 * { box-sizing: border-box; }
@@ -35,49 +33,32 @@ h1 { margin: 0 0 4px; font-size: 20px; font-weight: 600; }
 #hint { margin: 0 0 16px; color: var(--dim); max-width: 60ch; }
 
 #board {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap);
+  display: block;
+  width: 100%;
+  background: var(--water);
+  border-radius: 6px;
   touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
 }
 
-.row { display: flex; gap: var(--gap); }
-.row:nth-child(2) { margin-left: calc((var(--key) + var(--gap)) * 0.5); }
-.row:nth-child(3) { margin-left: calc((var(--key) + var(--gap)) * 1); }
-.row:nth-child(4) { margin-left: calc((var(--key) + var(--gap)) * 1.5); }
+.water path { fill: none; stroke: #ffffff; stroke-opacity: 0.45; stroke-width: 0.025; }
 
-.key {
-  position: relative;
-  width: var(--key);
-  height: var(--key);
-  flex: none;
-  padding: 0;
-  border: 1px solid #0003;
-  border-radius: 4px;
-  font: inherit;
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-}
+/* Shoals of one habitat share a fill and overlap, so they run together. */
+.key { cursor: pointer; stroke: #00000022; stroke-width: 0.012; }
+.key:focus { outline: none; }
+.key:focus-visible { stroke: var(--ink); stroke-width: 0.05; stroke-dasharray: 0.1 0.06; }
 
-.key .glyph { font-size: calc(var(--key) * 0.5); line-height: 1; }
-.key .char {
-  position: absolute; left: 4px; top: 2px;
-  font-size: calc(var(--key) * 0.2); line-height: 1; opacity: 0.75;
-  font-family: ui-monospace, Consolas, monospace;
-}
-.key .hz {
-  position: absolute; right: 3px; bottom: 2px;
-  font-size: calc(var(--key) * 0.17); line-height: 1; opacity: 0.85;
-  font-family: ui-monospace, Consolas, monospace;
-}
-#board:not(.show-hz) .key .hz { display: none; }
+.labels { pointer-events: none; }
+.labels text { text-anchor: middle; dominant-baseline: middle; }
+.glyph { font-size: 0.46px; }
+.char, .hz { font-family: ui-monospace, Consolas, monospace; opacity: 0.8; }
+.char { font-size: 0.17px; }
+.hz { font-size: 0.14px; }
+#board:not(.show-hz) .hz { display: none; }
 
-/* A struck key is inset and outlined, so the state does not rest on colour. */
-.key.down { outline: 3px solid var(--ink); outline-offset: -3px; transform: translateY(1px); }
-.key:focus-visible { outline: 2px dashed var(--ink); outline-offset: 2px; }
+/* A sounding shoal is outlined, so the state does not rest on colour. */
+.mark { fill: none; stroke: var(--ink); stroke-width: 0.06; pointer-events: none; }
 
 .bar {
   display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;

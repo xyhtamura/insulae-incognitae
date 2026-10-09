@@ -10,11 +10,11 @@
 <body>
   <header>
     <h1>Bahura</h1>
-    <p id="hint">Press a key on the keyboard, or click or tap one here. Each glyph is a note. Two keys with the same glyph in one row are a few hertz apart and beat when played together.</p>
+    <p id="hint">Press a key on the keyboard, or click or tap a shoal here. Its colour is the note, and the script its glyph is written in is how the note starts and stops. Some notes last while the key is held. Two shoals of one colour in a row are a few hertz apart and beat when played together.</p>
   </header>
 
   <main>
-    <div id="board" role="group" aria-label="Keyboard"></div>
+    <svg id="board" role="group" aria-label="Keyboard"></svg>
 
     <div class="bar">
       <button id="reshuffle" type="button">Reshuffle</button>
@@ -28,6 +28,7 @@
       <label>Registers <select id="registers"></select></label>
       <label>Beat band <input id="window" type="range"> <output id="window-value"></output></label>
       <label><input id="show-hz" type="checkbox"> Show hertz on keys</label>
+      <span id="pinned"></span> <button id="unpin" type="button">Unpin</button>
       <p id="readout" aria-live="polite">No key struck yet.</p>
     </fieldset>
   </main>

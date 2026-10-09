@@ -71,8 +71,11 @@ The stagger gives each key up to six neighbours: left, right, two above, and
 two below. Contact and sympathetic ringing (section 6) both use this
 neighbourhood.
 
-Each key shows its terrain glyph large and its keyboard character small, so a
-typist can find it.
+Each key is drawn as an irregular shoal, and the four rows follow a seeded
+wave, so the board suggests a keyboard without being a grid. Neighbouring
+shoals overlap, and a patch of one habitat reads as a single shoal. Each key
+shows its terrain glyph large and its keyboard character small, so a typist
+can find it.
 
 The rows are read as a shore in section: the top row is the landward edge and
 the bottom row the seaward edge. Section 5 uses this for where each habitat
@@ -151,6 +154,15 @@ the 100-cent grid. Unusual terrain sits between those steps. The table lives in
 just, historical, and xenharmonic scales and no gamelan tuning, so a measured
 pelog or slendro would have to be retrieved if one is wanted.
 
+### Envelope
+
+The habitat gives a key its note and partial balance. The script its glyph is
+written in gives the envelope: attack, decay, sustain, and release. A mark or
+punctuation glyph is a plain strike that rings out; other scripts swell, damp
+on release, or hold while the key is held. The table is in
+`data/envelopes.js`. Two keys of one habitat therefore play the same note
+with different articulation.
+
 ### Voice
 
 A strike is a short burst of four to six sine partials at non-integer ratios,
@@ -219,6 +231,9 @@ check to measure.
   multi-touch.
 - Audio starts on the first strike, which is the user gesture the browser
   requires. There is no separate start screen.
+- The tuning, registers, and beat band are drawn by the seed on each
+  reshuffle. The step 1 page shows them in an Audition panel for testing; the
+  finished page hides the panel and gives the player no control over them.
 - The page carries no prose beyond its labels.
 - It is a build-free static page with no network requests. Any `localStorage`
   key is prefixed `bahura_`.

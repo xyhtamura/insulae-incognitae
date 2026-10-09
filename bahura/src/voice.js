@@ -1,6 +1,7 @@
-// Web Audio: one strike is a few decaying sine partials.
+// Web Audio: a key is a few sine partials under an attack, decay, sustain, and
+// release envelope.
 
-import { PARTIALS, DECAY_FALLOFF, ATTACK } from '../data/voice.js';
+import { PARTIALS, DECAY_FALLOFF } from '../data/voice.js';
 
 export function createVoice() {
   let ctx = null, master = null, level = 0.7;
@@ -17,25 +18,43 @@ export function createVoice() {
     if (ctx.state === 'suspended') ctx.resume();
   }
 
-  // `decay` is the seconds the fundamental takes to fall by 60 dB; `bright` is
-  // the gain ratio between successive partials.
-  function strike(hz, { decay, bright }, gain = 1) {
+  // Starts a note and returns the function that releases it. `decay` is the
+  // seconds the fundamental takes to settle; `bright` is the gain ratio between
+  // successive partials. Higher partials decay and release faster.
+  function start(hz, { decay, bright }, envelope) {
     ensure();
-    const now = ctx.currentTime;
+    const now = ctx.currentTime, peakAt = now + envelope.attack;
+    const settle = decay * envelope.decay;
     let total = 0;
     PARTIALS.forEach((_, k) => { total += bright ** k; });
+    const parts = [];
     PARTIALS.forEach((ratio, k) => {
-      const f = hz * ratio;
-      if (f > 16000) return;
-      const length = decay / (1 + k * DECAY_FALLOFF * 2);
+      if (hz * ratio > 16000) return;
+      const faster = 1 + k * DECAY_FALLOFF * 2, peak = 0.32 * bright ** k / total;
       const osc = ctx.createOscillator(), amp = ctx.createGain();
-      osc.frequency.value = f;
+      osc.frequency.value = hz * ratio;
       amp.gain.setValueAtTime(0, now);
-      amp.gain.linearRampToValueAtTime(0.32 * gain * bright ** k / total, now + ATTACK);
-      amp.gain.setTargetAtTime(0, now + ATTACK, length / 6.9);
+      amp.gain.linearRampToValueAtTime(peak, peakAt);
+      amp.gain.setTargetAtTime(peak * envelope.sustain, peakAt, settle / faster / 5);
       osc.connect(amp); amp.connect(master);
-      osc.start(now); osc.stop(now + ATTACK + length * 1.5);
+      osc.start(now);
+      // A plain strike ends by itself; a sustained note waits for its release.
+      if (!envelope.sustain) osc.stop(peakAt + settle / faster * 1.6);
+      parts.push({ osc, amp, faster });
     });
+
+    let released = false;
+    return function release() {
+      if (released || envelope.release == null) return;
+      released = true;
+      const t = ctx.currentTime;
+      for (const { osc, amp, faster } of parts) {
+        if (amp.gain.cancelAndHoldAtTime) amp.gain.cancelAndHoldAtTime(t);
+        else { const held = amp.gain.value; amp.gain.cancelScheduledValues(t); amp.gain.setValueAtTime(held, t); }
+        amp.gain.setTargetAtTime(0, t, envelope.release / faster / 5);
+        try { osc.stop(t + envelope.release / faster * 1.6); } catch { /* already stopped */ }
+      }
+    };
   }
 
   function setLevel(value) {
@@ -43,5 +62,5 @@ export function createVoice() {
     if (master) master.gain.value = value;
   }
 
-  return { strike, setLevel };
+  return { start, setLevel };
 }

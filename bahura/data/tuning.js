@@ -46,3 +46,14 @@ export function frequency(key, offsets, settings) {
   const register = preset(REGISTERS, settings.registers).hz[key.row];
   return register * 2 ** (habitatCents(key.habitat, settings.tuning) / 1200) + offsets[key.col] * settings.window;
 }
+
+// What a reshuffle draws along with the terrain: the page hides these in its
+// final form, so the seed decides them.
+export function drawSettings(seed, unit) {
+  const bands = [4, 6, 8, 10, 12];
+  return {
+    tuning: TUNINGS[Math.floor(unit(1, seed, 503) * TUNINGS.length)].id,
+    registers: REGISTERS[Math.floor(unit(2, seed, 503) * REGISTERS.length)].id,
+    window: bands[Math.floor(unit(3, seed, 503) * bands.length)],
+  };
+}
