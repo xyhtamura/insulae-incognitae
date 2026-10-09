@@ -336,7 +336,9 @@ and playing the key one is on startles it. They have three kinds of sound, none 
 voice: ticks from a vendored copy of `dithertick/synth.js` for those that stay
 put, pitched calls from a vendored ZzFX for those that walk, and for every
 kind a short voice from a vendored extract of Pink Trombone, heard when it
-comes out and when its shoal is played. The kinds, habitats, and rates are in `data/creatures.js`.
+comes out and when its shoal is played. Each is drawn as its word on a tag of its own colour and wanders about its
+shoal, rocking as it goes, after Sulat's animals; a checkbox stops the
+movement. The kinds, habitats, and rates are in `data/creatures.js`.
 
 ## 12. Deferred
 

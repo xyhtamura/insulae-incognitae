@@ -8,6 +8,7 @@ import { view, centre, outline } from './shape.js';
 import { contact } from './contact.js';
 import { createClock } from './clock.js';
 import { createCreatures } from './creatures.js';
+import { createCreatureView } from './creature-view.js';
 import { buildPlan, renderPlan } from '../vendor/dithertick-synth.js';
 import { ZZFX } from '../vendor/zzfx.js';
 import { renderMouth } from './mouth.js';
@@ -35,7 +36,6 @@ let sympathy = SYMPATHY.initial;
 let last = null;             // the last key struck, for the beat readout
 let clock = null;            // terrain time for this board
 let creatures = null;        // what is out on this board
-const drawn = new Map();     // creature id -> its element
 const rendered = new Map();  // creature kind id -> { sounds, voices }, buffers
 const preparing = new Set(); // creature kind ids waiting to be rendered
 let creaturesOn = true;
@@ -88,7 +88,7 @@ function load(seed) {
   board = generateBoard(seed);
   clock = createClock(board);
   creatures = createCreatures(board);
-  drawn.clear();
+  life.clear();
   settings = { ...drawSettings(seed, unit), ...pinned };
   last = null;
   readout.textContent = 'No key struck yet.';
@@ -106,7 +106,7 @@ function draw() {
   boardEl.setAttribute('viewBox', `0 0 ${size.width} ${size.height}`);
   boardEl.classList.toggle('upright', upright);
   const land = svg('g'), shade = svg('g', { class: 'shade' }), text = svg('g', { class: 'labels' }), marks = svg('g', { id: 'marks' });
-  const life = svg('g', { id: 'creatures' });
+  const lifeLayer = svg('g', { id: 'creatures' });
   for (const key of board.keys) {
     const at = centre(key, board.seed, upright);
     const shape = svg('path', { d: outline(key, board.seed, at), class: 'key', role: 'button', tabindex: 0 });
@@ -139,10 +139,10 @@ function draw() {
   const grain = svg('rect', { class: 'grain', x: -size.width, y: -size.height, width: size.width * 3, height: size.height * 3, filter: 'url(#grain)' });
   const coloured = svg('g', { class: 'coloured' });
   coloured.append(land, shade, grain, text);
-  boardEl.replaceChildren(defs(), coloured, marks, life);
+  boardEl.replaceChildren(defs(), coloured, marks, lifeLayer);
   // A redraw, as when the layout turns, puts back whatever is out.
-  drawn.clear();
-  for (const creature of creatures.out) place(creature);
+  life.clear();
+  for (const creature of creatures.out) life.add(creature);
   $('seed').textContent = `Board ${board.seed}`;
   label();
 }
@@ -223,19 +223,13 @@ function showTide() {
   boardEl.classList.toggle('tide-in', clock.tideIn);
 }
 
-// Creatures. Each is a short word or mark drawn over the shoal it is on.
-function spot(creature) {
-  const key = board.keys.find(k => k.char === creature.key), at = centre(key, board.seed, narrow.matches);
-  return { x: at.x - 0.18, y: at.y - 0.3 };
-}
-function place(creature) {
-  const el = svg('text', { class: 'creature' }), at = spot(creature);
-  el.textContent = creature.kind.glyph;
-  el.style.transform = `translate(${at.x}px, ${at.y}px)`;
-  $('creatures').append(el);
-  drawn.set(creature.id, el);
-  return el;
-}
+// Creatures. Each is a word on a coloured tag that wanders about the shoal it
+// is on; src/creature-view.js draws and moves them.
+const life = createCreatureView({
+  layer: () => $('creatures'),
+  home: creature => centre(board.keys.find(k => k.char === creature.key), board.seed, narrow.matches),
+  moving: () => $('creatures-move').checked,
+});
 
 // A creature's sounds are rendered a few times over, so that it does not
 // repeat exactly. A kind with a call is built by ZzFX, whose own randomness
@@ -280,8 +274,7 @@ function soundsOf(kind) {
 // `which` is 'sounds' for the call or tick a creature makes every few seconds,
 // or 'voices' for the voice it uses on coming out and on being startled.
 function sound(creature, which = 'sounds') {
-  const el = drawn.get(creature.id);
-  if (el) { el.classList.remove('sounding'); void el.getBoundingClientRect(); el.classList.add('sounding'); }
+  life.flash(creature);
   if (!voice.ready()) return;
   const made = rendered.get(creature.kind.id)?.[which];
   if (!made) { prepare(creature.kind); return; }
@@ -299,23 +292,15 @@ function show(events, startled = false) {
   for (const event of events) {
     const { creature } = event;
     if (event.type === 'appear') {
-      const el = place(creature);
-      el.classList.add('arriving');
-      void el.getBoundingClientRect();
-      el.classList.remove('arriving');
+      life.add(creature);
       readout.textContent = `${/^[aeiou]/.test(creature.kind.name) ? 'An' : 'A'} ${creature.kind.name} came out on ${creature.key}.`;
       // Its sounds are rendered now, and it gives voice once they are ready.
       prepare(creature.kind);
-      setTimeout(() => { if (drawn.has(creature.id)) sound(creature, 'voices'); }, 700);
+      setTimeout(() => { if (life.has(creature.id)) sound(creature, 'voices'); }, 700);
     } else if (event.type === 'leave') {
-      const el = drawn.get(creature.id);
-      drawn.delete(creature.id);
-      if (el) { el.classList.add('leaving'); el.addEventListener('transitionend', () => el.remove(), { once: true }); }
+      life.remove(creature);
     } else {
-      if (event.type === 'move') {
-        const el = drawn.get(creature.id), at = spot(creature);
-        if (el) el.style.transform = `translate(${at.x}px, ${at.y}px)`;
-      }
+      if (event.type === 'move') life.go(creature);
       sound(creature, startled ? 'voices' : 'sounds');
     }
   }
@@ -381,6 +366,7 @@ for (const type of ['pointerup', 'pointercancel', 'pointerout']) {
 
 narrow.addEventListener('change', draw);
 
+$('creatures-move').addEventListener('change', () => life.refresh());
 $('reshuffle').addEventListener('click', () => load(Math.floor(Math.random() * 1e6)));
 $('volume').addEventListener('input', e => voice.setLevel(Number(e.target.value)));
 

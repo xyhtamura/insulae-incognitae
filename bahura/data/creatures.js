@@ -16,6 +16,8 @@
 //   brightness, tail   passed to dithertick: -1 to 1, and a length multiplier
 //   call       ZzFX parameters, in that tool's order (see CALL below). A kind
 //              with a call uses it and ignores its dithertick fields.
+//   colour     its tag and its word, as [background, text]
+//   motion     how it is drawn moving (see MOTION below)
 //   every      seconds between sounds, drawn between the two bounds
 //   stays      seconds before it leaves, drawn between the two bounds
 
@@ -59,17 +61,53 @@ const MOUTH = {
   bubbles:   { pitch: [500, 700], tongue: [[19, 2.6], [19, 2.6]], lips: [0.5, 0.5], tense: 0.7, seconds: 0.08 },  // a very short rounded "o"
 };
 
+// How each is drawn moving, in key spacings and seconds. Sulat's animals walk
+// with a rock of five degrees; the numbers here start from that.
+//   speed     how fast it crosses the board, key spacings a second
+//   range     how far from the top of its shoal it wanders
+//   rests     seconds it stays put between wanders, as two bounds
+//   rock      degrees it tilts from side to side while moving
+//   sideways  true if it keeps to a line, as a crab does
+//   sway, bob, pulse, rise   for things that stay put: degrees of slow
+//             leaning, a vertical drift, a squeeze in and out, and a climb
+//             that starts again from the bottom
+const MOTION = {
+  crab:      { speed: 0.9,  range: 0.3,  rests: [0.4, 1.6], rock: 7, sideways: true },
+  shrimp:    { speed: 0.6,  range: 0.12, rests: [0.2, 0.9], rock: 9 },
+  octopus:   { speed: 0.22, range: 0.26, rests: [1.0, 3.0], rock: 3, pulse: 0.08 },
+  jellyfish: { speed: 0.08, range: 0.2,  rests: [0.5, 2.0], rock: 0, bob: 0.05, pulse: 0.12 },
+  turtle:    { speed: 0.12, range: 0.24, rests: [1.5, 4.0], rock: 4 },
+  milkfish:  { speed: 0.8,  range: 0.3,  rests: [0.2, 1.0], rock: 5 },
+  squid:     { speed: 0.6,  range: 0.28, rests: [1.0, 2.5], rock: 2, pulse: 0.06 },
+  monkey:    { speed: 0.5,  range: 0.14, rests: [0.6, 2.0], rock: 8, bob: 0.03 },
+  sprout:    { speed: 0,    range: 0,    rests: [9, 9],     rock: 0, sway: 7 },
+  bubbles:   { speed: 0,    range: 0,    rests: [9, 9],     rock: 0, rise: 0.35 },
+};
+
+const COLOUR = {
+  crab:      ['#c8452c', '#fff3e6'],
+  shrimp:    ['#e88a8a', '#4a1414'],
+  octopus:   ['#7a4a9c', '#f6ecff'],
+  jellyfish: ['#b9a7e0', '#2d2350'],
+  turtle:    ['#4f7d4a', '#f0f7e6'],
+  milkfish:  ['#9fb6c4', '#17303d'],
+  squid:     ['#2f3559', '#e6e9ff'],
+  monkey:    ['#7a5536', '#fbeedd'],
+  sprout:    ['#6fa03c', '#f4fbe6'],
+  bubbles:   ['#e9f6fb', '#2b6b86'],
+};
+
 export const CREATURES = [
-  { id: 'crab', mouth: MOUTH.crab, call: CALL.crab,      name: 'crab',      glyph: 'カニ',     habitats: [...SANDS, 'tideline', 'mangrove', 'marsh', 'mudflat'], walks: true,  family: 'lattice',   brightness: 0.2,  tail: 0.6, every: [4, 8],  stays: [40, 90] },
-  { id: 'shrimp', mouth: MOUTH.shrimp,    name: 'shrimp',    glyph: 'झींगा',    habitats: ['channel', 'creek', 'seagrass', ...CORALS],            walks: false, family: 'fizz',      brightness: 0.5,  tail: 0.5, every: [2, 5],  stays: [30, 70] },
-  { id: 'octopus', mouth: MOUTH.octopus, call: CALL.octopus,   name: 'octopus',   glyph: 'タコ',     habitats: [...CORALS, 'seagrass', 'basalt'],                      walks: true,  family: 'handshake', brightness: -0.2, tail: 1.2, every: [6, 11], stays: [50, 100] },
-  { id: 'jellyfish', mouth: MOUTH.jellyfish, name: 'jellyfish', glyph: 'クラゲ',   habitats: ['shallows', 'dropoff', 'tidepool'],                    walks: false, family: 'latency',   brightness: 0,    tail: 1.6, every: [5, 9],  stays: [40, 80] },
-  { id: 'turtle', mouth: MOUTH.turtle, call: CALL.turtle,    name: 'turtle',    glyph: 'ᜉᜏᜒᜃᜈ᜔', habitats: ['coral', 'braincoral', 'shallows', 'seagrass', 'channel'], walks: true, family: 'underflow', brightness: -0.3, tail: 1.4, every: [7, 12], stays: [60, 110] },
-  { id: 'milkfish', mouth: MOUTH.milkfish, call: CALL.milkfish,  name: 'milkfish',  glyph: 'ᜊᜅᜓᜐ᜔',  habitats: ['channel', 'shallows', 'creek'],                       walks: true,  family: 'shard',     brightness: 0.3,  tail: 0.7, every: [3, 6],  stays: [30, 60] },
-  { id: 'squid', mouth: MOUTH.squid, call: CALL.squid,     name: 'squid',     glyph: 'ᜉᜓᜐᜒᜆ᜔',  habitats: ['dropoff', 'shallows'],                                walks: true,  family: 'tear',      brightness: 0,    tail: 0.8, every: [5, 9],  stays: [30, 70] },
-  { id: 'monkey', mouth: MOUTH.monkey,    name: 'monkey',    glyph: 'ลิง',      habitats: ['mangrove', 'ironwood', 'driftwood'],                  walks: false, family: 'chroma',    brightness: 0.4,  tail: 0.5, every: [4, 8],  stays: [40, 80] },
-  { id: 'sprout', mouth: MOUTH.sprout,    name: 'sprout',    glyph: '艹',       habitats: ['mudflat', 'marsh', 'oxide'],                          walks: false, family: 'foil',      brightness: -0.1, tail: 1.0, every: [6, 12], stays: [60, 120] },
-  { id: 'bubbles', mouth: MOUTH.bubbles,   name: 'bubbles',   glyph: '∘∘',      habitats: ['tidepool', 'anemone', 'limestone'],                   walks: false, family: 'shard',     brightness: 0.9,  tail: 0.4, every: [2, 4],  stays: [15, 30] },
+  { id: 'crab', colour: COLOUR.crab, motion: MOTION.crab, mouth: MOUTH.crab, call: CALL.crab,      name: 'crab',      glyph: 'カニ',     habitats: [...SANDS, 'tideline', 'mangrove', 'marsh', 'mudflat'], walks: true,  family: 'lattice',   brightness: 0.2,  tail: 0.6, every: [4, 8],  stays: [40, 90] },
+  { id: 'shrimp', colour: COLOUR.shrimp, motion: MOTION.shrimp, mouth: MOUTH.shrimp,    name: 'shrimp',    glyph: 'झींगा',    habitats: ['channel', 'creek', 'seagrass', ...CORALS],            walks: false, family: 'fizz',      brightness: 0.5,  tail: 0.5, every: [2, 5],  stays: [30, 70] },
+  { id: 'octopus', colour: COLOUR.octopus, motion: MOTION.octopus, mouth: MOUTH.octopus, call: CALL.octopus,   name: 'octopus',   glyph: 'タコ',     habitats: [...CORALS, 'seagrass', 'basalt'],                      walks: true,  family: 'handshake', brightness: -0.2, tail: 1.2, every: [6, 11], stays: [50, 100] },
+  { id: 'jellyfish', colour: COLOUR.jellyfish, motion: MOTION.jellyfish, mouth: MOUTH.jellyfish, name: 'jellyfish', glyph: 'クラゲ',   habitats: ['shallows', 'dropoff', 'tidepool'],                    walks: false, family: 'latency',   brightness: 0,    tail: 1.6, every: [5, 9],  stays: [40, 80] },
+  { id: 'turtle', colour: COLOUR.turtle, motion: MOTION.turtle, mouth: MOUTH.turtle, call: CALL.turtle,    name: 'turtle',    glyph: 'ᜉᜏᜒᜃᜈ᜔', habitats: ['coral', 'braincoral', 'shallows', 'seagrass', 'channel'], walks: true, family: 'underflow', brightness: -0.3, tail: 1.4, every: [7, 12], stays: [60, 110] },
+  { id: 'milkfish', colour: COLOUR.milkfish, motion: MOTION.milkfish, mouth: MOUTH.milkfish, call: CALL.milkfish,  name: 'milkfish',  glyph: 'ᜊᜅᜓᜐ᜔',  habitats: ['channel', 'shallows', 'creek'],                       walks: true,  family: 'shard',     brightness: 0.3,  tail: 0.7, every: [3, 6],  stays: [30, 60] },
+  { id: 'squid', colour: COLOUR.squid, motion: MOTION.squid, mouth: MOUTH.squid, call: CALL.squid,     name: 'squid',     glyph: 'ᜉᜓᜐᜒᜆ᜔',  habitats: ['dropoff', 'shallows'],                                walks: true,  family: 'tear',      brightness: 0,    tail: 0.8, every: [5, 9],  stays: [30, 70] },
+  { id: 'monkey', colour: COLOUR.monkey, motion: MOTION.monkey, mouth: MOUTH.monkey,    name: 'monkey',    glyph: 'ลิง',      habitats: ['mangrove', 'ironwood', 'driftwood'],                  walks: false, family: 'chroma',    brightness: 0.4,  tail: 0.5, every: [4, 8],  stays: [40, 80] },
+  { id: 'sprout', colour: COLOUR.sprout, motion: MOTION.sprout, mouth: MOUTH.sprout,    name: 'sprout',    glyph: '艹',       habitats: ['mudflat', 'marsh', 'oxide'],                          walks: false, family: 'foil',      brightness: -0.1, tail: 1.0, every: [6, 12], stays: [60, 120] },
+  { id: 'bubbles', colour: COLOUR.bubbles, motion: MOTION.bubbles, mouth: MOUTH.bubbles,   name: 'bubbles',   glyph: '∘∘',      habitats: ['tidepool', 'anemone', 'limestone'],                   walks: false, family: 'shard',     brightness: 0.9,  tail: 0.4, every: [2, 4],  stays: [15, 30] },
 ];
 
 // How many may be out at once, and the chance each second that one more

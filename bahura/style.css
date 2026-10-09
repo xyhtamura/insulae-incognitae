@@ -80,19 +80,16 @@ h1 { margin: 0 0 4px; font-size: 20px; font-weight: 600; }
 /* The upright board is for screens with no keyboard, so it drops the key characters. */
 #board.upright .char { display: none; }
 
-/* A creature is a pale word with a dark edge, readable on any habitat. */
+/* A creature is a word on a tag of its own colour, as Sulat draws its animals.
+   Its position and tilt are set from src/creature-view.js. */
 #creatures { pointer-events: none; }
-.creature {
-  font-size: 0.26px; font-weight: 600; text-anchor: middle; dominant-baseline: middle;
-  fill: #fdfbef; stroke: #202b28; stroke-width: 0.04px; paint-order: stroke; stroke-linejoin: round;
-  transition: transform 0.6s ease, opacity 0.8s ease;
-}
+.creature { transition: opacity 0.8s ease; }
+.creature rect { stroke: #202b28; stroke-opacity: 0.35; stroke-width: 0.012px; }
+.creature text { font-size: 0.2px; font-weight: 600; text-anchor: middle; dominant-baseline: central; }
 .creature.arriving, .creature.leaving { opacity: 0; }
-.creature.sounding { animation: creature-sound 0.35s ease-out; }
-@keyframes creature-sound { from { fill: #ffd34d; stroke-width: 0.09px; } }
-@media (prefers-reduced-motion: reduce) {
-  .creature { transition: opacity 0.8s ease; }
-}
+/* Sounding: the tag's edge thickens and darkens for a moment. */
+.creature.sounding rect { animation: creature-sound 0.4s ease-out; }
+@keyframes creature-sound { from { stroke-opacity: 1; stroke-width: 0.06px; } }
 
 .changed { pointer-events: none; }
 .changed circle { fill: #f4f3e9; stroke: var(--ink); stroke-width: 0.03; }

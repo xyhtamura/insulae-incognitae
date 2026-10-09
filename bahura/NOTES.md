@@ -18,6 +18,58 @@ device, and hiding the Audition panel for the finished page.
 
 ## Log
 
+2026-10-10 — Claude Code — Coloured the creatures and set them moving, at
+Xyh's request, after how Sulat draws its animals.
+
+What Sulat does, read from `../sulat/index.html` and `typerEngine.js`: an
+animal is a word on a dark rounded tag, a blue one while swimming, and while
+it walks it rocks by five degrees on a sine of twelve times its age.
+
+What changed:
+- `src/creature-view.js`: draws each creature as its word on a rounded tag
+  and moves it in one animation loop that runs only while something is out.
+  A creature wanders to points near the top of its shoal, rests, and wanders
+  again; when the rules move it to another shoal it travels there. It rocks
+  while moving, as in Sulat.
+- `data/creatures.js`: a tag colour and word colour per kind, and a motion
+  entry per kind. Crabs are quick and keep to a line; milkfish dart; octopus
+  and squid glide and squeeze; turtles are slow; jellyfish barely travel, bob,
+  and pulse; shrimp and monkeys jitter in a small range; the sprout leans
+  from side to side; bubbles climb, fade, and start again.
+- The page has a "Creatures move" checkbox beside Reshuffle. Unticked,
+  creatures are placed where they were heading and stay there.
+
+Found while checking: this machine has Windows' "animations inside windows"
+setting turned off (`SPI_GETCLIENTAREAANIMATION` reads false), so every
+browser on it reports `prefers-reduced-motion: reduce`. The first version
+stood still under that setting, which would have shown Xyh no movement at
+all. Movement was asked for, so it now follows the page's checkbox, on by
+default, and does not read the system setting. That is a choice against the
+usual accessibility practice, and whether a visitor with that setting should
+get still creatures by default is Xyh's to decide. The brief CSS flash on the
+tag when a creature sounds, and its fade in and out, also still play.
+
+Verified:
+- A headless Edge screenshot of board 5 with three creatures out, looked at:
+  a red crab tag, a pink shrimp tag, and a purple octopus tag, each sized to
+  its word and legible over its shoal.
+- Movement, in the Browser pane by DOM. The pane was hidden, which stops the
+  browser's animation frames, so the frame function was replaced with a
+  16 ms timer for the test. Over four seconds and 243 frames an octopus went
+  from (2.761, 2.635) to (3.007, 2.526) and was tilted mid-move, and two crabs
+  shifted along their lines. With the checkbox unticked the positions were
+  identical two seconds apart.
+- `npm run check` passes. The page loads with no new console errors.
+
+Not verified: the movement as it looks, by eye, at real frame rates; no agent
+has watched it. Whether a moving tag is distracting over a key being played.
+Cost was not measured; the loop sets one transform per creature per frame, at
+most three.
+
+A bug caught on the way: the first load after this change drew no creatures
+and no board number, because a local variable in `draw` had the same name as
+the new view. The console error showed it.
+
 2026-10-10 — Claude Code — Gave every creature a voice rendered by Pink
 Trombone, at Xyh's request, after confirming its licence and putting it on the
 workspace shelf.
