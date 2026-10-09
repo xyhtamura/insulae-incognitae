@@ -104,7 +104,7 @@ export { Glottis, Tract, noise, AudioSystem };
 export function setSampleRate(rate) { sampleRate = rate; AudioSystem.blockTime = AudioSystem.blockLength / rate; }
 export function setAlwaysVoice(on) { alwaysVoice = on; }
 export function setAutoWobble(on) { autoWobble = on; }
-`;
+`.replace(/\r\n/g, '\n');   // the same output whatever line endings this script was checked out with
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
