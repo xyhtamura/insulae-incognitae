@@ -3,17 +3,73 @@
 A browser gong keyboard whose forty keys are a patch of estuarine terrain: the
 glyph on a key is its note, and the notes change as the terrain does. Sulat's
 terrain and contact rules with Ombak Lock's beating, at shoal scale. The design
-is in [SPEC.md](SPEC.md). Steps 1 and 2 are built: a playable board with
-sympathetic ringing and no mutation.
+is in [SPEC.md](SPEC.md). Steps 1 to 3 are built: a playable board with
+sympathetic ringing whose terrain changes by contact as it is played.
 
 ## Next step
 
-Build step 3 of [SPEC.md](SPEC.md) section 10: contact mutation driven by
-playing, with the changed-key mark and the closed-rules check. Xyh's verdicts
-on the envelopes, tunings, and ringing level are still owed and can arrive at
-any point.
+Build step 4 of [SPEC.md](SPEC.md) section 10: contact by time, the tide, and
+the earthquake. The 2026-10-09 simulation shows why it matters: playing alone
+settles a board in about fifteen minutes. Xyh's verdicts on the envelopes,
+tunings, and ringing level are still owed and can arrive at any point.
 
 ## Log
+
+2026-10-09 — Claude Code — Built step 3, contact by playing, and made two
+changes Xyh asked for with it: no wave lines behind the board, and an upright
+layout on a narrow screen.
+
+What changed:
+- `src/contact.js`: the contact rules, taken from `target()` in
+  `../sulat/typingEcology.js` for the biomes that occur here, in Sulat's
+  order. Two are adapted because Sulat's cold water is not a habitat here: ice
+  and glacier beside shallows become shallows. Playing a key gives it and its
+  neighbours one opportunity each. A key changes when the rules name the same
+  target on two successive opportunities and a 1.2% chance comes up, and it
+  then sits out 60 opportunities. The values are in `data/rates.js`.
+- `src/main.js`, `style.css`: a changed key takes its new colour and a glyph
+  from the new habitat, and carries a ring with a dot until it is next played.
+  The readout names each change. The Audition panel has a Terrain change
+  control: normal, 20 times faster, or off.
+- `src/shape.js`: the wave lines are gone. On a portrait screen up to 700 px
+  wide the board is turned a quarter, so its rows run down the screen, and the
+  keyboard characters are hidden. Which keys touch is unchanged, so contact
+  and ringing behave the same in both layouts. Xyh allowed the mobile layout
+  to leave the keyboard arrangement altogether; a quarter turn was the least
+  that keeps drawn neighbours and sounding neighbours the same keys.
+- `scripts/check_contact.mjs`, run with `npm run check`.
+
+Measured by `node scripts/check_contact.mjs`, 100 boards for 60 simulated
+minutes at 120 keys played per minute:
+- Keys changed per minute: 1.07 in the first 5 minutes, 0.61 in the first 15,
+  0.18 over the hour. The spec's target is about one.
+- 97 of 100 boards had nothing left to change by the end, at a median of
+  minute 15. Six were already settled when generated.
+- Sandbar and tide line go from 7.8% and 7.2% of keys to none, and flower,
+  lava, and volcanic ground also disappear. Mudflat goes from 9.5% to 20.6%
+  and mangrove from 4.5% to 8.5%. Marsh, tide pool, seagrass, and coral do not
+  move, because no rule creates or removes them.
+- The rules make 18 distinct changes, and every target is a habitat with
+  glyphs, a voice, and a pitch.
+
+Verified in the Browser pane by DOM, board 5: after 200 key presses at normal
+speed at least one key's fill had changed; at 20 times, the readout reported
+"d changed: tide line to mudflat" and "w changed: creek mouth to brackish
+channel", four rings showed, and four keys' labels read "changed"; no wave
+lines remained; no console errors. At 375 by 812 the board is upright, 343 by
+666 px, with keys about 56 by 51 px against 29 px in the keyboard layout, the
+key characters hidden, and no horizontal overflow. Looked at one screenshot of
+the upright board with rings on four shoals.
+
+Not verified: the sound of a key after it changes; touch on a device; whether
+the ring is noticeable enough at phone size.
+
+Open: Sulat's rules only run one way here, toward mud and mangrove, and
+nothing makes sand, tide line, coral, or seagrass. Step 4's tide is where an
+opposite direction would come from, for example an ebb that uncovers mudflat
+as sandbar. That is new authored behaviour and is Xyh's to approve.
+
+Undone: steps 4 and 5.
 
 2026-10-09 — Claude Code — Built step 2, sympathetic ringing, at Xyh's request.
 

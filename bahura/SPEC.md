@@ -227,6 +227,8 @@ check to measure.
 | **Reshuffle** | Draw another board |
 | **Volume** | Set the output level |
 
+- On a portrait screen up to 700 px wide the board is turned a quarter, so its
+  rows run down the screen, and the keyboard characters are hidden.
 - Held keys do not repeat. Several keys can sound at once, by keyboard and by
   multi-touch.
 - Audio starts on the first strike, which is the user gesture the browser

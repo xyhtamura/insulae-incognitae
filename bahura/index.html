@@ -10,7 +10,7 @@
 <body>
   <header>
     <h1>Bahura</h1>
-    <p id="hint">Press a key on the keyboard, or click or tap a shoal here. Its colour is the note, and the script its glyph is written in is how the note starts and stops. Some notes last while the key is held. Two shoals of one colour in a row are a few hertz apart and beat when played together.</p>
+    <p id="hint">Press a key on the keyboard, or click or tap a shoal here. Its colour is the note, and the script its glyph is written in is how the note starts and stops. Some notes last while the key is held. Two shoals of one colour in a row are a few hertz apart and beat when played together. Playing slowly changes the terrain; a shoal that has changed carries a ring until it is next played.</p>
   </header>
 
   <main>
@@ -28,6 +28,7 @@
       <label>Registers <select id="registers"></select></label>
       <label>Beat band <input id="window" type="range"> <output id="window-value"></output></label>
       <label>Neighbour ringing <input id="sympathy" type="range"> <output id="sympathy-value"></output></label>
+      <label>Terrain change <select id="speed"></select></label>
       <label><input id="show-hz" type="checkbox"> Show hertz on keys</label>
       <span id="pinned"></span> <button id="unpin" type="button">Unpin</button>
       <p id="readout" aria-live="polite">No key struck yet.</p>

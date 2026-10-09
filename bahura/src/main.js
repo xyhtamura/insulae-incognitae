@@ -1,13 +1,16 @@
-// Step 1 of SPEC.md: a playable board with no mutation. Draws the shoals, plays
-// them from the keyboard and the pointer, and holds the Audition panel.
+// Steps 1 to 3 of SPEC.md: draws the shoals, plays them from the keyboard and
+// the pointer, lets playing change the terrain by contact, and holds the
+// Audition panel.
 
 import { generateBoard, neighbours } from './board.js';
 import { unit } from './hash.js';
-import { VIEW, centre, outline, ripples } from './shape.js';
+import { view, centre, outline } from './shape.js';
+import { contact } from './contact.js';
 import { createVoice } from './voice.js';
 import { habitat } from '../data/habitats.js';
 import { ENVELOPES, scriptOf } from '../data/envelopes.js';
 import { SYMPATHY } from '../data/voice.js';
+import { CONTACT, SPEEDS } from '../data/rates.js';
 import { TUNINGS, REGISTERS, WINDOW, frequency, drawSettings } from '../data/tuning.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
@@ -23,6 +26,10 @@ const shapes = new Map();    // key character -> its outline element
 const sounding = new Map();  // key character -> { releases, marks }
 let sympathy = SYMPATHY.initial;
 let last = null;             // the last key struck, for the beat readout
+let speed = SPEEDS[0];       // the Audition panel's multiplier on the contact chance
+
+// A narrow upright screen has no keyboard under it, so the board is turned to run down it.
+const narrow = matchMedia('(orientation: portrait) and (max-width: 700px)');
 
 const svg = (name, attrs = {}) => {
   const el = document.createElementNS(SVG, name);
@@ -50,28 +57,45 @@ function draw() {
   for (const { releases } of sounding.values()) releases.forEach(release => release());
   sounding.clear();
   shapes.clear();
-  boardEl.setAttribute('viewBox', `0 0 ${VIEW.width} ${VIEW.height}`);
-  const water = svg('g', { class: 'water' }), land = svg('g'), text = svg('g', { class: 'labels' }), marks = svg('g', { id: 'marks' });
-  for (const d of ripples(board.seed)) water.append(svg('path', { d }));
+  const upright = narrow.matches, size = view(upright);
+  boardEl.setAttribute('viewBox', `0 0 ${size.width} ${size.height}`);
+  boardEl.classList.toggle('upright', upright);
+  const land = svg('g'), text = svg('g', { class: 'labels' }), marks = svg('g', { id: 'marks' });
   for (const key of board.keys) {
-    const kind = habitat(key.habitat), at = centre(key, board.seed);
-    const shape = svg('path', { d: outline(key, board.seed, at), class: 'key', fill: kind.bg, role: 'button', tabindex: 0 });
+    const at = centre(key, board.seed, upright);
+    const shape = svg('path', { d: outline(key, board.seed, at), class: 'key', role: 'button', tabindex: 0 });
     shape.dataset.char = key.char;
     land.append(shape);
     shapes.set(key.char, shape);
-    const label = (cls, y, value) => {
-      const el = svg('text', { class: cls, x: at.x, y: at.y + y, fill: kind.fg });
+    const label = (cls, y, value = '') => {
+      const el = svg('text', { class: cls, x: at.x, y: at.y + y });
       el.textContent = value;
       text.append(el);
       return el;
     };
-    label('glyph', 0.1, key.glyph);
-    label('char', 0.36, key.char);
-    shape.hzLabel = label('hz', -0.3, '');
+    shape.glyphLabel = label('glyph', 0.1);
+    shape.charLabel = label('char', 0.36, key.char);
+    shape.hzLabel = label('hz', -0.3);
+    // Shown while a key has changed and has not been played since: a ring
+    // with a dot, so the state does not rest on colour.
+    shape.badge = svg('g', { class: 'changed', transform: `translate(${at.x + 0.3} ${at.y - 0.3})` });
+    shape.badge.append(svg('circle', { r: 0.1 }), svg('circle', { r: 0.035, class: 'dot' }));
+    shape.badge.style.display = 'none';
+    marks.append(shape.badge);
+    paint(key);
   }
-  boardEl.replaceChildren(water, land, text, marks);
+  boardEl.replaceChildren(land, text, marks);
   $('seed').textContent = `Board ${board.seed}`;
   label();
+}
+
+// A key's colours and glyph follow its habitat, which contact can change.
+function paint(key) {
+  const shape = shapes.get(key.char), kind = habitat(key.habitat);
+  shape.setAttribute('fill', kind.bg);
+  shape.glyphLabel.textContent = key.glyph;
+  for (const el of [shape.glyphLabel, shape.charLabel, shape.hzLabel]) el.setAttribute('fill', kind.fg);
+  shape.badge.style.display = key.changed ? '' : 'none';
 }
 
 // Frequencies depend on the settings, so the labels are rewritten when one changes.
@@ -79,7 +103,7 @@ function label() {
   for (const key of board.keys) {
     const shape = shapes.get(key.char), hz = hzOf(key);
     shape.hzLabel.textContent = hz.toFixed(1);
-    shape.setAttribute('aria-label', `${key.char}: ${habitat(key.habitat).name}, ${ENVELOPES[scriptOf(key.glyph)].label}, ${hz.toFixed(1)} hertz`);
+    shape.setAttribute('aria-label', `${key.char}: ${habitat(key.habitat).name}, ${ENVELOPES[scriptOf(key.glyph)].label}, ${hz.toFixed(1)} hertz${key.changed ? ', changed' : ''}`);
   }
 }
 
@@ -109,6 +133,18 @@ function press(char) {
     if (gap < 20) text += `   ${gap.toFixed(2)} Hz from ${last.char}`;
   }
   if (ringing.length) text += `   rings with ${ringing.map(n => `${n.char} (${n.row === key.row ? `${Math.abs(hz - hzOf(n)).toFixed(2)} Hz` : 'other row'})`).join(', ')}`;
+  // Playing a key clears its own changed mark, then gives it and its
+  // neighbours one contact opportunity each.
+  key.changed = false;
+  const changes = speed.factor
+    ? contact(board, [key, ...neighbours(board, key)], { ...CONTACT, chance: CONTACT.chance * speed.factor })
+    : [];
+  for (const change of changes) {
+    change.key.changed = true;
+    text += `   ${change.key.char} changed: ${habitat(change.from).name} to ${habitat(change.to).name}`;
+  }
+  for (const k of [key, ...changes.map(c => c.key)]) paint(k);
+  if (changes.length) label();
   readout.textContent = text;
   last = key;
 }
@@ -154,6 +190,8 @@ for (const type of ['pointerup', 'pointercancel', 'pointerout']) {
   });
 }
 
+narrow.addEventListener('change', draw);
+
 $('reshuffle').addEventListener('click', () => load(Math.floor(Math.random() * 1e6)));
 $('volume').addEventListener('input', e => voice.setLevel(Number(e.target.value)));
 
@@ -190,6 +228,8 @@ Object.assign(sympathyEl, { min: SYMPATHY.min, max: SYMPATHY.max, step: SYMPATHY
 const showSympathy = () => { $('sympathy-value').textContent = sympathy ? `${Math.round(sympathy * 100)}%` : 'off'; };
 showSympathy();
 sympathyEl.addEventListener('input', e => { sympathy = Number(e.target.value); liftAll(); showSympathy(); });
+for (const item of SPEEDS) $('speed').add(new Option(item.label, item.id));
+$('speed').addEventListener('change', e => { speed = SPEEDS.find(s => s.id === e.target.value); });
 $('show-hz').addEventListener('change', e => boardEl.classList.toggle('show-hz', e.target.checked));
 
 // Choices in the address are pinned, if they name something that exists.

@@ -1,24 +1,29 @@
 // Where each key sits and what outline it has. The four rows follow a wave, so
 // the board reads as shoals lying in the order of a keyboard. No DOM.
+//
+// In the upright layout, for a narrow screen with no keyboard under it, the
+// same board is turned a quarter: the rows run down the screen and the shore's
+// landward edge is on the left. Which keys touch does not change.
 
 import { unit } from './hash.js';
 import { ROWS, COLS, STAGGER } from './board.js';
 
 // One unit is the distance between two keys in a row.
-export const VIEW = { width: COLS + STAGGER * (ROWS.length - 1) + 0.6, height: ROWS.length * 0.94 + 1.1 };
+const ALONG = COLS + STAGGER * (ROWS.length - 1) + 0.6, ACROSS = ROWS.length * 0.94 + 1.1;
+export const view = upright => (upright ? { width: ACROSS, height: ALONG } : { width: ALONG, height: ACROSS });
 
-// Two overlaid waves along the keyboard, phased by the seed and shifted a
-// little from row to row.
-function wave(x, row, seed) {
+// Two overlaid waves along the rows, phased by the seed and shifted a little
+// from row to row.
+function wave(along, row, seed) {
   const a = unit(1, seed, 401) * Math.PI * 2, b = unit(2, seed, 401) * Math.PI * 2;
-  return 0.26 * Math.sin(x * 0.72 + a + row * 0.5) + 0.1 * Math.sin(x * 1.9 + b - row * 0.8);
+  return 0.26 * Math.sin(along * 0.72 + a + row * 0.5) + 0.1 * Math.sin(along * 1.9 + b - row * 0.8);
 }
 
-export function centre(key, seed) {
+export function centre(key, seed, upright = false) {
   const n = key.row * COLS + key.col;
-  const x = 0.8 + key.col + key.row * STAGGER + (unit(n, seed, 409) - 0.5) * 0.16;
-  const y = 0.95 + key.row * 0.94 + wave(x, key.row, seed) + (unit(n, seed, 419) - 0.5) * 0.1;
-  return { x, y };
+  const along = 0.8 + key.col + key.row * STAGGER + (unit(n, seed, 409) - 0.5) * 0.16;
+  const across = 0.95 + key.row * 0.94 + wave(along, key.row, seed) + (unit(n, seed, 419) - 0.5) * 0.1;
+  return upright ? { x: across, y: along } : { x: along, y: across };
 }
 
 // A closed, smooth, irregular outline around a centre. The radius is a little
@@ -40,18 +45,4 @@ export function outline(key, seed, { x, y }) {
     d += `C${f(p1[0] + (p2[0] - p0[0]) / 6)} ${f(p1[1] + (p2[1] - p0[1]) / 6)} ${f(p2[0] - (p3[0] - p1[0]) / 6)} ${f(p2[1] - (p3[1] - p1[1]) / 6)} ${f(p2[0])} ${f(p2[1])}`;
   }
   return `${d}Z`;
-}
-
-// Faint lines across the water, following the same wave as the rows.
-export function ripples(seed) {
-  const lines = [];
-  for (let row = -1; row <= ROWS.length; row++) {
-    let d = '';
-    for (let x = 0; x <= VIEW.width + 0.01; x += 0.25) {
-      const y = 0.95 + (row + 0.5) * 0.94 + wave(x, row + 0.5, seed);
-      d += `${d ? 'L' : 'M'}${x.toFixed(2)} ${y.toFixed(3)}`;
-    }
-    lines.push(d);
-  }
-  return lines;
 }

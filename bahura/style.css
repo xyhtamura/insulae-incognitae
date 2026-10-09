@@ -35,14 +35,14 @@ h1 { margin: 0 0 4px; font-size: 20px; font-weight: 600; }
 #board {
   display: block;
   width: 100%;
+  /* The upright board is tall; keep it and the Reshuffle button on one screen. */
+  max-height: 82vh;
   background: var(--water);
   border-radius: 6px;
   touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
 }
-
-.water path { fill: none; stroke: #ffffff; stroke-opacity: 0.45; stroke-width: 0.025; }
 
 /* Shoals of one habitat share a fill and overlap, so they run together. */
 .key { cursor: pointer; stroke: #00000022; stroke-width: 0.012; }
@@ -56,6 +56,12 @@ h1 { margin: 0 0 4px; font-size: 20px; font-weight: 600; }
 .char { font-size: 0.17px; }
 .hz { font-size: 0.14px; }
 #board:not(.show-hz) .hz { display: none; }
+/* The upright board is for screens with no keyboard, so it drops the key characters. */
+#board.upright .char { display: none; }
+
+.changed { pointer-events: none; }
+.changed circle { fill: #f4f3e9; stroke: var(--ink); stroke-width: 0.03; }
+.changed .dot { fill: var(--ink); stroke: none; }
 
 /* A sounding shoal is outlined, so the state does not rest on colour. */
 .mark { fill: none; stroke: var(--ink); stroke-width: 0.06; pointer-events: none; }
