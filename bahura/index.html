@@ -2,53 +2,56 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Bahura</title>
   <meta name="description" content="A gong keyboard whose keys are a patch of estuarine terrain.">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>Bahura</h1>
-    <p id="hint">Press a key on the keyboard, or click or tap a shoal here. Its colour is the note, and the script its glyph is written in is how the note starts and stops. Some notes last while the key is held. Two shoals of one colour in a row are a few hertz apart and beat when played together. The terrain changes slowly, by playing and by itself, and the tide comes in and goes out. A shoal that has changed carries a ring until it is next played. Animals come out of the terrain for a minute or so and make their own sounds; playing the shoal one is on startles it.</p>
-  </header>
+  <h1 class="visually-hidden">Bahura</h1>
+  <svg id="board" role="group" aria-label="Keyboard"></svg>
 
-  <main>
-    <svg id="board" role="group" aria-label="Keyboard"></svg>
+  <button id="menu-button" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
 
-    <div class="bar">
+  <aside id="menu" aria-label="Menu" hidden>
+    <section>
       <button id="reshuffle" type="button">Reshuffle</button>
-      <button id="open-settings" type="button">Settings</button>
-      <span id="seed"></span>
-      <span id="tide"></span>
-    </div>
+      <p class="note"><span id="seed"></span> · <span id="tide"></span></p>
+    </section>
 
-    <fieldset id="audition">
-      <legend>Audition</legend>
+    <section>
+      <h2>How to play</h2>
+      <p id="hint">Press a key on the keyboard, or click or tap a shoal. Its colour is the note, and the script its glyph is written in is how the note starts and stops. Some notes last while the key is held. Two shoals of one colour in a row are a few hertz apart and beat when played together.</p>
+      <p>The terrain changes slowly, by playing and by itself, and the tide comes in and goes out. A shoal that has changed carries a ring until it is next played. Animals come out of the terrain for a minute or so and make their own sounds; playing the shoal one is on startles it.</p>
+    </section>
+
+    <section>
+      <h2>Settings</h2>
+      <p class="note">Saved in this browser.</p>
+      <label>Volume <input id="volume" type="range" min="0" max="1" step="0.01" value="0.7"></label>
+      <label>Colour strength <input id="saturation" type="range"> <output id="saturation-value"></output></label>
+      <label><input id="creatures-on" type="checkbox" checked> Show creatures</label>
+      <label><input id="creatures-move" type="checkbox" checked> Creatures move</label>
+      <p class="note" id="motion-note"></p>
+    </section>
+
+    <details id="audition">
+      <summary>Testing</summary>
       <label>Tuning <select id="tuning"></select></label>
       <label>Registers <select id="registers"></select></label>
       <label>Beat band <input id="window" type="range"> <output id="window-value"></output></label>
       <label>Neighbour ringing <input id="sympathy" type="range"> <output id="sympathy-value"></output></label>
       <label>Terrain change <select id="speed"></select></label>
-      <button id="call" type="button">Call a creature</button>
-      <button id="turn-tide" type="button">Turn the tide</button>
-      <button id="shake" type="button">Earthquake</button>
       <label><input id="show-hz" type="checkbox"> Show hertz on keys</label>
-      <span id="pinned"></span> <button id="unpin" type="button">Unpin</button>
+      <div class="row">
+        <button id="call" type="button">Call a creature</button>
+        <button id="turn-tide" type="button">Turn the tide</button>
+        <button id="shake" type="button">Earthquake</button>
+      </div>
+      <p class="note"><span id="pinned"></span> <button id="unpin" type="button">Unpin</button></p>
       <p id="readout" aria-live="polite">No key struck yet.</p>
-    </fieldset>
-  </main>
-
-  <dialog id="settings" aria-labelledby="settings-title">
-    <h2 id="settings-title">Settings</h2>
-    <p class="note">Saved in this browser.</p>
-    <label>Volume <input id="volume" type="range" min="0" max="1" step="0.01" value="0.7"></label>
-    <label>Colour strength <input id="saturation" type="range"> <output id="saturation-value"></output></label>
-    <label><input id="creatures-on" type="checkbox" checked> Show creatures</label>
-    <label><input id="creatures-move" type="checkbox" checked> Creatures move</label>
-    <p class="note" id="motion-note"></p>
-    <form method="dialog"><button type="submit">Close</button></form>
-  </dialog>
+    </details>
+  </aside>
 
   <script type="module" src="src/main.js"></script>
 </body>

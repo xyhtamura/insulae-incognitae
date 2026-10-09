@@ -43,8 +43,9 @@ let creaturesOn = true;
 const seconds = () => performance.now() / 1000;
 let speed = SPEEDS[0];       // the Audition panel's multiplier on the contact chance
 
-// A narrow upright screen has no keyboard under it, so the board is turned to run down it.
-const narrow = matchMedia('(orientation: portrait) and (max-width: 700px)');
+// The board fills the window, so it is turned to run down any window that is
+// taller than it is wide.
+const narrow = matchMedia('(orientation: portrait)');
 
 const svg = (name, attrs = {}) => {
   const el = document.createElementNS(SVG, name);
@@ -337,8 +338,8 @@ const liftAll = () => [...sounding.keys()].forEach(lift);
 const typing = target => target instanceof HTMLSelectElement
   || (target instanceof HTMLInputElement && target.type !== 'range' && target.type !== 'checkbox');
 window.addEventListener('keydown', e => {
-  // Keys typed while the settings are open belong to the settings.
-  if (e.repeat || e.ctrlKey || e.metaKey || e.altKey || typing(e.target) || $('settings').open) return;
+  if (e.key === 'Escape' && !$('menu').hidden) { toggleMenu(false); return; }
+  if (e.repeat || e.ctrlKey || e.metaKey || e.altKey || typing(e.target)) return;
   // Enter or Space plays a focused shoal, for keyboard-only use of the on-screen keys.
   const focused = e.target.closest?.('.key');
   const char = focused && (e.key === 'Enter' || e.key === ' ') ? focused.dataset.char : e.key.toLowerCase();
@@ -449,9 +450,16 @@ initSettings({
   creaturesOn: { el: $('creatures-on'), event: 'change', fallback: true },
   creaturesMove: { el: $('creatures-move'), event: 'change', fallback: () => !reduced.matches },
 });
-$('open-settings').addEventListener('click', () => $('settings').showModal());
-// For screenshots: ?settings=open shows the dialog as the page opens.
-if (params.get('settings') === 'open') $('settings').showModal();
+// The menu is a panel in the corner, not a dialog: the board stays in view and
+// stays playable while it is open, which the testing controls need.
+function toggleMenu(open = $('menu').hidden) {
+  $('menu').hidden = !open;
+  $('menu-button').setAttribute('aria-expanded', String(open));
+  $('menu-button').textContent = open ? 'Close' : 'Menu';
+}
+$('menu-button').addEventListener('click', () => toggleMenu());
+// For screenshots: ?menu=open shows the menu as the page opens.
+if (params.get('menu') === 'open') toggleMenu(true);
 
 // For testing and screenshots: ?creatures=3 calls that many out as the page opens.
 for (let n = Math.min(3, Number(params.get('creatures')) || 0); n > 0; n--) {

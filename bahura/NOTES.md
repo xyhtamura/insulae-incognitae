@@ -18,6 +18,46 @@ device, and hiding the Audition panel for the finished page.
 
 ## Log
 
+2026-10-10 — Claude Code — Made the board the whole window and put everything
+else behind one corner button, at Xyh's request for a minimal page.
+
+What changed:
+- `index.html`, `style.css`: the board is a fixed element the size of the
+  window. Its drawing is fitted inside, and the water, which is the element's
+  background, runs to every edge. The title, the instructions, the bar, and
+  the settings dialog are gone from the page surface.
+- A Menu button sits in the top right corner. It opens a panel in that
+  corner holding Reshuffle with the board number and tide, the instructions
+  under "How to play", the four settings, and the testing controls folded
+  under "Testing". The button reads Close while the panel is open, and Escape
+  also closes it.
+- The panel is not a dialog. The board stays in view and playable while it is
+  open, so the testing controls can be used while playing. The 2026-10-10
+  rule that keys do not play while settings are open is withdrawn with the
+  dialog; keys typed into a text field or a select still do not play.
+- The board turns upright in any window taller than it is wide, where before
+  it needed the window to be under 700 px as well. The keyboard characters
+  are hidden on touch devices and no longer tied to the upright layout.
+- `?menu=open` replaces `?settings=open` for screenshots.
+
+Verified: three headless Edge screenshots, looked at. At 1280 by 720 the
+board spans the window's width with water above and below and the Menu button
+in the corner. With the menu open the panel covers the right-hand keys and
+leaves the rest playable. At 520 by 900 the board is upright and the panel
+covers most of it. In the Browser pane by DOM: the menu opens from the button
+and closes on Escape with the button's label and `aria-expanded` following; a
+key played while the menu was open; Reshuffle in the menu changed the seed
+and the status line; no console errors. `npm run check` passes.
+
+Not verified: sizes in the pane, which reported a window of zero by zero
+while hidden. A real phone. Whether the Menu button or the open panel sits
+over a shoal someone wants to play; on the wide screenshot the button is
+clear of the board, and on the tall one the panel covers most of it.
+
+Known: on a phone the open menu hides most of the board, so Reshuffle cannot
+be watched there. A separate small Reshuffle button in another corner would
+fix that and was left out to keep to one button.
+
 2026-10-10 — Claude Code — Added a Settings button, at Xyh's request, and
 made creature movement one of its settings.
 

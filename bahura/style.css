@@ -15,36 +15,33 @@
 
 * { box-sizing: border-box; }
 
+html, body { height: 100%; }
 body {
   margin: 0;
-  padding: 16px;
-  background: var(--page);
+  overflow: hidden;
+  background: var(--water);
   color: var(--ink);
   font-family: "Noto Sans Tagalog Local", "Noto Sans", "Segoe UI", "Yu Gothic", "Nirmala UI", "Leelawadee UI", "Myanmar Text", "Javanese Text", sans-serif;
   font-size: 14px;
   line-height: 1.45;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
-header, main { width: 100%; max-width: 760px; }
-
-h1 { margin: 0 0 4px; font-size: 20px; font-weight: 600; }
-#hint { margin: 0 0 16px; color: var(--dim); max-width: 60ch; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
 #board {
+  /* The board is the whole window. Its drawing is fitted inside and the
+     water, which is this element's background, runs to every edge. */
+  position: fixed;
+  inset: 0;
   display: block;
   width: 100%;
-  /* The upright board is tall; keep it and the Reshuffle button on one screen. */
-  max-height: 82vh;
+  height: 100%;
   /* Layered radial gradients over the water colour, after Ombak Lock: a pale
      patch up and to the left and a deeper one down and to the right. */
   background:
     radial-gradient(70% 60% at 22% 12%, #ffffff55 0%, transparent 62%),
     radial-gradient(90% 80% at 88% 96%, #3d517a40 0%, transparent 66%),
     var(--water);
-  border-radius: 6px;
   touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
@@ -77,8 +74,8 @@ h1 { margin: 0 0 4px; font-size: 20px; font-weight: 600; }
 .char { font-size: 0.17px; }
 .hz { font-size: 0.14px; }
 #board:not(.show-hz) .hz { display: none; }
-/* The upright board is for screens with no keyboard, so it drops the key characters. */
-#board.upright .char { display: none; }
+/* A touch screen has no keyboard under it, so it drops the key characters. */
+@media (hover: none) and (pointer: coarse) { #board .char { display: none; } }
 
 /* A creature is a word on a tag of its own colour, as Sulat draws its animals.
    Its position and tilt are set from src/creature-view.js. */
@@ -100,36 +97,38 @@ h1 { margin: 0 0 4px; font-size: 20px; font-weight: 600; }
 /* A neighbour set ringing by another key has a thinner, broken outline. */
 .mark.sympathetic { stroke-width: 0.03; stroke-dasharray: 0.08 0.06; }
 
-.bar {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
-  margin: 16px 0;
+/* One button in the corner opens everything that is not the board. */
+#menu-button {
+  position: fixed; z-index: 3;
+  top: max(10px, env(safe-area-inset-top)); right: max(10px, env(safe-area-inset-right));
+  min-width: 64px;
+  background: #f1f1ecd9; border-color: #20282833;
 }
+#menu {
+  position: fixed; z-index: 2;
+  top: max(10px, env(safe-area-inset-top)); right: max(10px, env(safe-area-inset-right));
+  width: min(340px, calc(100vw - 20px));
+  max-height: calc(100% - 20px);
+  overflow: auto;
+  padding: 56px 16px 16px;
+  background: #f1f1ecf2; border: 1px solid var(--line); border-radius: 6px;
+}
+#menu[hidden] { display: none; }
+#menu section, #menu details { margin-bottom: 16px; }
+#menu h2, #menu summary { margin: 0 0 4px; font-size: 14px; font-weight: 600; }
+#menu summary { cursor: pointer; }
+#menu p { margin: 0 0 8px; }
+#menu label { display: flex; align-items: center; gap: 8px; margin: 10px 0; }
+#menu input[type="range"], #menu select { flex: 1; min-width: 0; }
+#menu .row { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
 
 button, select {
   font: inherit; color: var(--ink);
   background: #fff; border: 1px solid var(--line); border-radius: 3px;
   padding: 8px 12px; min-height: 40px; cursor: pointer;
 }
-#reshuffle { background: var(--ink); color: #f4f3e9; border-color: var(--ink); }
+#reshuffle { width: 100%; background: var(--ink); color: #f4f3e9; border-color: var(--ink); }
+#unpin { min-height: 0; padding: 2px 8px; }
 
-label { display: inline-flex; align-items: center; gap: 6px; }
-#seed { color: var(--dim); }
-
-fieldset {
-  border: 1px solid var(--line); border-radius: 3px;
-  padding: 10px 12px; margin: 0;
-  display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center;
-}
-legend { padding: 0 6px; color: var(--dim); }
-#readout { flex-basis: 100%; margin: 0; color: var(--dim); font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
-
-dialog#settings {
-  border: 1px solid var(--line); border-radius: 6px; padding: 16px 18px;
-  background: var(--page); color: var(--ink); width: min(360px, calc(100vw - 32px));
-}
-dialog#settings::backdrop { background: #202b2866; }
-dialog#settings h2 { margin: 0 0 2px; font-size: 16px; font-weight: 600; }
-dialog#settings label { display: flex; margin: 12px 0; }
-dialog#settings input[type="range"] { flex: 1; min-width: 0; }
-dialog#settings form { margin-top: 16px; text-align: right; }
 .note { margin: 0; color: var(--dim); font-size: 13px; }
+#readout { color: var(--dim); font-family: ui-monospace, Consolas, monospace; font-size: 12px; overflow-wrap: anywhere; }
