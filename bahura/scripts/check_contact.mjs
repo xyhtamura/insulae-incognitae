@@ -1,15 +1,17 @@
-// Contact checks for step 3 of SPEC.md (section 9): the rules are closed, and
-// a simulation of steady playing prints how fast the terrain changes.
+// Terrain change checks for steps 3 and 4 of SPEC.md (section 9): the contact
+// rules are closed, and simulations print how fast the terrain changes when
+// played, when left alone, and when both happen.
 //
 //   node scripts/check_contact.mjs [--seeds 100] [--minutes 60] [--rate 120]
 //
 // --rate is keys played per minute.
 
 import { generateBoard, neighbours } from '../src/board.js';
-import { target, contact, settled } from '../src/contact.js';
+import { target, contact } from '../src/contact.js';
+import { createClock } from '../src/clock.js';
 import { HABITATS, UNUSUAL, habitat } from '../data/habitats.js';
 import { habitatCents } from '../data/tuning.js';
-import { CONTACT } from '../data/rates.js';
+import { CONTACT, TICK } from '../data/rates.js';
 
 const arg = (name, fallback) => { const i = process.argv.indexOf(`--${name}`); return i > 0 ? Number(process.argv[i + 1]) : fallback; };
 const SEEDS = arg('seeds', 100), MINUTES = arg('minutes', 60), RATE = arg('rate', 120);
@@ -28,6 +30,9 @@ for (const id of ids) for (const a of ids) for (const b of ids) {
   else if (!kind.glyphs.length || !(kind.decay > 0) || !Number.isFinite(habitatCents(to, 'spread13'))) failures.push(`${to} lacks glyphs, a voice, or a pitch`);
   if (to === id) failures.push(`${id} beside ${a}, ${b} becomes itself`);
 }
+for (const kind of [...HABITATS, ...UNUSUAL]) {
+  if (new Set(kind.glyphs).size !== kind.glyphs.length) failures.push(`${kind.id} lists a glyph twice`);
+}
 
 // A small seeded generator, so a run can be repeated.
 function mulberry(seed) {
@@ -39,32 +44,49 @@ function mulberry(seed) {
   };
 }
 
-const perMinute = Array(MINUTES).fill(0), mixStart = new Map(), mixEnd = new Map();
-let settledAtStart = 0, settledAtEnd = 0, settleMinutes = [];
-for (let seed = 0; seed < SEEDS; seed++) {
-  const board = generateBoard(seed), random = mulberry(seed + 1);
-  for (const key of board.keys) mixStart.set(key.habitat, (mixStart.get(key.habitat) ?? 0) + 1);
-  if (settled(board)) settledAtStart++;
-  let settledAt = null;
-  for (let minute = 0; minute < MINUTES; minute++) {
-    for (let n = 0; n < RATE; n++) {
-      const key = board.keys[Math.floor(random() * board.keys.length)];
-      perMinute[minute] += contact(board, [key, ...neighbours(board, key)], CONTACT, random).length;
+const kinds = board => new Set(board.keys.map(k => k.habitat)).size;
+
+function simulate(label, { played, timed }) {
+  const perMinute = Array(MINUTES).fill(0), causes = new Map(), mixStart = new Map(), mixEnd = new Map();
+  let kindsStart = 0, kindsEnd = 0, fewest = Infinity;
+  for (let seed = 0; seed < SEEDS; seed++) {
+    const board = generateBoard(seed), random = mulberry(seed + 1), clock = createClock(board, random);
+    kindsStart += kinds(board);
+    for (const key of board.keys) mixStart.set(key.habitat, (mixStart.get(key.habitat) ?? 0) + 1);
+    for (let minute = 0; minute < MINUTES; minute++) {
+      const changes = [];
+      const ticks = 60 / TICK.seconds, strikes = played ? RATE : 0;
+      for (let t = 0; t < ticks; t++) {
+        for (let n = 0; n < strikes / ticks; n++) {
+          const key = board.keys[Math.floor(random() * board.keys.length)];
+          changes.push(...contact(board, [key, ...neighbours(board, key)], CONTACT, random).map(c => ({ ...c, cause: 'playing' })));
+        }
+        if (timed) changes.push(...clock.advance(TICK.seconds));
+      }
+      perMinute[minute] += changes.length;
+      for (const c of changes) causes.set(c.cause, (causes.get(c.cause) ?? 0) + 1);
     }
-    if (settledAt == null && settled(board)) settledAt = minute + 1;
+    kindsEnd += kinds(board);
+    fewest = Math.min(fewest, kinds(board));
+    for (const key of board.keys) mixEnd.set(key.habitat, (mixEnd.get(key.habitat) ?? 0) + 1);
   }
-  if (settled(board)) { settledAtEnd++; settleMinutes.push(settledAt); }
-  for (const key of board.keys) mixEnd.set(key.habitat, (mixEnd.get(key.habitat) ?? 0) + 1);
+  const mean = (from, to) => (perMinute.slice(from, to).reduce((a, b) => a + b, 0) / (to - from) / SEEDS).toFixed(2);
+  console.log(`\n${label}`);
+  console.log(`  Keys changed per minute: ${mean(0, Math.min(10, MINUTES))} in the first 10 minutes, ${mean(Math.max(0, MINUTES - 20), MINUTES)} in the last 20, ${mean(0, MINUTES)} overall`);
+  console.log(`  By cause, per minute: ${[...causes].map(([cause, n]) => `${cause} ${(n / MINUTES / SEEDS).toFixed(2)}`).join(', ') || 'none'}`);
+  console.log(`  Habitats per board: ${(kindsStart / SEEDS).toFixed(1)} at the start, ${(kindsEnd / SEEDS).toFixed(1)} at the end, fewest ${fewest}`);
+  return { mixStart, mixEnd };
 }
 
-const mean = (from, to) => perMinute.slice(from, to).reduce((a, b) => a + b, 0) / (to - from) / SEEDS;
-console.log(`Rules: ${reachable.size} distinct changes, e.g. ${[...reachable].slice(0, 4).join('; ')}`);
-console.log(`${SEEDS} boards, ${MINUTES} minutes each at ${RATE} keys played per minute`);
-console.log(`Keys changed per minute: ${mean(0, Math.min(5, MINUTES)).toFixed(2)} in the first 5 minutes, ${mean(0, Math.min(15, MINUTES)).toFixed(2)} in the first 15, ${mean(0, MINUTES).toFixed(2)} over the whole run`);
-console.log(`Boards with nothing left to change: ${settledAtStart} at the start, ${settledAtEnd} at the end${settleMinutes.length ? ` (median minute ${settleMinutes.sort((a, b) => a - b)[Math.floor(settleMinutes.length / 2)]})` : ''}`);
-console.log('Habitat mix, start to end:');
+console.log(`Rules: ${reachable.size} distinct contact changes`);
+console.log(`${SEEDS} boards, ${MINUTES} minutes each; played means ${RATE} keys per minute`);
+simulate('Played, time stopped', { played: true, timed: false });
+simulate('Left alone', { played: false, timed: true });
+const { mixStart, mixEnd } = simulate('Played, with time running', { played: true, timed: true });
+
+console.log('\nHabitat mix when played with time running, start to end:');
 const total = SEEDS * 40, share = n => `${(100 * (n ?? 0) / total).toFixed(1)}%`.padStart(6);
-for (const id of ids) if (mixStart.get(id) || mixEnd.get(id)) console.log(`  ${id.padEnd(10)} ${share(mixStart.get(id))} -> ${share(mixEnd.get(id))}`);
+for (const id of ids) if (mixStart.get(id) || mixEnd.get(id)) console.log(`  ${id.padEnd(11)} ${share(mixStart.get(id))} -> ${share(mixEnd.get(id))}`);
 
 if (failures.length) {
   console.error(`\nFAILED\n${[...new Set(failures)].slice(0, 20).join('\n')}`);

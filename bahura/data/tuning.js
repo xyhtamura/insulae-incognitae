@@ -6,15 +6,17 @@
 import { HABITATS, UNUSUAL } from './habitats.js';
 
 // Habitat pitch within the octave. `step(i)` takes a habitat's index in shore
-// order (0 to 11) and returns its step out of `divisions` equal divisions of
-// the octave. "Spread" walks the steps by a fixed stride, so habitats that sit
-// beside each other on the shore are several steps apart in pitch. A tuning
-// with fewer than twelve steps makes some habitats share a note.
+// order and returns its step out of `divisions` equal divisions of the
+// octave. "Spread" walks the steps by a fixed stride, so habitats that sit
+// beside each other on the shore are several steps apart in pitch. There are
+// twenty-five habitats, so only the 25-division tuning gives each its own
+// note; in the others several habitats share one.
 export const TUNINGS = [
   { id: 'spread13', label: '13 equal, spread',      divisions: 13, step: i => (5 * i) % 13 },
-  { id: 'shore13',  label: '13 equal, shore order', divisions: 13, step: i => (i < 11 ? i : 12) },
-  { id: 'shared7',  label: '7 equal, shared notes', divisions: 7,  step: i => (3 * i) % 7 },
-  { id: 'shared5',  label: '5 equal, shared notes', divisions: 5,  step: i => (2 * i) % 5 },
+  { id: 'spread25', label: '25 equal, spread',      divisions: 25, step: i => (7 * i) % 25 },
+  { id: 'shore13',  label: '13 equal, shore order', divisions: 13, step: i => i % 13 },
+  { id: 'shared7',  label: '7 equal',               divisions: 7,  step: i => (3 * i) % 7 },
+  { id: 'shared5',  label: '5 equal',               divisions: 5,  step: i => (2 * i) % 5 },
 ];
 
 // Row registers in hertz, top (landward) row first. 236.5 Hz is Ombak Lock's

@@ -10,6 +10,7 @@
   --dim: #5b6763;
   --line: #b9beb6;
   --water: #c3dae0;
+  --water-in: #a9c9d6;
 }
 
 * { box-sizing: border-box; }
@@ -45,6 +46,10 @@ h1 { margin: 0 0 4px; font-size: 20px; font-weight: 600; }
 }
 
 /* Shoals of one habitat share a fill and overlap, so they run together. */
+/* The water is a shade deeper while the tide is in; the status line says so in words. */
+#board.tide-in { background: var(--water-in); }
+#tide { color: var(--dim); }
+
 .key { cursor: pointer; stroke: #00000022; stroke-width: 0.012; }
 .key:focus { outline: none; }
 .key:focus-visible { stroke: var(--ink); stroke-width: 0.05; stroke-dasharray: 0.1 0.06; }

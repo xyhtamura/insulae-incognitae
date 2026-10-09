@@ -3,17 +3,87 @@
 A browser gong keyboard whose forty keys are a patch of estuarine terrain: the
 glyph on a key is its note, and the notes change as the terrain does. Sulat's
 terrain and contact rules with Ombak Lock's beating, at shoal scale. The design
-is in [SPEC.md](SPEC.md). Steps 1 to 3 are built: a playable board with
-sympathetic ringing whose terrain changes by contact as it is played.
+is in [SPEC.md](SPEC.md). Steps 1 to 4 are built: a playable board with
+sympathetic ringing whose terrain changes by playing, by time, by tide, and by
+earthquake. That is the first complete version by the spec's own measure.
 
 ## Next step
 
-Build step 4 of [SPEC.md](SPEC.md) section 10: contact by time, the tide, and
-the earthquake. The 2026-10-09 simulation shows why it matters: playing alone
-settles a board in about fifteen minutes. Xyh's verdicts on the envelopes,
-tunings, and ringing level are still owed and can arrive at any point.
+Xyh plays it and gives verdicts by ear and eye: the envelopes, the tunings,
+the ringing level, the rate of change, and the twenty-five habitats' colours.
+Step 5 of [SPEC.md](SPEC.md) section 10 is what is left to build: a check on a
+real touch device, and hiding the Audition panel for the finished page.
 
 ## Log
+
+2026-10-09 — Claude Code — Built step 4 and widened the terrain, at Xyh's
+request: time, tide with an ebb that uncovers mudflat as sandbar, earthquake,
+changes that need no cause, and a more colourful set of habitats.
+
+What changed:
+- `data/habitats.js`: twenty-five habitats, up from twelve. Added ironwood
+  and driftwood; red oxide bank; ochre, white, pink, and black sand; limestone
+  and basalt; anemone, brain coral, fire coral, and sea fan. Each borrows the
+  glyph set of a Sulat biome that has no place on a shoal, and has its own
+  colour, decay, and brightness. The ten unusual habitats are unchanged.
+- `data/tuning.js`: with twenty-five habitats only a new 25-division tuning
+  gives each its own note. In the 13-, 7-, and 5-division tunings several
+  habitats share one, so there colour no longer identifies the note.
+- `src/contact.js`: the rules read "sand" as any of the five sands and "reef"
+  as any coral or anemone. Added drift: each key has a small chance per tick
+  of becoming a habitat near its place on the shore with nothing causing it,
+  following Xyh's ruling that terrain need not form literally.
+- `src/events.js`: the tide floods some coverable keys in the two seaward rows
+  to shallows; the ebb returns them as tide line or a sand and turns some
+  mudflat to sandbar. An earthquake turns one key to unusual terrain and may
+  turn each key touching it to any habitat.
+- `src/clock.js`: one clock for the tick, tide, and earthquake, driven by a
+  5-second timer in the page and directly by the simulation. A hidden page
+  stands still.
+- Page: a tide status beside the board number, a deeper water colour while the
+  tide is in, and Audition buttons to turn the tide and to cause an
+  earthquake. The Terrain change speed now scales time as well as playing.
+
+Measured by `node scripts/check_contact.mjs`, 100 boards for 60 simulated
+minutes:
+- Left alone: 0.65 keys changed per minute (contact 0.20, drift 0.19, tide
+  0.20, earthquake 0.06). The spec's target was about 0.5.
+- Played at 120 keys a minute with time running: 0.93 per minute, steady from
+  the first ten minutes (0.88) to the last twenty (0.86).
+- Played with time stopped, for comparison: 0.55 in the first ten minutes and
+  none in the last twenty.
+- Habitats per board: 9.8 when generated, 15.8 after an hour of play with time
+  running, never fewer than 10. Boards get more varied, not less.
+- Mudflat still doubles, 6.0% to 12.3%. Every sand survives, between 1.5% and
+  4.2% of keys each.
+
+Two rule changes came out of the first run, which had 1.35 changes a minute
+and no sand left: the sands were taken out of the rule that turns open ground
+beside water to mudflat, and the timed contact chance was cut from 2% to 0.4%
+per tick. The tide waits 8 to 14 minutes, longer than the spec's 5 to 10,
+because Xyh asked for slow.
+
+Verified in the Browser pane by DOM: the earthquake button reported "1 changed
+by earthquake: creek mouth to rock" and "2 changed by earthquake: creek mouth
+to marsh" with two rings; the tide button switched the status between "Tide
+in" and "Tide out" and the board's class with it; at 20 times speed with no
+input, three keys changed fill in ten seconds and the readout named drift and
+contact changes; no console errors. Looked at one screenshot of board 11,
+upright, showing sea fan, ochre sand, pink sand, and white sand. Both check
+scripts pass.
+
+Not verified: the sound of any new habitat. A flood or ebb that actually
+changed keys in the page; on board 5 the tide button reported "Nothing
+changed" both ways, because its seaward rows held nothing the tide covers, and
+only the simulation shows tides changing keys. Whether twenty-five colours
+stay distinguishable from one another, by eye. Touch on a device.
+
+Known rough edges: the hint paragraph above the board is long on a phone. The
+pale habitats (creek mouth, shallows, white sand) sit close to the water
+colour. Reshuffling restarts terrain time, including the wait for the first
+tide.
+
+Undone: step 5.
 
 2026-10-09 — Claude Code — Built step 3, contact by playing, and made two
 changes Xyh asked for with it: no wave lines behind the board, and an upright

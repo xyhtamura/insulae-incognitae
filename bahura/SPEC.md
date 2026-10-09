@@ -183,6 +183,13 @@ Playing two same-habitat keys together gives the same beating at full level.
 
 ## 7. Mutation
 
+Terrain does not have to form literally (Xyh, 2026-10-09). Beside contact,
+each key has a small chance per tick of drifting to a habitat near its place
+on the shore with nothing causing it, and an earthquake can turn a key into
+any habitat. The habitat set is also wider than the table in section 5: it
+adds woods, stones, a red oxide bank, four coloured sands, and four more reef
+habitats, twenty-five in all, listed in `data/habitats.js`.
+
 The contact rules are the subset of Sulat's `target()` whose biomes occur here,
 for example: creek mouth beside shallows or tide line becomes brackish channel;
 sandbar beside shallows or coral becomes tide line; open ground beside water
@@ -204,7 +211,7 @@ Starting rates, all in `data/rates.js`:
 | --- | --- |
 | Keys changed by playing | About one per minute of steady playing |
 | Keys changed by time alone | About one every two minutes |
-| Tide | Every five to ten minutes: the seaward row floods upward one row, then ebbs |
+| Tide | Every eight to fourteen minutes: some coverable keys in the two seaward rows flood to shallows; the ebb returns them as tide line or sand and uncovers some mudflat as sandbar |
 | Earthquake | Rare: changes a few keys around one key and may leave unusual terrain |
 
 The check in section 9 measures these rates in simulation, so "slow" is a

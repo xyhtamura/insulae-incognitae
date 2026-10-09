@@ -10,7 +10,7 @@
 <body>
   <header>
     <h1>Bahura</h1>
-    <p id="hint">Press a key on the keyboard, or click or tap a shoal here. Its colour is the note, and the script its glyph is written in is how the note starts and stops. Some notes last while the key is held. Two shoals of one colour in a row are a few hertz apart and beat when played together. Playing slowly changes the terrain; a shoal that has changed carries a ring until it is next played.</p>
+    <p id="hint">Press a key on the keyboard, or click or tap a shoal here. Its colour is the note, and the script its glyph is written in is how the note starts and stops. Some notes last while the key is held. Two shoals of one colour in a row are a few hertz apart and beat when played together. The terrain changes slowly, by playing and by itself, and the tide comes in and goes out. A shoal that has changed carries a ring until it is next played.</p>
   </header>
 
   <main>
@@ -20,6 +20,7 @@
       <button id="reshuffle" type="button">Reshuffle</button>
       <label>Volume <input id="volume" type="range" min="0" max="1" step="0.01" value="0.7"></label>
       <span id="seed"></span>
+      <span id="tide"></span>
     </div>
 
     <fieldset id="audition">
@@ -29,6 +30,8 @@
       <label>Beat band <input id="window" type="range"> <output id="window-value"></output></label>
       <label>Neighbour ringing <input id="sympathy" type="range"> <output id="sympathy-value"></output></label>
       <label>Terrain change <select id="speed"></select></label>
+      <button id="turn-tide" type="button">Turn the tide</button>
+      <button id="shake" type="button">Earthquake</button>
       <label><input id="show-hz" type="checkbox"> Show hertz on keys</label>
       <span id="pinned"></span> <button id="unpin" type="button">Unpin</button>
       <p id="readout" aria-live="polite">No key struck yet.</p>
