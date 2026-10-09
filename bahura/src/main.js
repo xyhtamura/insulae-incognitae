@@ -9,6 +9,7 @@ import { contact } from './contact.js';
 import { createClock } from './clock.js';
 import { createCreatures } from './creatures.js';
 import { createCreatureView } from './creature-view.js';
+import { initSettings } from './settings.js';
 import { buildPlan, renderPlan } from '../vendor/dithertick-synth.js';
 import { ZZFX } from '../vendor/zzfx.js';
 import { renderMouth } from './mouth.js';
@@ -336,7 +337,8 @@ const liftAll = () => [...sounding.keys()].forEach(lift);
 const typing = target => target instanceof HTMLSelectElement
   || (target instanceof HTMLInputElement && target.type !== 'range' && target.type !== 'checkbox');
 window.addEventListener('keydown', e => {
-  if (e.repeat || e.ctrlKey || e.metaKey || e.altKey || typing(e.target)) return;
+  // Keys typed while the settings are open belong to the settings.
+  if (e.repeat || e.ctrlKey || e.metaKey || e.altKey || typing(e.target) || $('settings').open) return;
   // Enter or Space plays a focused shoal, for keyboard-only use of the on-screen keys.
   const focused = e.target.closest?.('.key');
   const char = focused && (e.key === 'Enter' || e.key === ' ') ? focused.dataset.char : e.key.toLowerCase();
@@ -434,6 +436,22 @@ if (params.has('window') && band >= WINDOW.min && band <= WINDOW.max) pinned.win
 
 const asked = Number(params.get('seed'));
 load(params.has('seed') && Number.isInteger(asked) ? asked : 5);
+
+// Settings. Whether creatures move starts from the system's reduced-motion
+// setting, and the visitor's own choice replaces that once they make one.
+const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+$('motion-note').textContent = reduced.matches
+  ? 'This device asks for reduced motion, so creatures stay put unless this is ticked.'
+  : '';
+initSettings({
+  volume: { el: $('volume'), event: 'input', fallback: 0.7 },
+  saturation: { el: $('saturation'), event: 'input', fallback: SATURATION.initial },
+  creaturesOn: { el: $('creatures-on'), event: 'change', fallback: true },
+  creaturesMove: { el: $('creatures-move'), event: 'change', fallback: () => !reduced.matches },
+});
+$('open-settings').addEventListener('click', () => $('settings').showModal());
+// For screenshots: ?settings=open shows the dialog as the page opens.
+if (params.get('settings') === 'open') $('settings').showModal();
 
 // For testing and screenshots: ?creatures=3 calls that many out as the page opens.
 for (let n = Math.min(3, Number(params.get('creatures')) || 0); n > 0; n--) {

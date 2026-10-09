@@ -4,10 +4,9 @@
 // this file only draws.
 //
 // One animation loop runs while anything is out and stops when nothing is.
-// The page's "Creatures move" control turns the loop off; creatures are then
-// placed and stay put. The system's reduced-motion setting is not read here,
-// on Xyh's machine it is on and the movement was asked for; see NOTES.md,
-// 2026-10-10.
+// The "Creatures move" setting turns the loop off; creatures are then placed
+// and stay put. The setting starts from the system's reduced-motion setting
+// (src/main.js), so this file does not read that itself.
 
 const SVG = 'http://www.w3.org/2000/svg';
 const el = (name, attrs = {}) => {

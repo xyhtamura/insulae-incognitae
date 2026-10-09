@@ -18,6 +18,42 @@ device, and hiding the Audition panel for the finished page.
 
 ## Log
 
+2026-10-10 — Claude Code — Added a Settings button, at Xyh's request, and
+made creature movement one of its settings.
+
+What changed:
+- `index.html`, `style.css`: a Settings button beside Reshuffle opens a
+  dialog with Volume, Colour strength, Show creatures, and Creatures move.
+  Those four controls moved there from the bar and from the Audition panel,
+  which now holds only the testing controls.
+- `src/settings.js`: the four values are read from this browser's storage
+  under `bahura_settings` when the page opens and written when one changes.
+- Creatures move starts from the system's reduced-motion setting: unticked
+  where the system asks for reduced motion, ticked elsewhere. Once the
+  visitor changes any setting, their choice is saved and used from then on.
+  This replaces the earlier entry's choice to ignore the system setting. The
+  dialog shows a line explaining the unticked box when the system setting is
+  the reason.
+- Keys typed while the dialog is open do not play shoals.
+- `?settings=open` shows the dialog as the page opens, for screenshots.
+
+Verified in the Browser pane by DOM: with storage cleared, the controls came
+up at their defaults and nothing was saved; changing Creatures move and Colour
+strength wrote all four values; after a reload the saved values were applied,
+with the board's filter at `saturate(0.4)`; a key event while the dialog was
+open left the readout unchanged, and the same key after closing played. The
+bar's buttons are Reshuffle and Settings. One headless Edge screenshot of the
+open dialog was looked at. `npm run check` passes.
+
+Not verified: the reduced-motion default itself. In this sitting the pane and
+headless Edge both reported no reduced-motion request, although Windows'
+"animations inside windows" setting reads off and the pane had reported a
+request earlier in the day. So the unticked default and its explanatory line
+were not seen. Which of the two Xyh's own browser reports is unknown; the
+checkbox is the remedy either way.
+
+The storage used for the test was cleared afterwards.
+
 2026-10-10 — Claude Code — Coloured the creatures and set them moving, at
 Xyh's request, after how Sulat draws its animals.
 

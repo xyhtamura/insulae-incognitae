@@ -232,7 +232,7 @@ check to measure.
 | A character key | Strike that key |
 | Click or tap a key | Strike that key |
 | **Reshuffle** | Draw another board |
-| **Volume** | Set the output level |
+| **Settings** | Open a dialog with volume, colour strength, whether creatures show, and whether they move; the choices are saved in the browser |
 
 - On a portrait screen up to 700 px wide the board is turned a quarter, so its
   rows run down the screen, and the keyboard characters are hidden.

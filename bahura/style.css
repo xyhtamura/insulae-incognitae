@@ -122,3 +122,14 @@ fieldset {
 }
 legend { padding: 0 6px; color: var(--dim); }
 #readout { flex-basis: 100%; margin: 0; color: var(--dim); font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
+
+dialog#settings {
+  border: 1px solid var(--line); border-radius: 6px; padding: 16px 18px;
+  background: var(--page); color: var(--ink); width: min(360px, calc(100vw - 32px));
+}
+dialog#settings::backdrop { background: #202b2866; }
+dialog#settings h2 { margin: 0 0 2px; font-size: 16px; font-weight: 600; }
+dialog#settings label { display: flex; margin: 12px 0; }
+dialog#settings input[type="range"] { flex: 1; min-width: 0; }
+dialog#settings form { margin-top: 16px; text-align: right; }
+.note { margin: 0; color: var(--dim); font-size: 13px; }
