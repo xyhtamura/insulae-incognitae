@@ -19,7 +19,7 @@ import { habitat } from '../data/habitats.js';
 import { ENVELOPES, scriptOf } from '../data/envelopes.js';
 import { SYMPATHY } from '../data/voice.js';
 import { CONTACT, TICK, SPEEDS } from '../data/rates.js';
-import { SATURATION, TEXTURES } from '../data/look.js';
+import { SATURATION, SUBMERGED, TEXTURES } from '../data/look.js';
 import { TUNINGS, REGISTERS, WINDOW, frequency, drawSettings } from '../data/tuning.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
@@ -63,7 +63,23 @@ function defs() {
     for (const [offset, color, opacity] of stops) g.append(svg('stop', { offset, 'stop-color': color, 'stop-opacity': opacity }));
     el.append(g);
   };
-  gradient('boss', '0.36', '0.28', '0.6', [['0', '#fff', 0.42], ['0.55', '#fff', 0.08], ['1', '#fff', 0]]);
+  gradient('boss', '0.36', '0.28', '0.6', [['0', '#fff', 0.24], ['0.55', '#fff', 0.05], ['1', '#fff', 0]]);
+  // Water over a shoal: clear at its crown and thick at its rim, so the middle
+  // of the shoal stands out of the water and its edges go under.
+  gradient('veil', '0.46', '0.4', '0.62', [['0', '#1fa3b8', 0], ['0.45', '#1fa3b8', 0.35], ['1', '#1787ab', 1]]);
+  // Light on the water: a web of thin bright lines. Smooth noise is turned
+  // white and given an opacity that peaks where the noise is at its middle
+  // value, which draws the noise's contour lines.
+  const caustics = svg('filter', { id: 'caustics', x: 0, y: 0, width: 1, height: 1 });
+  const contour = svg('feComponentTransfer');
+  contour.append(svg('feFuncA', { type: 'table', tableValues: '0 0 0 0 0 0 0.5 1 0.5 0 0 0 0 0 0' }));
+  caustics.append(
+    svg('feTurbulence', { type: 'fractalNoise', baseFrequency: '1.5 2.3', numOctaves: 2, seed: board.seed % 991 }),
+    svg('feColorMatrix', { type: 'matrix', values: '0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  1 0 0 0 0' }),
+    contour,
+    svg('feGaussianBlur', { stdDeviation: 0.015 }),
+  );
+  el.append(caustics);
   gradient('depth', '0.62', '0.78', '1.05', [['0', '#1b2440', 0], ['0.55', '#1b2440', 0.06], ['1', '#1b2440', 0.34]]);
   const grain = svg('filter', { id: 'grain', x: 0, y: 0, width: 1, height: 1 });
   grain.append(
@@ -113,7 +129,8 @@ function draw() {
   boardEl.setAttribute('viewBox', `0 0 ${size.width} ${size.height}`);
   boardEl.classList.toggle('upright', upright);
   const land = svg('g'), shade = svg('g', { class: 'shade' }), text = svg('g', { class: 'labels' }), marks = svg('g', { id: 'marks' });
-  const lifeLayer = svg('g', { id: 'creatures' }), glows = svg('g', { id: 'glows' });
+  const lifeLayer = svg('g', { id: 'creatures' }), glows = svg('g', { id: 'glows' }), water = svg('g', { id: 'water' });
+  boardEl.style.setProperty('--tide-depth', SUBMERGED.tide);
   for (const key of board.keys) {
     const at = centre(key, board.seed, upright);
     const shape = svg('path', { d: outline(key, board.seed, at), class: 'key', role: 'button', tabindex: 0 });
@@ -124,6 +141,10 @@ function draw() {
     const d = shape.getAttribute('d');
     shape.textureLayer = svg('path', { d, class: 'texture' });
     shade.append(shape.textureLayer, svg('path', { d, fill: 'url(#depth)' }), svg('path', { d, fill: 'url(#boss)' }));
+    // The seaward rows lie deeper, so more water is drawn over them.
+    const veil = svg('path', { d, class: 'veil', fill: 'url(#veil)' });
+    veil.style.setProperty('--depth', SUBMERGED.rows[key.row]);
+    water.append(veil);
     shapes.set(key.char, shape);
     const label = (cls, y, value = '') => {
       const el = svg('text', { class: cls, x: at.x, y: at.y + y });
@@ -148,7 +169,10 @@ function draw() {
   // The glow's top layers go between the shoals and their glyphs, so a glowing
   // shoal brightens and its glyph keeps the colour it had.
   const wash = svg('g', { id: 'wash' });
-  coloured.append(land, shade, grain);
+  // Over the shoals: the water that covers them, then the light on the water,
+  // which falls on shoal and open water alike.
+  const light = svg('rect', { class: 'caustics', x: -size.width, y: -size.height, width: size.width * 3, height: size.height * 3, filter: 'url(#caustics)' });
+  coloured.append(land, shade, grain, water, light);
   text.classList.add('coloured');
   boardEl.replaceChildren(defs(), glows, coloured, wash, text, marks, lifeLayer);
   // A redraw, as when the layout turns, puts back whatever is out.
@@ -488,7 +512,9 @@ $('motion-note').textContent = reduced.matches
   : '';
 initSettings({
   volume: { el: $('volume'), event: 'input', fallback: 0.7 },
-  saturation: { el: $('saturation'), event: 'input', fallback: SATURATION.initial },
+  // Named colour, not saturation, so that a value saved before the palette
+  // changed on 2026-10-10 is not carried over.
+  colour: { el: $('saturation'), event: 'input', fallback: SATURATION.initial },
   creaturesOn: { el: $('creatures-on'), event: 'change', fallback: true },
   creaturesMove: { el: $('creatures-move'), event: 'change', fallback: () => !reduced.matches },
 });
@@ -500,6 +526,8 @@ function toggleMenu(open = $('menu').hidden) {
   $('menu-button').textContent = open ? 'Close' : 'Menu';
 }
 $('menu-button').addEventListener('click', () => toggleMenu());
+// The testing controls are for development: ?testing shows them.
+$('audition').hidden = !params.has('testing');
 // For screenshots: ?menu=open shows the menu as the page opens.
 if (params.get('menu') === 'open') toggleMenu(true);
 

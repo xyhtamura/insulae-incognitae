@@ -9,8 +9,10 @@
   --ink: #202b28;
   --dim: #5b6763;
   --line: #b9beb6;
-  --water: #b9cdd0;
-  --water-in: #9fb9c2;
+  /* Clear water over pale sand: aqua at the landward edge, blue at the seaward. */
+  --water-shallow: #6fd3cf;
+  --water: #2fa9bd;
+  --water-deep: #1c6f9f;
 }
 
 * { box-sizing: border-box; }
@@ -39,9 +41,8 @@ body {
   /* Layered radial gradients over the water colour, after Ombak Lock: a pale
      patch up and to the left and a deeper one down and to the right. */
   background:
-    radial-gradient(70% 60% at 22% 12%, #ffffff55 0%, transparent 62%),
-    radial-gradient(90% 80% at 88% 96%, #3d517a40 0%, transparent 66%),
-    var(--water);
+    radial-gradient(70% 60% at 22% 8%, #ffffff40 0%, transparent 60%),
+    linear-gradient(to bottom, var(--water-shallow), var(--water) 45%, var(--water-deep));
   touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
@@ -49,18 +50,25 @@ body {
 
 /* Shoals of one habitat share a fill and overlap, so they run together. */
 /* The water is a shade deeper while the tide is in; the status line says so in words. */
-#board.tide-in {
+/* Upright, the landward edge is on the left. */
+#board.upright {
   background:
-    radial-gradient(70% 60% at 22% 12%, #ffffff40 0%, transparent 62%),
-    radial-gradient(90% 80% at 88% 96%, #2b3d6a55 0%, transparent 66%),
-    var(--water-in);
+    radial-gradient(60% 70% at 8% 22%, #ffffff40 0%, transparent 60%),
+    linear-gradient(to right, var(--water-shallow), var(--water) 45%, var(--water-deep));
 }
+/* The tide coming in deepens the water and covers the shoals further. */
+#board.tide-in { --tide: var(--tide-depth, 0.2); filter: brightness(0.9) saturate(1.1); }
+
+/* Water over each shoal, and the light on the water. */
+#water, .caustics { pointer-events: none; }
+.veil { opacity: calc(var(--depth, 0.3) + var(--tide, 0)); transition: opacity 3s ease; }
+.caustics { mix-blend-mode: soft-light; opacity: 0.6; }
 
 /* One control for how strong every colour on the board is. */
 .coloured { filter: saturate(var(--saturation, 0.65)); }
 .shade, .grain { pointer-events: none; }
 .texture { mix-blend-mode: multiply; opacity: 0.7; }
-.grain { mix-blend-mode: soft-light; opacity: 0.55; }
+.grain { mix-blend-mode: soft-light; opacity: 0.35; }
 #tide { color: var(--dim); }
 
 .key { cursor: pointer; }

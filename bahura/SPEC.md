@@ -241,8 +241,10 @@ check to measure.
 - Audio starts on the first strike, which is the user gesture the browser
   requires. There is no separate start screen.
 - The tuning, registers, and beat band are drawn by the seed on each
-  reshuffle. The step 1 page shows them in an Audition panel for testing; the
-  finished page hides the panel and gives the player no control over them.
+  reshuffle. The testing controls that show and override them are hidden, and
+  `?testing` in the address brings them back.
+- The shoals lie partly under water, deeper toward the seaward row and deeper
+  again when the tide is in, with generated light on the water over them.
 - Playing a shoal shows its habitat's name at the foot of the window, and the
   shoal glows amber while it sounds.
 - The board fills the window. A Menu button in the top right corner opens a

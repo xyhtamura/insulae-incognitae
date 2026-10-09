@@ -18,6 +18,52 @@ device, and hiding the Audition panel for the finished page.
 
 ## Log
 
+2026-10-10 — Claude Code — Hid the testing panel, strengthened the colours,
+and drew the shoals as partly under water, at Xyh's request and from three
+reference photographs Xyh attached: clear water with light rippling on pale
+rubble, a white sand shoal seen through turquoise water, and a reef in pink,
+orange, and magenta against deep blue. Xyh's ruling for this pass: the look
+comes first, and contrast and legibility are not the concern yet.
+
+What changed:
+- Testing panel. The Testing section of the menu is hidden. Adding
+  `?testing` to the address shows it. Its controls are still in the page, so
+  nothing that reads them changed.
+- Colours. All twenty-five habitats have deeper, stronger colours in
+  `data/habitats.js`; the pale blues and creams are gone. Colour strength
+  starts at 110%, was 65%, and its slider now runs to 150%. The saved setting
+  was renamed so that a 65% saved earlier is not carried over. The white
+  highlight on each shoal is about half as strong and the grain lighter,
+  since both were whitening the colours.
+- Water. The background runs from aqua at the landward edge to blue at the
+  seaward, top to bottom in the keyboard layout and left to right upright.
+- Submerged. Each shoal has water drawn over it that is clear at its crown
+  and thick at its rim, so the middle stands out of the water and the edges
+  go under. Its strength follows the row: 12% on the landward row, then 30%,
+  50%, and 70% on the seaward row. The values are in `data/look.js`. When the
+  tide is in, every row gains 20% over three seconds and the whole board
+  darkens a little.
+- Light on the water. A web of thin bright lines lies over the water and the
+  shoals alike. It is generated: smooth noise whose opacity peaks at its
+  middle value, which draws the noise's contour lines. It is still, and it is
+  different on each board.
+
+Verified: headless Edge screenshots of board 5 at 1280 by 720 and board 11 at
+520 by 900, looked at. The water reads as shallow sea with light on it; the
+seaward shoals are visibly sunk at their edges and the landward ones stand
+clear; the habitats are distinctly coloured. The first version of the light
+was coarse white blobs that read as breaking waves, and was replaced. By
+rendered DOM: the Testing section has the `hidden` attribute at the plain
+address and not with `?testing`. `npm run check` passes.
+
+Not verified: the tide's deepening, which no screenshot was taken of. Drawing
+cost: the board now has a second full-board noise filter and forty more
+gradient paths, and nothing was measured. Contrast was set aside by
+instruction; some glyphs on the seaward row are faint under the water.
+
+The photographs were used as references for colour and for the idea of light
+on water. Nothing from them is in the page.
+
 2026-10-10 — Claude Code — Three changes Xyh asked for after playing: the
 glyph stays dark while its shoal glows, the terrain changes faster, and each
 creature has a tune.
