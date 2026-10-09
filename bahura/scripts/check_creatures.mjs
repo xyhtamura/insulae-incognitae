@@ -14,36 +14,57 @@ import { CREATURES, CROWD, DITHERTICK, VARIANTS } from '../data/creatures.js';
 import { habitat } from '../data/habitats.js';
 import { FAMILY_LIST, buildPlan, renderPlan } from '../vendor/dithertick-synth.js';
 
+// ZzFX makes an AudioContext as it is imported, and Node has none.
+globalThis.AudioContext ??= class {};
+const { ZZFX } = await import('../vendor/zzfx.js');
+
 const arg = (name, fallback) => { const i = process.argv.indexOf(`--${name}`); return i > 0 ? Number(process.argv[i + 1]) : fallback; };
 const SEEDS = arg('seeds', 100), MINUTES = arg('minutes', 60);
 const failures = [], notes = [];
 const here = name => fileURLToPath(new URL(name, import.meta.url));
 const sha = buffer => crypto.createHash('sha256').update(buffer).digest('hex');
 
-// The vendored copy: its body must hash to its own stamp, and to the source if
-// the source is on this disk. A difference from the source is reported and
+// Each vendored copy: its body must hash to its own stamp, and to the source
+// if the source is on this disk. A difference from the source is reported and
 // nothing is copied, because re-vendoring is a decision.
 const MARK = '// ---------------------------------------------------------------------------\n';
-const copy = fs.readFileSync(here('../vendor/dithertick-synth.js'));
-const cut = copy.indexOf(MARK) + MARK.length;
-const stamp = /Source SHA-256: ([0-9a-f]{64})/.exec(copy.subarray(0, cut).toString())?.[1];
-if (sha(copy.subarray(cut)) !== stamp) failures.push('vendor/dithertick-synth.js does not match its own stamp: it has been edited');
-const source = here('../../../dithertick/synth.js');
-if (fs.existsSync(source)) {
-  if (sha(fs.readFileSync(source)) !== stamp) notes.push('DRIFT: dithertick/synth.js has changed since it was vendored. Listen before copying it again.');
-  else notes.push('Vendored synth matches dithertick/synth.js.');
-} else notes.push('dithertick/synth.js is not on this disk, so drift was not checked.');
+for (const [name, from] of [['dithertick-synth.js', '../../../dithertick/synth.js'], ['zzfx.js', '../../../third-party/zzfx/ZzFX.js']]) {
+  const copy = fs.readFileSync(here(`../vendor/${name}`));
+  const cut = copy.indexOf(MARK) + MARK.length;
+  const stamp = /Source SHA-256: ([0-9a-f]{64})/.exec(copy.subarray(0, cut).toString())?.[1];
+  if (sha(copy.subarray(cut)) !== stamp) failures.push(`vendor/${name} does not match its own stamp: it has been edited`);
+  const source = here(from);
+  if (!fs.existsSync(source)) notes.push(`${from.slice(9)} is not on this disk, so drift was not checked.`);
+  else if (sha(fs.readFileSync(source)) !== stamp) notes.push(`DRIFT: ${from.slice(9)} has changed since it was vendored. Listen before copying it again.`);
+  else notes.push(`vendor/${name} matches ${from.slice(9)}.`);
+}
+if (!fs.existsSync(here('../vendor/zzfx-LICENSE'))) failures.push('vendor/zzfx-LICENSE is missing; the MIT notice has to travel with the copy');
 
 // The table.
 for (const kind of CREATURES) {
-  if (!FAMILY_LIST.includes(kind.family)) failures.push(`${kind.id}: no dithertick family called ${kind.family}`);
+  if (kind.call && !(Array.isArray(kind.call) && kind.call.every(Number.isFinite))) failures.push(`${kind.id}: its call is not a list of numbers`);
+  if (!kind.call && !FAMILY_LIST.includes(kind.family)) failures.push(`${kind.id}: no dithertick family called ${kind.family}`);
   for (const id of kind.habitats) if (!habitat(id)) failures.push(`${kind.id}: no habitat called ${id}`);
   if (!(kind.every[0] > 0 && kind.every[1] >= kind.every[0] && kind.stays[1] >= kind.stays[0])) failures.push(`${kind.id}: bounds out of order`);
 }
 
 // Every render the page will ask for is finite and not silent.
 let longest = 0, renderMs = 0;
+ZZFX.sampleRate = 48000;
+const lengths = [];
 for (const kind of CREATURES) for (let v = 0; v < VARIANTS; v++) {
+  if (kind.call) {
+    const started = performance.now();
+    const samples = ZZFX.buildSamples(...kind.call);
+    renderMs += performance.now() - started;
+    longest = Math.max(longest, samples.length / 48000);
+    if (!v) lengths.push(`${kind.id} ${(samples.length / 48000).toFixed(2)} s`);
+    let peak = 0;
+    for (const x of samples) { if (!Number.isFinite(x)) { failures.push(`${kind.id} variant ${v}: a sample is not a number`); break; } peak = Math.max(peak, Math.abs(x)); }
+    if (peak < 0.01) failures.push(`${kind.id} variant ${v}: the call is silent`);
+    if (peak > 1.001) failures.push(`${kind.id} variant ${v}: the call peaks at ${peak.toFixed(2)}, over full level`);
+    continue;
+  }
   const settings = { ...DITHERTICK, seed: `${kind.id}:${v}`, brightness: DITHERTICK.brightness + kind.brightness * 0.3, tailScale: kind.tail };
   const started = performance.now();
   const rendered = renderPlan(buildPlan([{ time: 0, note: 42, velocity: 0.8, duration: 0.1, track: 0, channel: 9 }], settings, kind.family), settings, 48000);
@@ -88,6 +109,7 @@ if (most > CROWD.most) failures.push(`${most} creatures were out at once; the li
 if (misplaced) failures.push(`two creatures shared a key at ${misplaced} moments`);
 
 for (const note of notes) console.log(note);
+console.log(`ZzFX calls: ${lengths.join(', ')}`);
 console.log(`Renders: ${CREATURES.length * VARIANTS} in ${renderMs.toFixed(0)} ms in Node, the longest ${longest.toFixed(2)} s of sound`);
 console.log(`${SEEDS} boards, ${MINUTES} minutes each, left alone`);
 console.log(`Creatures out: ${(total / samples).toFixed(2)} on average, ${most} at most; none ${(100 * (counts.get(0) ?? 0) / samples).toFixed(0)}% of the time`);

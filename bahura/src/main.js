@@ -9,6 +9,7 @@ import { contact } from './contact.js';
 import { createClock } from './clock.js';
 import { createCreatures } from './creatures.js';
 import { buildPlan, renderPlan } from '../vendor/dithertick-synth.js';
+import { ZZFX } from '../vendor/zzfx.js';
 import { CREATURE_LEVEL, DITHERTICK, VARIANTS } from '../data/creatures.js';
 import { createVoice } from './voice.js';
 import { habitat } from '../data/habitats.js';
@@ -230,12 +231,20 @@ function place(creature) {
   return el;
 }
 
-// A creature's sounds are rendered by dithertick the first time it is heard:
-// one note in its family, a few times over with different seeds.
+// A creature's sounds are rendered the first time it is heard, a few times
+// over so that it does not repeat exactly. A kind with a call is built by ZzFX,
+// whose own randomness varies the pitch from one build to the next. Any other
+// kind is one dithertick note in its family, under different seeds.
 function soundsOf(kind) {
   if (!rendered.has(kind.id)) {
     const made = [];
+    ZZFX.sampleRate = voice.sampleRate;
     for (let v = 0; v < VARIANTS; v++) {
+      if (kind.call) {
+        const samples = ZZFX.buildSamples(...kind.call);
+        made.push(voice.buffer({ left: samples, right: samples, sampleRate: voice.sampleRate }));
+        continue;
+      }
       const settings = { ...DITHERTICK, seed: `${kind.id}:${v}`, brightness: DITHERTICK.brightness + kind.brightness * 0.3, tailScale: kind.tail };
       const plan = buildPlan([{ time: 0, note: 42, velocity: 0.8, duration: 0.1, track: 0, channel: 9 }], settings, kind.family);
       made.push(voice.buffer(renderPlan(plan, settings, voice.sampleRate)));

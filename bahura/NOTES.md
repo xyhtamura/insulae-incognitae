@@ -18,6 +18,57 @@ device, and hiding the Audition panel for the finished page.
 
 ## Log
 
+2026-10-10 — Claude Code — Added ZzFX as a second creature voice, after Xyh
+opened vendoring to engines by other people and asked for a root folder to
+keep such copies in.
+
+Survey before choosing: ZzFX (Frank Force, MIT, one module of 260 lines),
+jsfxr (Unlicense, the same kind of sound, larger), Pink Trombone (a vocal
+tract; the original's licence was not found, a TypeScript fork is MIT; it runs
+continuously and would be a larger change), Flocking (licence listed two
+ways), and Tone.js (MIT, a framework). ZzFX was taken. Pink Trombone is the
+one worth a second look, licence first.
+
+What changed:
+- The workspace has a shelf, `../../third-party/`, with ZzFX and its licence
+  at a pinned commit, a manifest of hashes, and a check. Its README says how
+  to add to it.
+- `vendor/zzfx.js` and `vendor/zzfx-LICENSE`: the stamped copy and the MIT
+  notice. The contract is in the root `DEPENDENCIES.md`.
+- `data/creatures.js`: the five walkers (crab, octopus, turtle, milkfish,
+  squid) each have a ZzFX call, a list of numbers in that tool's parameter
+  order with a comment saying what it is meant to be. The five sitters keep
+  their dithertick ticks. So a creature that moves calls in pitch, and one
+  that stays put ticks.
+- `src/main.js`: a kind with a call is built by `ZZFX.buildSamples` three
+  times; ZzFX's own randomness makes each build a slightly different pitch.
+- `scripts/check_creatures.mjs`: checks both vendored copies against their
+  stamps and sources, that the licence file is present, and that every call
+  is a list of numbers that renders finite, audible, and at or under full
+  level.
+
+Measured by the check: the calls last 0.12 s (crab), 0.30 s (octopus),
+0.58 s (turtle), 0.10 s (milkfish), and 0.14 s (squid), each peaking at full
+level before the 30% creature level is applied. The crab call first came out
+at 0.05 s, shorter than its own repeat time, so it could only click once; its
+sustain was lengthened.
+
+Verified in the Browser pane by DOM: the page loads with the ZzFX import and
+draws 40 keys with no console messages; importing the vendored module in the
+page and building all five calls gave the same lengths as Node; calling a
+turtle and pressing its key ran without error.
+
+Not verified: any call, by ear. The five parameter lists were written from
+ZzFX's parameter list and comments, not from listening, and they are the part
+of this entry most likely to need changing. Real key presses could not be sent
+to the pane in this sitting, so the sound path was reached only through a
+dispatched event.
+
+Known: ZzFX makes its own `AudioContext` when imported, so the page holds a
+second one that plays nothing. In the Browser pane it reported itself running.
+Removing it would mean editing the copy, which the shelf's rule forbids
+without saying so in the header.
+
 2026-10-09 — Claude Code — Added creatures, at Xyh's request: animals and
 other things that come out of the terrain, make sounds unlike the keys', and
 leave by themselves. Xyh offered `cytophone/` and `dithertick/` as engines to
