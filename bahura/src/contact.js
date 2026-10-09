@@ -80,13 +80,18 @@ export function driftTarget(key, reach, random) {
   return near.length ? near[Math.floor(random() * near.length)].id : null;
 }
 
-// One drift opportunity for every key: a small chance of becoming a nearby
-// habitat with nothing causing it.
+// One drift opportunity for every key: a small chance of changing with
+// nothing causing it. Most of the time it takes the habitat of a key touching
+// it, which keeps same-habitat keys together in patches; otherwise it becomes
+// something new from nearby on the shore.
 export function drift(board, rates, random = Math.random) {
   const changes = [];
   for (const key of board.keys) {
     if (key.cooldown > 0 || random() >= rates.chance) continue;
-    const to = driftTarget(key, rates.reach, random);
+    const others = neighbours(board, key).map(n => n.habitat).filter(id => id !== key.habitat && HABITATS.some(h => h.id === id));
+    const to = others.length && random() < rates.spread
+      ? others[Math.floor(random() * others.length)]
+      : driftTarget(key, rates.reach, random);
     if (to) changes.push(become(key, to, 'drift', random));
   }
   return changes;

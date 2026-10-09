@@ -45,13 +45,17 @@ function mulberry(seed) {
 }
 
 const kinds = board => new Set(board.keys.map(k => k.habitat)).size;
+// The share of keys touching at least one key of their own habitat: the keys
+// that have something to beat and ring with.
+const paired = board => board.keys.filter(k => neighbours(board, k).some(n => n.habitat === k.habitat)).length / board.keys.length;
 
 function simulate(label, { played, timed }) {
   const perMinute = Array(MINUTES).fill(0), causes = new Map(), mixStart = new Map(), mixEnd = new Map();
-  let kindsStart = 0, kindsEnd = 0, fewest = Infinity;
+  let kindsStart = 0, kindsEnd = 0, fewest = Infinity, pairedStart = 0, pairedEnd = 0;
   for (let seed = 0; seed < SEEDS; seed++) {
     const board = generateBoard(seed), random = mulberry(seed + 1), clock = createClock(board, random);
     kindsStart += kinds(board);
+    pairedStart += paired(board);
     for (const key of board.keys) mixStart.set(key.habitat, (mixStart.get(key.habitat) ?? 0) + 1);
     for (let minute = 0; minute < MINUTES; minute++) {
       const changes = [];
@@ -67,6 +71,7 @@ function simulate(label, { played, timed }) {
       for (const c of changes) causes.set(c.cause, (causes.get(c.cause) ?? 0) + 1);
     }
     kindsEnd += kinds(board);
+    pairedEnd += paired(board);
     fewest = Math.min(fewest, kinds(board));
     for (const key of board.keys) mixEnd.set(key.habitat, (mixEnd.get(key.habitat) ?? 0) + 1);
   }
@@ -75,6 +80,7 @@ function simulate(label, { played, timed }) {
   console.log(`  Keys changed per minute: ${mean(0, Math.min(10, MINUTES))} in the first 10 minutes, ${mean(Math.max(0, MINUTES - 20), MINUTES)} in the last 20, ${mean(0, MINUTES)} overall`);
   console.log(`  By cause, per minute: ${[...causes].map(([cause, n]) => `${cause} ${(n / MINUTES / SEEDS).toFixed(2)}`).join(', ') || 'none'}`);
   console.log(`  Habitats per board: ${(kindsStart / SEEDS).toFixed(1)} at the start, ${(kindsEnd / SEEDS).toFixed(1)} at the end, fewest ${fewest}`);
+  console.log(`  Keys touching one of their own habitat: ${(100 * pairedStart / SEEDS).toFixed(0)}% at the start, ${(100 * pairedEnd / SEEDS).toFixed(0)}% at the end`);
   return { mixStart, mixEnd };
 }
 

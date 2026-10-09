@@ -68,7 +68,9 @@ body {
 .key:focus-visible { stroke: var(--ink); stroke-width: 0.05; stroke-dasharray: 0.1 0.06; }
 
 .labels { pointer-events: none; }
-.labels text { text-anchor: middle; dominant-baseline: middle; }
+.labels text { text-anchor: middle; dominant-baseline: middle; transition: fill 0.3s ease; }
+/* The glyph of a shoal that is glowing; a style rule outranks the fill attribute. */
+.labels text.glowing { fill: var(--ink); transition-duration: 0.08s; }
 .glyph { font-size: 0.46px; }
 .char, .hz { font-family: ui-monospace, Consolas, monospace; opacity: 0.8; }
 .char { font-size: 0.17px; }
@@ -96,7 +98,7 @@ body {
    drawn under every shoal and blurred, so it shows as light round the edge;
    the wash on top brightens the shoal itself. A neighbour set ringing by
    another key gets a fainter version of both. */
-#glows, #marks { pointer-events: none; }
+#glows, #wash, #marks { pointer-events: none; }
 .halo {
   fill: hsl(36 92% 60%); filter: url(#halo); opacity: 0.95;
   transform-box: fill-box; transform-origin: center; transform: scale(1.14);

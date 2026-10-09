@@ -145,8 +145,12 @@ function draw() {
   // Wider than the view box, because an upright board is letterboxed inside its element.
   const grain = svg('rect', { class: 'grain', x: -size.width, y: -size.height, width: size.width * 3, height: size.height * 3, filter: 'url(#grain)' });
   const coloured = svg('g', { class: 'coloured' });
-  coloured.append(land, shade, grain, text);
-  boardEl.replaceChildren(defs(), glows, coloured, marks, lifeLayer);
+  // The glow's top layers go between the shoals and their glyphs, so a glowing
+  // shoal brightens and its glyph keeps the colour it had.
+  const wash = svg('g', { id: 'wash' });
+  coloured.append(land, shade, grain);
+  text.classList.add('coloured');
+  boardEl.replaceChildren(defs(), glows, coloured, wash, text, marks, lifeLayer);
   // A redraw, as when the layout turns, puts back whatever is out.
   life.clear();
   for (const creature of creatures.out) life.add(creature);
@@ -188,8 +192,15 @@ function press(char) {
     // A second, fainter blur on top lets the light fall on the shoals around it.
     const bloom = svg('path', { d, class: `bloom${cls}` });
     $('glows').append(halo);
-    $('marks').append(bloom, lit);
-    return { remove() { for (const el of [halo, bloom, lit]) { el.classList.add('fading'); setTimeout(() => el.remove(), 500); } } };
+    $('wash').append(bloom, lit);
+    // A played shoal turns pale, so its glyph and letter go dark for as long as
+    // it glows, whatever colour the habitat gives them.
+    const words = weak ? [] : [shapes.get(c).glyphLabel, shapes.get(c).charLabel];
+    for (const word of words) word.classList.add('glowing');
+    return { remove() {
+      for (const el of [halo, bloom, lit]) { el.classList.add('fading'); setTimeout(() => el.remove(), 500); }
+      for (const word of words) word.classList.remove('glowing');
+    } };
   };
   const releases = [voice.start(hz, kind, envelope)], marks = [glowOf(char, false)];
   // Neighbours of the same habitat ring with it, each at its own pitch and
@@ -297,9 +308,13 @@ function sound(creature, which = 'sounds') {
   // Each sits in the stereo field where its column is. A call or tick plays a
   // little higher toward the landward row, as the keys do; a voice keeps the
   // pitch it was rendered at.
+  // Each sound is the next note of the creature's tune, in steps of whichever
+  // tuning the board is in, made by playing the clip faster or slower.
+  const step = creature.melody[creature.note++ % creature.melody.length];
+  const divisions = TUNINGS.find(t => t.id === settings.tuning).divisions;
   voice.play(made[Math.floor(Math.random() * made.length)], {
     gain: which === 'voices' ? MOUTH_LEVEL : CREATURE_LEVEL, pan: (key.col / 9) * 1.4 - 0.7,
-    rate: which === 'voices' ? 1 : 1.25 - key.row * 0.15,
+    rate: (which === 'voices' ? 1 : 1.25 - key.row * 0.15) * 2 ** (step / divisions),
   });
 }
 

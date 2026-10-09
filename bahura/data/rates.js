@@ -8,7 +8,7 @@ export const CONTACT = {
   // successive opportunities.
   agree: 2,
   // The chance that an agreed change happens on a given opportunity.
-  chance: 0.012,
+  chance: 0.035,
   // Opportunities a changed key sits out before it can change again.
   cooldown: 60,
 };
@@ -17,24 +17,25 @@ export const CONTACT = {
 // opportunity.
 export const TICK = {
   seconds: 5,
-  contact: { agree: 2, chance: 0.004, cooldown: 12 },
-  // Drift: the chance per key per tick of becoming a habitat within `reach`
-  // of its place on the shore, with nothing causing it.
-  drift: { chance: 0.0004, reach: 0.25 },
+  contact: { agree: 2, chance: 0.012, cooldown: 12 },
+  // Drift: the chance per key per tick of changing with nothing causing it.
+  // On `spread` of those occasions it takes a touching key's habitat, and on
+  // the rest a habitat within `reach` of its own place on the shore.
+  drift: { chance: 0.0012, reach: 0.25, spread: 0.85 },
 };
 
 // Tide: comes in after a wait drawn between `every` bounds, stays in for a
 // time drawn between `stays` bounds, then goes out. All in seconds.
 export const TIDE = {
-  every: [480, 840],
-  stays: [60, 120],
+  every: [180, 360],
+  stays: [40, 80],
   cover: 0.2,     // share of coverable keys in the two seaward rows that flood
   uncover: 0.4,   // share of mudflat keys the ebb turns to sandbar
 };
 
 // Earthquake: after a wait drawn between these bounds, in seconds.
 export const QUAKE = {
-  every: [1500, 2700],
+  every: [600, 1200],
   reach: 0.5,     // chance that each key touching the centre also changes
 };
 

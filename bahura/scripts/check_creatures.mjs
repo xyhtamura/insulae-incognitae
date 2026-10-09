@@ -124,7 +124,7 @@ function mulberry(seed) {
 }
 
 // An hour on each board with terrain time running and nobody playing.
-const counts = new Map(), seen = new Map();
+const counts = new Map(), seen = new Map(), tunes = new Set();
 let samples = 0, total = 0, most = 0, sounds = 0, appearances = 0, stayed = 0, left = 0, misplaced = 0;
 for (let seed = 0; seed < SEEDS; seed++) {
   const board = generateBoard(seed), random = mulberry(seed + 1);
@@ -134,7 +134,11 @@ for (let seed = 0; seed < SEEDS; seed++) {
     const now = half / 2;
     if (half % 10 === 0 && half) clock.advance(5);
     for (const event of creatures.step(now)) {
-      if (event.type === 'appear') { appearances++; born.set(event.creature.id, now); seen.set(event.creature.kind.id, (seen.get(event.creature.kind.id) ?? 0) + 1); }
+      if (event.type === 'appear') {
+        const tune = event.creature.melody;
+        if (!(tune?.length >= 3 && tune[0] === 0 && new Set(tune).size > 1)) failures.push(`a ${event.creature.kind.id} came out with the tune ${JSON.stringify(tune)}`);
+        tunes.add(tune.join(' '));
+        appearances++; born.set(event.creature.id, now); seen.set(event.creature.kind.id, (seen.get(event.creature.kind.id) ?? 0) + 1); }
       if (event.type === 'sound' || event.type === 'move') sounds++;
       if (event.type === 'leave') { left++; stayed += now - born.get(event.creature.id); }
     }
@@ -155,6 +159,7 @@ console.log(`Renders: ${CREATURES.length * VARIANTS} in ${renderMs.toFixed(0)} m
 console.log(`${SEEDS} boards, ${MINUTES} minutes each, left alone`);
 console.log(`Creatures out: ${(total / samples).toFixed(2)} on average, ${most} at most; none ${(100 * (counts.get(0) ?? 0) / samples).toFixed(0)}% of the time`);
 console.log(`Per minute: ${(appearances / SEEDS / MINUTES).toFixed(2)} appear, ${(sounds / SEEDS / MINUTES).toFixed(1)} sounds`);
+console.log(`Tunes: ${tunes.size} different ones among ${appearances} creatures, for example ${[...tunes].slice(0, 3).join(' | ')}`);
 console.log(`A creature stays ${(stayed / left).toFixed(0)} s on average`);
 console.log(`Seen: ${CREATURES.map(kind => `${kind.id} ${seen.get(kind.id) ?? 0}`).join(', ')}`);
 

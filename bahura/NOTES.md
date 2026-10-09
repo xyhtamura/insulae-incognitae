@@ -18,6 +18,56 @@ device, and hiding the Audition panel for the finished page.
 
 ## Log
 
+2026-10-10 — Claude Code — Three changes Xyh asked for after playing: the
+glyph stays dark while its shoal glows, the terrain changes faster, and each
+creature has a tune.
+
+Glyph:
+- The glow's top layers moved under the glyphs, and a played shoal's glyph
+  and letter turn dark for as long as it glows. Moving the layers was not
+  enough by itself: dark habitats have pale glyphs, and a pale glyph on a
+  shoal that has just turned pale disappears. A headless Edge screenshot with
+  5, h, and z held shows all three glyphs dark, where the one before showed
+  two of them washed out.
+
+Terrain, in `data/rates.js`, each about three times what it was:
+- The chance that playing changes a key: 1.2% to 3.5% per opportunity.
+- Timed contact: 0.4% to 1.2% per key per tick. Drift: 0.04% to 0.12%.
+- The tide comes every 3 to 6 minutes and stays 40 to 80 s, where it came
+  every 8 to 14 and stayed 60 to 120. An earthquake comes every 10 to 20
+  minutes, where it came every 25 to 45.
+
+Measured by `node scripts/check_contact.mjs`, 100 boards for 60 simulated
+minutes: left alone, 1.77 keys change a minute, up from 0.65; played at 120
+keys a minute with time running, 2.38, up from 0.93.
+
+Faster change broke the patches up, which matters because same-habitat
+neighbours are what beat and ring together. The check now prints the share of
+keys touching one of their own habitat. It is 92% on a new board. With the
+faster rates alone it fell to 57% after an hour of play. Three changes hold
+more of it: drift takes a touching key's habitat 85% of the time and only
+otherwise becomes something new; one ebb leaves one kind of sand or tide line
+behind, not a different one per key; and an earthquake throws one habitat
+over the keys round its centre, not a different one each. With those it is
+68% after an hour, and a board has 13.9 habitats where it had 16.2.
+
+Creature tunes:
+- `src/creatures.js`: each creature is given a tune of three to five notes
+  when it comes out. A note is a number of steps, from 3 down to 5 up, in
+  whichever tuning the board is in. The first note is the pitch its sounds
+  were rendered at, and at least one other differs.
+- `src/main.js`: each sound a creature makes, call, tick, or voice, is the
+  next note of its tune, made by playing the clip faster or slower. So a
+  higher note is also shorter.
+- Measured by `node scripts/check_creatures.mjs`: 6,636 creatures came out
+  with 2,718 different tunes, for example "0 2 4 -3", and the check fails any
+  creature without one.
+
+Verified: the checks above pass, and the page loads and draws in headless
+Edge. Not verified: any tune by ear; the playback-rate arithmetic was read
+and not listened to, and no creature sound was triggered in a browser in this
+sitting. Whether 2.4 changes a minute is the right speed is for Xyh.
+
 2026-10-10 — Claude Code — Two changes Xyh asked for: the name of the terrain
 shown as a subtitle when a shoal is played, and a glow in place of the dark
 outline on a sounding shoal, after Ombak Lock's activation glow.

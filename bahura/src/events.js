@@ -26,12 +26,13 @@ export function flood(board, rates, random = Math.random) {
 // uncovered as sandbar.
 export function ebb(board, rates, random = Math.random) {
   const changes = [];
+  // One tide leaves one thing behind, so what it uncovers lies in patches.
+  const choices = ['tideline', ...SANDS], left = choices[Math.floor(random() * choices.length)];
   for (const key of board.keys) {
     if (key.flooded) {
       key.flooded = false;
       if (key.habitat === 'shallows') {
-        const left = ['tideline', ...SANDS];
-        changes.push(become(key, left[Math.floor(random() * left.length)], 'tide', random));
+        changes.push(become(key, left, 'tide', random));
         continue;
       }
     }
@@ -40,13 +41,15 @@ export function ebb(board, rates, random = Math.random) {
   return changes;
 }
 
-// An earthquake picks one key. That key becomes unusual terrain, and each key
-// touching it may become any habitat at all.
+// An earthquake picks one key. That key becomes unusual terrain, and the keys
+// touching it may all become one other habitat, any at all, which leaves a
+// new patch round the centre.
 export function quake(board, rates, random = Math.random) {
   const centre = board.keys[Math.floor(random() * board.keys.length)];
   const changes = [become(centre, anyUnusual(random), 'earthquake', random)];
+  const thrown = anyHabitat(random);
   for (const key of neighbours(board, centre)) {
-    if (random() < rates.reach) changes.push(become(key, anyHabitat(random), 'earthquake', random));
+    if (key.habitat !== thrown && random() < rates.reach) changes.push(become(key, thrown, 'earthquake', random));
   }
   return changes;
 }

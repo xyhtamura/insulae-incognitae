@@ -209,9 +209,9 @@ Starting rates, all in `data/rates.js`:
 
 | Thing | Target |
 | --- | --- |
-| Keys changed by playing | About one per minute of steady playing |
-| Keys changed by time alone | About one every two minutes |
-| Tide | Every eight to fourteen minutes: some coverable keys in the two seaward rows flood to shallows; the ebb returns them as tide line or sand and uncovers some mudflat as sandbar |
+| Keys changed while playing, all causes | About two and a half a minute (raised on 2026-10-10 from about one) |
+| Keys changed when left alone | About two a minute (raised from about one every two minutes) |
+| Tide | Every three to six minutes: some coverable keys in the two seaward rows flood to shallows; the ebb returns them as tide line or sand and uncovers some mudflat as sandbar |
 | Earthquake | Rare: changes a few keys around one key and may leave unusual terrain |
 
 The check in section 9 measures these rates in simulation, so "slow" is a

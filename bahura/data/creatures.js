@@ -114,6 +114,10 @@ export const CREATURES = [
 // appears while there is room.
 export const CROWD = { most: 3, chance: 0.02 };
 
+// Each creature has a tune of this many notes, each between `low` and `high`
+// steps of the board's tuning from the pitch its sound was rendered at.
+export const MELODY = { length: [3, 5], low: -3, high: 5 };
+
 // A walker moves on this share of its turns and sounds in place on the rest.
 export const WALK_CHANCE = 0.7;
 

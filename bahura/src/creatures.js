@@ -8,11 +8,23 @@
 //   'leave'   it goes
 
 import { neighbours } from './board.js';
-import { CREATURES, CROWD, WALK_CHANCE } from '../data/creatures.js';
+import { CREATURES, CROWD, WALK_CHANCE, MELODY } from '../data/creatures.js';
 
 const between = ([low, high], random) => low + random() * (high - low);
 const keyOf = (board, char) => board.keys.find(k => k.char === char);
 const suits = (kind, key) => kind.habitats.includes(key.habitat);
+
+// A creature's own short tune: a few steps of the board's tuning, up or down
+// from where its sound was rendered. It plays them in order, one per sound,
+// and starts again. The first note is always the rendered pitch, and at least
+// one other differs from it.
+function melody(random) {
+  const length = MELODY.length[0] + Math.floor(random() * (MELODY.length[1] - MELODY.length[0] + 1));
+  const steps = [0];
+  while (steps.length < length) steps.push(MELODY.low + Math.floor(random() * (MELODY.high - MELODY.low + 1)));
+  if (steps.every(step => step === 0)) steps[1] = MELODY.high;
+  return steps;
+}
 
 export function createCreatures(board, random = Math.random) {
   const out = [];
@@ -26,7 +38,7 @@ export function createCreatures(board, random = Math.random) {
     const key = places[Math.floor(random() * places.length)];
     const kinds = CREATURES.filter(kind => suits(kind, key));
     const kind = kinds[Math.floor(random() * kinds.length)];
-    const creature = { id: ++serial, kind, key: key.char, leavesAt: now + between(kind.stays, random), soundsAt: now + between(kind.every, random) };
+    const creature = { id: ++serial, kind, key: key.char, leavesAt: now + between(kind.stays, random), soundsAt: now + between(kind.every, random), melody: melody(random), note: 0 };
     out.push(creature);
     return { type: 'appear', creature };
   }
