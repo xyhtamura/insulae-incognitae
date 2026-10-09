@@ -9,12 +9,57 @@ earthquake. That is the first complete version by the spec's own measure.
 
 ## Next step
 
-Xyh plays it and gives verdicts by ear and eye: the envelopes, the tunings,
-the ringing level, the rate of change, and the twenty-five habitats' colours.
-Step 5 of [SPEC.md](SPEC.md) section 10 is what is left to build: a check on a
-real touch device, and hiding the Audition panel for the finished page.
+Xyh looks for photographed textures and says whether the shading, grain, and
+colour strength are right. A texture is added by putting the file in
+`textures/` and listing it in `data/look.js`. After the look is settled, step 5
+of [SPEC.md](SPEC.md) section 10 is what is left: a check on a real touch
+device, and hiding the Audition panel for the finished page.
 
 ## Log
+
+2026-10-09 — Claude Code — First pass on the look of the shoals, after Xyh
+played steps 1 to 4 and found the sound and behaviour acceptable. Xyh asked
+for something drawn from Ombak Lock's gradients, less saturation, and room for
+textures to be found later.
+
+What changed:
+- Shading. Ombak Lock draws its knobs and tumblers with two layered radial
+  gradients: a highlight up and to the left over a body that darkens down and
+  to the right. Each shoal now has the same two layers over its flat habitat
+  colour, as SVG gradients shared by every key (`defs` in `src/main.js`), so
+  a shoal reads as a low boss. The outline stroke is gone.
+- Water. The board background is the water colour under two radial gradients
+  in the same manner, and a deeper pair while the tide is in.
+- Colour strength. One CSS `saturate` filter over the shoals and their glyphs,
+  set to 65%, with a Colour slider in the Audition panel from 20% to 100%. The
+  habitat colours in `data/habitats.js` are unchanged.
+- Grain. A generated noise layer (`feTurbulence`) over the board in soft
+  light, as a stand-in for texture.
+- Texture slot. `data/look.js` has a `TEXTURES` table from habitat id to an
+  image and a tile size. A listed habitat has its image tiled over its colour
+  and multiplied into it, under the shading. The table is empty.
+
+Verified: headless Edge screenshots of board 11 at 900 px wide and board 5 at
+520 px wide, upright, both looked at. The shoals read as rounded and grainy,
+glyphs stay legible, and the colours are muted. The first upright screenshot
+showed the grain as a band narrower than the board, because an upright board
+is letterboxed inside its element; the grain rectangle was enlarged and the
+second screenshot shows it edge to edge. In the Browser pane by DOM: the
+element under the centre of a shoal is still the key and not a shading layer,
+a pointer press there sounded it and its neighbours, the Colour slider changed
+the computed filter to `saturate(0.4)`, and there were no console errors.
+
+Not verified: the texture path. No image has been through it, so the tiling
+size, the multiply blend, and how a texture sits under the shading are
+untested. Drawing cost was not measured; the board now has 120 shading paths,
+a filter over the group, and a noise filter, and a slow phone may show it.
+
+A consequence to judge by eye: each shoal is shaded by itself, so a patch of
+one habitat now reads as several mounds side by side and less as one merged
+shape.
+
+Any texture file that is added needs its source and licence in
+`../ASSETS.md` before it is committed.
 
 2026-10-09 — Claude Code — Built step 4 and widened the terrain, at Xyh's
 request: time, tide with an ebb that uncovers mudflat as sandbar, earthquake,

@@ -9,8 +9,8 @@
   --ink: #202b28;
   --dim: #5b6763;
   --line: #b9beb6;
-  --water: #c3dae0;
-  --water-in: #a9c9d6;
+  --water: #b9cdd0;
+  --water-in: #9fb9c2;
 }
 
 * { box-sizing: border-box; }
@@ -38,7 +38,12 @@ h1 { margin: 0 0 4px; font-size: 20px; font-weight: 600; }
   width: 100%;
   /* The upright board is tall; keep it and the Reshuffle button on one screen. */
   max-height: 82vh;
-  background: var(--water);
+  /* Layered radial gradients over the water colour, after Ombak Lock: a pale
+     patch up and to the left and a deeper one down and to the right. */
+  background:
+    radial-gradient(70% 60% at 22% 12%, #ffffff55 0%, transparent 62%),
+    radial-gradient(90% 80% at 88% 96%, #3d517a40 0%, transparent 66%),
+    var(--water);
   border-radius: 6px;
   touch-action: manipulation;
   user-select: none;
@@ -47,10 +52,21 @@ h1 { margin: 0 0 4px; font-size: 20px; font-weight: 600; }
 
 /* Shoals of one habitat share a fill and overlap, so they run together. */
 /* The water is a shade deeper while the tide is in; the status line says so in words. */
-#board.tide-in { background: var(--water-in); }
+#board.tide-in {
+  background:
+    radial-gradient(70% 60% at 22% 12%, #ffffff40 0%, transparent 62%),
+    radial-gradient(90% 80% at 88% 96%, #2b3d6a55 0%, transparent 66%),
+    var(--water-in);
+}
+
+/* One control for how strong every colour on the board is. */
+.coloured { filter: saturate(var(--saturation, 0.65)); }
+.shade, .grain { pointer-events: none; }
+.texture { mix-blend-mode: multiply; opacity: 0.7; }
+.grain { mix-blend-mode: soft-light; opacity: 0.55; }
 #tide { color: var(--dim); }
 
-.key { cursor: pointer; stroke: #00000022; stroke-width: 0.012; }
+.key { cursor: pointer; }
 .key:focus { outline: none; }
 .key:focus-visible { stroke: var(--ink); stroke-width: 0.05; stroke-dasharray: 0.1 0.06; }
 

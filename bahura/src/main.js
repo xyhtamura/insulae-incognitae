@@ -12,6 +12,7 @@ import { habitat } from '../data/habitats.js';
 import { ENVELOPES, scriptOf } from '../data/envelopes.js';
 import { SYMPATHY } from '../data/voice.js';
 import { CONTACT, TICK, SPEEDS } from '../data/rates.js';
+import { SATURATION, TEXTURES } from '../data/look.js';
 import { TUNINGS, REGISTERS, WINDOW, frequency, drawSettings } from '../data/tuning.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
@@ -38,6 +39,33 @@ const svg = (name, attrs = {}) => {
   for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
   return el;
 };
+// Shading shared by every shoal, after Ombak Lock's layered radial gradients:
+// a soft highlight up and to the left, and a darkening down and to the right,
+// so each shoal reads as a low boss. Both sit over the habitat's flat colour.
+// The grain is generated noise, standing in until photographed textures exist.
+function defs() {
+  const el = svg('defs');
+  const gradient = (id, cx, cy, r, stops) => {
+    const g = svg('radialGradient', { id, cx, cy, r });
+    for (const [offset, color, opacity] of stops) g.append(svg('stop', { offset, 'stop-color': color, 'stop-opacity': opacity }));
+    el.append(g);
+  };
+  gradient('boss', '0.36', '0.28', '0.6', [['0', '#fff', 0.42], ['0.55', '#fff', 0.08], ['1', '#fff', 0]]);
+  gradient('depth', '0.62', '0.78', '1.05', [['0', '#1b2440', 0], ['0.55', '#1b2440', 0.06], ['1', '#1b2440', 0.34]]);
+  const grain = svg('filter', { id: 'grain', x: 0, y: 0, width: 1, height: 1 });
+  grain.append(
+    svg('feTurbulence', { type: 'fractalNoise', baseFrequency: 9, numOctaves: 3, seed: board.seed % 997 }),
+    svg('feColorMatrix', { type: 'matrix', values: '0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0.9 0.9 0.9 0 -0.95' }),
+  );
+  el.append(grain);
+  for (const [id, texture] of Object.entries(TEXTURES)) {
+    const pattern = svg('pattern', { id: `texture-${id}`, patternUnits: 'userSpaceOnUse', width: texture.size, height: texture.size });
+    pattern.append(svg('image', { href: texture.src, width: texture.size, height: texture.size, preserveAspectRatio: 'xMidYMid slice' }));
+    el.append(pattern);
+  }
+  return el;
+}
+
 const hzOf = key => frequency(key, board.offsets, settings);
 
 // The address bar holds the seed and any pinned choice, so a board can be returned to.
@@ -64,12 +92,17 @@ function draw() {
   const upright = narrow.matches, size = view(upright);
   boardEl.setAttribute('viewBox', `0 0 ${size.width} ${size.height}`);
   boardEl.classList.toggle('upright', upright);
-  const land = svg('g'), text = svg('g', { class: 'labels' }), marks = svg('g', { id: 'marks' });
+  const land = svg('g'), shade = svg('g', { class: 'shade' }), text = svg('g', { class: 'labels' }), marks = svg('g', { id: 'marks' });
   for (const key of board.keys) {
     const at = centre(key, board.seed, upright);
     const shape = svg('path', { d: outline(key, board.seed, at), class: 'key', role: 'button', tabindex: 0 });
     shape.dataset.char = key.char;
     land.append(shape);
+    // Over the flat colour: a photographed texture where the habitat has one,
+    // then the highlight and the darkening.
+    const d = shape.getAttribute('d');
+    shape.textureLayer = svg('path', { d, class: 'texture' });
+    shade.append(shape.textureLayer, svg('path', { d, fill: 'url(#depth)' }), svg('path', { d, fill: 'url(#boss)' }));
     shapes.set(key.char, shape);
     const label = (cls, y, value = '') => {
       const el = svg('text', { class: cls, x: at.x, y: at.y + y });
@@ -88,7 +121,11 @@ function draw() {
     marks.append(shape.badge);
     paint(key);
   }
-  boardEl.replaceChildren(land, text, marks);
+  // Wider than the view box, because an upright board is letterboxed inside its element.
+  const grain = svg('rect', { class: 'grain', x: -size.width, y: -size.height, width: size.width * 3, height: size.height * 3, filter: 'url(#grain)' });
+  const coloured = svg('g', { class: 'coloured' });
+  coloured.append(land, shade, grain, text);
+  boardEl.replaceChildren(defs(), coloured, marks);
   $('seed').textContent = `Board ${board.seed}`;
   label();
 }
@@ -97,6 +134,8 @@ function draw() {
 function paint(key) {
   const shape = shapes.get(key.char), kind = habitat(key.habitat);
   shape.setAttribute('fill', kind.bg);
+  const textured = key.habitat in TEXTURES;
+  shape.textureLayer.setAttribute('fill', textured ? `url(#texture-${key.habitat})` : 'none');
   shape.glyphLabel.textContent = key.glyph;
   for (const el of [shape.glyphLabel, shape.charLabel, shape.hzLabel]) el.setAttribute('fill', kind.fg);
   shape.badge.style.display = key.changed ? '' : 'none';
@@ -256,6 +295,14 @@ $('speed').addEventListener('change', e => { speed = SPEEDS.find(s => s.id === e
 const event = changes => { const line = apply(changes); showTide(); readout.textContent = line ? `Terrain:${line}` : 'Nothing changed.'; };
 $('turn-tide').addEventListener('click', () => event(clock.turnTide()));
 $('shake').addEventListener('click', () => event(clock.shake()));
+const saturationEl = $('saturation');
+Object.assign(saturationEl, { min: SATURATION.min, max: SATURATION.max, step: SATURATION.step, value: SATURATION.initial });
+const showSaturation = () => {
+  boardEl.style.setProperty('--saturation', saturationEl.value);
+  $('saturation-value').textContent = `${Math.round(saturationEl.value * 100)}%`;
+};
+showSaturation();
+saturationEl.addEventListener('input', showSaturation);
 $('show-hz').addEventListener('change', e => boardEl.classList.toggle('show-hz', e.target.checked));
 
 // Choices in the address are pinned, if they name something that exists.
