@@ -243,6 +243,8 @@ check to measure.
 - The tuning, registers, and beat band are drawn by the seed on each
   reshuffle. The step 1 page shows them in an Audition panel for testing; the
   finished page hides the panel and gives the player no control over them.
+- Playing a shoal shows its habitat's name at the foot of the window, and the
+  shoal glows amber while it sounds.
 - The board fills the window. A Menu button in the top right corner opens a
   panel with the instructions, the settings, and the testing controls, and a
   Reshuffle button sits in the bottom left corner.

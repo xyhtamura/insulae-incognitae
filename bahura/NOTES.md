@@ -18,6 +18,46 @@ device, and hiding the Audition panel for the finished page.
 
 ## Log
 
+2026-10-10 — Claude Code — Two changes Xyh asked for: the name of the terrain
+shown as a subtitle when a shoal is played, and a glow in place of the dark
+outline on a sounding shoal, after Ombak Lock's activation glow.
+
+What Ombak Lock does, read from `../../ombak-lock/index.html`: an active
+tumbler gets an outer shadow in amber, `hsl(32 84% 56% / .5)`, whose spread
+grows with a glow variable, over an inset highlight.
+
+What changed:
+- Subtitle. Playing a shoal writes its habitat name at the foot of the
+  window, for example "mangrove" or "pink sand". It stays while a key is down
+  and fades 1.6 s after the last one is lifted. It is an `aria-live` region.
+- Glow. A sounding shoal has three layers in place of the outline: a blurred
+  amber copy of its shape underneath every shoal, so light shows round its
+  edge; a fainter blurred copy on top, so some light falls on the shoals
+  beside it; and a pale wash on top that brightens the shoal itself. A
+  neighbour set ringing has the same three, weaker. All fade in over 0.12 s
+  and out over 0.45 s.
+- `?hold=5hz` holds those keys as the page opens, for screenshots.
+
+Verified: two headless Edge screenshots of board 5 with 5, h, and z held,
+looked at. The glow reads as light round each held shoal and faintly on the
+two mangrove neighbours of 5, and the subtitle reads "anemone", the last of
+the three. The first screenshot, without the layer on top, showed almost
+nothing round h, which is surrounded by other shoals; the second has it. In
+the Browser pane by DOM: holding 5 made three of each layer, two of them the
+weak kind, and no old outline elements; the subtitle read "mangrove" and was
+shown; on lifting, all nine layers were fading; 2.3 s later none remained and
+the subtitle was hidden; playing h changed the subtitle to "pink sand". No
+console errors. `npm run check` passes.
+
+Not verified: the glow in motion, by eye. The cost of blurring three shapes
+per sounding shoal while several keys are held.
+
+Known: the state now rests on brightness and colour, where the outline it
+replaced was a shape. The wash lowers the contrast of the glyph on pale
+shoals; in the screenshot the glyph on pink sand is faint while it is held.
+The subtitle carries only the habitat's name; the readout in the menu still
+has the frequency and envelope.
+
 2026-10-10 — Claude Code — Moved Reshuffle out of the menu to a small button
 of its own in the bottom left corner, at Xyh's request. The menu keeps the
 board number and tide. The corner is the one diagonally opposite the menu, so

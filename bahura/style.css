@@ -92,10 +92,38 @@ body {
 .changed circle { fill: #f4f3e9; stroke: var(--ink); stroke-width: 0.03; }
 .changed .dot { fill: var(--ink); stroke: none; }
 
-/* A sounding shoal is outlined, so the state does not rest on colour. */
-.mark { fill: none; stroke: var(--ink); stroke-width: 0.06; pointer-events: none; }
-/* A neighbour set ringing by another key has a thinner, broken outline. */
-.mark.sympathetic { stroke-width: 0.03; stroke-dasharray: 0.08 0.06; }
+/* A sounding shoal glows amber, after Ombak Lock's active tumbler. The halo is
+   drawn under every shoal and blurred, so it shows as light round the edge;
+   the wash on top brightens the shoal itself. A neighbour set ringing by
+   another key gets a fainter version of both. */
+#glows, #marks { pointer-events: none; }
+.halo {
+  fill: hsl(36 92% 60%); filter: url(#halo); opacity: 0.95;
+  transform-box: fill-box; transform-origin: center; transform: scale(1.14);
+  transition: opacity 0.45s ease; animation: glow-in 0.12s ease-out;
+}
+.halo.weak { opacity: 0.45; transform: scale(1.06); }
+.lit { fill: #fff3cf; opacity: 0.3; mix-blend-mode: screen; transition: opacity 0.45s ease; animation: glow-in 0.12s ease-out; }
+.lit.weak { opacity: 0.1; }
+.bloom {
+  fill: hsl(36 92% 60%); filter: url(#halo); opacity: 0.4; mix-blend-mode: screen;
+  transform-box: fill-box; transform-origin: center; transform: scale(1.1);
+  transition: opacity 0.45s ease; animation: glow-in 0.12s ease-out;
+}
+.bloom.weak { opacity: 0.14; }
+.halo.fading, .lit.fading, .bloom.fading { opacity: 0; }
+@keyframes glow-in { from { opacity: 0; } }
+
+/* The name of the terrain last played. */
+#subtitle {
+  position: fixed; z-index: 1; left: 0; right: 0;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  margin: 0; padding: 0 96px; text-align: center; pointer-events: none;
+  font-size: 18px; letter-spacing: 0.04em; color: var(--ink);
+  text-shadow: 0 0 6px #f1f1ec, 0 0 2px #f1f1ec;
+  opacity: 0; transition: opacity 0.5s ease;
+}
+#subtitle.shown { opacity: 1; transition-duration: 0.1s; }
 
 /* One button in the corner opens everything that is not the board. */
 #menu-button {

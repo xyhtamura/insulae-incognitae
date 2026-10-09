@@ -71,6 +71,11 @@ function defs() {
     svg('feColorMatrix', { type: 'matrix', values: '0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0.9 0.9 0.9 0 -0.95' }),
   );
   el.append(grain);
+  // The blur for the glow under a sounding shoal. Its region is widened so the
+  // light is not cut off square.
+  const halo = svg('filter', { id: 'halo', x: -0.6, y: -0.6, width: 2.2, height: 2.2 });
+  halo.append(svg('feGaussianBlur', { stdDeviation: 0.11 }));
+  el.append(halo);
   for (const [id, texture] of Object.entries(TEXTURES)) {
     const pattern = svg('pattern', { id: `texture-${id}`, patternUnits: 'userSpaceOnUse', width: texture.size, height: texture.size });
     pattern.append(svg('image', { href: texture.src, width: texture.size, height: texture.size, preserveAspectRatio: 'xMidYMid slice' }));
@@ -108,7 +113,7 @@ function draw() {
   boardEl.setAttribute('viewBox', `0 0 ${size.width} ${size.height}`);
   boardEl.classList.toggle('upright', upright);
   const land = svg('g'), shade = svg('g', { class: 'shade' }), text = svg('g', { class: 'labels' }), marks = svg('g', { id: 'marks' });
-  const lifeLayer = svg('g', { id: 'creatures' });
+  const lifeLayer = svg('g', { id: 'creatures' }), glows = svg('g', { id: 'glows' });
   for (const key of board.keys) {
     const at = centre(key, board.seed, upright);
     const shape = svg('path', { d: outline(key, board.seed, at), class: 'key', role: 'button', tabindex: 0 });
@@ -141,7 +146,7 @@ function draw() {
   const grain = svg('rect', { class: 'grain', x: -size.width, y: -size.height, width: size.width * 3, height: size.height * 3, filter: 'url(#grain)' });
   const coloured = svg('g', { class: 'coloured' });
   coloured.append(land, shade, grain, text);
-  boardEl.replaceChildren(defs(), coloured, marks, lifeLayer);
+  boardEl.replaceChildren(defs(), glows, coloured, marks, lifeLayer);
   // A redraw, as when the layout turns, puts back whatever is out.
   life.clear();
   for (const creature of creatures.out) life.add(creature);
@@ -173,21 +178,29 @@ function press(char) {
   const key = board.keys.find(k => k.char === char);
   if (!key || sounding.has(char)) return;
   const hz = hzOf(key), kind = habitat(key.habitat), envelope = ENVELOPES[scriptOf(key.glyph)];
-  // The struck outline is redrawn on top, so a neighbour's overlap cannot hide it.
-  const outlineOf = (c, cls) => {
-    const mark = svg('path', { d: shapes.get(c).getAttribute('d'), class: cls });
-    $('marks').append(mark);
-    return mark;
+  // A sounding shoal glows, after the amber halo Ombak Lock puts round an
+  // active tumbler: a blurred copy of its outline underneath every shoal, so the
+  // light spills past its edge, and a pale wash on top. A neighbour set ringing
+  // glows more faintly. Both fade out when the key is lifted.
+  const glowOf = (c, weak) => {
+    const d = shapes.get(c).getAttribute('d'), cls = weak ? ' weak' : '';
+    const halo = svg('path', { d, class: `halo${cls}` }), lit = svg('path', { d, class: `lit${cls}` });
+    // A second, fainter blur on top lets the light fall on the shoals around it.
+    const bloom = svg('path', { d, class: `bloom${cls}` });
+    $('glows').append(halo);
+    $('marks').append(bloom, lit);
+    return { remove() { for (const el of [halo, bloom, lit]) { el.classList.add('fading'); setTimeout(() => el.remove(), 500); } } };
   };
-  const releases = [voice.start(hz, kind, envelope)], marks = [outlineOf(char, 'mark')];
+  const releases = [voice.start(hz, kind, envelope)], marks = [glowOf(char, false)];
   // Neighbours of the same habitat ring with it, each at its own pitch and
   // envelope, and stop when this key does.
   const ringing = sympathy > 0 ? neighbours(board, key).filter(n => n.habitat === key.habitat) : [];
   for (const n of ringing) {
     releases.push(voice.start(hzOf(n), kind, ENVELOPES[scriptOf(n.glyph)], sympathy, SYMPATHY.attack));
-    marks.push(outlineOf(n.char, 'mark sympathetic'));
+    marks.push(glowOf(n.char, true));
   }
   sounding.set(char, { releases, marks });
+  subtitle(kind.name);
 
   let text = `${key.char}  ${kind.name}  ${hz.toFixed(2)} Hz  ${envelope.label}: attack ${envelope.attack} s, sustain ${envelope.sustain}, ${envelope.release == null ? 'rings out' : `release ${envelope.release} s`}`;
   if (last && last.char !== key.char) {
@@ -325,12 +338,26 @@ setInterval(() => {
   if (line) readout.textContent = `Terrain:${line}`;
 }, TICK.seconds * 1000);
 
+// The name of the terrain last played, shown at the foot of the window while a
+// key is down and for a moment after.
+let subtitleTimer = 0;
+function subtitle(name) {
+  clearTimeout(subtitleTimer);
+  $('subtitle').textContent = name;
+  $('subtitle').classList.add('shown');
+}
+function subtitleOff() {
+  clearTimeout(subtitleTimer);
+  subtitleTimer = setTimeout(() => $('subtitle').classList.remove('shown'), 1600);
+}
+
 function lift(char) {
   const note = sounding.get(char);
   if (!note) return;
   note.releases.forEach(release => release());
   note.marks.forEach(mark => mark.remove());
   sounding.delete(char);
+  if (!sounding.size) subtitleOff();
 }
 const liftAll = () => [...sounding.keys()].forEach(lift);
 
@@ -460,6 +487,9 @@ function toggleMenu(open = $('menu').hidden) {
 $('menu-button').addEventListener('click', () => toggleMenu());
 // For screenshots: ?menu=open shows the menu as the page opens.
 if (params.get('menu') === 'open') toggleMenu(true);
+
+// For screenshots: ?hold=5g holds those keys down as the page opens.
+for (const char of params.get('hold') ?? '') press(char);
 
 // For testing and screenshots: ?creatures=3 calls that many out as the page opens.
 for (let n = Math.min(3, Number(params.get('creatures')) || 0); n > 0; n--) {
