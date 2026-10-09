@@ -10,7 +10,8 @@ import { createClock } from './clock.js';
 import { createCreatures } from './creatures.js';
 import { buildPlan, renderPlan } from '../vendor/dithertick-synth.js';
 import { ZZFX } from '../vendor/zzfx.js';
-import { CREATURE_LEVEL, DITHERTICK, VARIANTS } from '../data/creatures.js';
+import { renderMouth } from './mouth.js';
+import { CREATURE_LEVEL, DITHERTICK, VARIANTS, MOUTH_VARIANTS, MOUTH_LEVEL } from '../data/creatures.js';
 import { createVoice } from './voice.js';
 import { habitat } from '../data/habitats.js';
 import { ENVELOPES, scriptOf } from '../data/envelopes.js';
@@ -35,7 +36,8 @@ let last = null;             // the last key struck, for the beat readout
 let clock = null;            // terrain time for this board
 let creatures = null;        // what is out on this board
 const drawn = new Map();     // creature id -> its element
-const rendered = new Map();  // creature kind id -> its sound buffers
+const rendered = new Map();  // creature kind id -> { sounds, voices }, buffers
+const preparing = new Set(); // creature kind ids waiting to be rendered
 let creaturesOn = true;
 const seconds = () => performance.now() / 1000;
 let speed = SPEEDS[0];       // the Audition panel's multiplier on the contact chance
@@ -195,7 +197,11 @@ function press(char) {
   // neighbours one contact opportunity each.
   key.changed = false;
   paint(key);
-  if (creaturesOn) show(creatures.disturb(char, seconds()));
+  if (creaturesOn) {
+    // The first key press is what lets audio start, so anything already out is rendered from here.
+    for (const creature of creatures.out) prepare(creature.kind);
+    show(creatures.disturb(char, seconds()), true);
+  }
   const changes = speed.factor
     ? contact(board, [key, ...neighbours(board, key)], { ...CONTACT, chance: CONTACT.chance * speed.factor })
     : [];
@@ -231,12 +237,31 @@ function place(creature) {
   return el;
 }
 
-// A creature's sounds are rendered the first time it is heard, a few times
-// over so that it does not repeat exactly. A kind with a call is built by ZzFX,
-// whose own randomness varies the pitch from one build to the next. Any other
-// kind is one dithertick note in its family, under different seeds.
+// A creature's sounds are rendered a few times over, so that it does not
+// repeat exactly. A kind with a call is built by ZzFX, whose own randomness
+// varies the pitch from one build to the next. Any other kind is one
+// dithertick note in its family, under different seeds. Its voice is rendered
+// by Pink Trombone.
+//
+// Rendering a kind takes a few tenths of a second, mostly the voice, so it is
+// done in a timer after the creature comes out and never inside a key press.
+// A creature that has to sound before its renders exist stays silent that
+// once.
+function prepare(kind) {
+  if (rendered.has(kind.id) || preparing.has(kind.id) || !voice.ready()) return;
+  preparing.add(kind.id);
+  setTimeout(() => {
+    const sounds = soundsOf(kind), voices = [];
+    for (let v = 0; v < MOUTH_VARIANTS; v++) {
+      const samples = renderMouth(kind.mouth, voice.sampleRate);
+      voices.push(voice.buffer({ left: samples, right: samples, sampleRate: voice.sampleRate }));
+    }
+    rendered.set(kind.id, { sounds, voices });
+    preparing.delete(kind.id);
+  }, 0);
+}
 function soundsOf(kind) {
-  if (!rendered.has(kind.id)) {
+  {
     const made = [];
     ZZFX.sampleRate = voice.sampleRate;
     for (let v = 0; v < VARIANTS; v++) {
@@ -249,23 +274,28 @@ function soundsOf(kind) {
       const plan = buildPlan([{ time: 0, note: 42, velocity: 0.8, duration: 0.1, track: 0, channel: 9 }], settings, kind.family);
       made.push(voice.buffer(renderPlan(plan, settings, voice.sampleRate)));
     }
-    rendered.set(kind.id, made);
+    return made;
   }
-  return rendered.get(kind.id);
 }
-function sound(creature) {
+// `which` is 'sounds' for the call or tick a creature makes every few seconds,
+// or 'voices' for the voice it uses on coming out and on being startled.
+function sound(creature, which = 'sounds') {
   const el = drawn.get(creature.id);
   if (el) { el.classList.remove('sounding'); void el.getBoundingClientRect(); el.classList.add('sounding'); }
   if (!voice.ready()) return;
-  const key = board.keys.find(k => k.char === creature.key), made = soundsOf(creature.kind);
-  // Landward creatures play a little higher, as the keys do, and each sits in
-  // the stereo field where its column is.
+  const made = rendered.get(creature.kind.id)?.[which];
+  if (!made) { prepare(creature.kind); return; }
+  const key = board.keys.find(k => k.char === creature.key);
+  // Each sits in the stereo field where its column is. A call or tick plays a
+  // little higher toward the landward row, as the keys do; a voice keeps the
+  // pitch it was rendered at.
   voice.play(made[Math.floor(Math.random() * made.length)], {
-    gain: CREATURE_LEVEL, pan: (key.col / 9) * 1.4 - 0.7, rate: 1.25 - key.row * 0.15,
+    gain: which === 'voices' ? MOUTH_LEVEL : CREATURE_LEVEL, pan: (key.col / 9) * 1.4 - 0.7,
+    rate: which === 'voices' ? 1 : 1.25 - key.row * 0.15,
   });
 }
 
-function show(events) {
+function show(events, startled = false) {
   for (const event of events) {
     const { creature } = event;
     if (event.type === 'appear') {
@@ -273,7 +303,10 @@ function show(events) {
       el.classList.add('arriving');
       void el.getBoundingClientRect();
       el.classList.remove('arriving');
-      readout.textContent = `A ${creature.kind.name} came out on ${creature.key}.`;
+      readout.textContent = `${/^[aeiou]/.test(creature.kind.name) ? 'An' : 'A'} ${creature.kind.name} came out on ${creature.key}.`;
+      // Its sounds are rendered now, and it gives voice once they are ready.
+      prepare(creature.kind);
+      setTimeout(() => { if (drawn.has(creature.id)) sound(creature, 'voices'); }, 700);
     } else if (event.type === 'leave') {
       const el = drawn.get(creature.id);
       drawn.delete(creature.id);
@@ -283,7 +316,7 @@ function show(events) {
         const el = drawn.get(creature.id), at = spot(creature);
         if (el) el.style.transform = `translate(${at.x}px, ${at.y}px)`;
       }
-      sound(creature);
+      sound(creature, startled ? 'voices' : 'sounds');
     }
   }
 }

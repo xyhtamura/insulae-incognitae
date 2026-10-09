@@ -332,9 +332,11 @@ Each has a default so that building is not blocked.
 
 Added 2026-10-09. Animals and a few other things come out of the terrain, make
 their own sounds, and leave. At most three are out, each stays about a minute,
-and playing the key one is on startles it. Their sounds come from a vendored
-copy of `dithertick/synth.js`, so they are ticks and bursts, unlike the keys'
-struck voice. The kinds, habitats, and rates are in `data/creatures.js`.
+and playing the key one is on startles it. They have three kinds of sound, none like the keys' struck
+voice: ticks from a vendored copy of `dithertick/synth.js` for those that stay
+put, pitched calls from a vendored ZzFX for those that walk, and for every
+kind a short voice from a vendored extract of Pink Trombone, heard when it
+comes out and when its shoal is played. The kinds, habitats, and rates are in `data/creatures.js`.
 
 ## 12. Deferred
 

@@ -18,6 +18,62 @@ device, and hiding the Audition panel for the finished page.
 
 ## Log
 
+2026-10-10 — Claude Code — Gave every creature a voice rendered by Pink
+Trombone, at Xyh's request, after confirming its licence and putting it on the
+workspace shelf.
+
+Licence: read in the page itself at `https://dood.al/pinktrombone/`. Its
+opening comment is "Copyright 2017 Neil Thapen" followed by the MIT text, and
+the noise routine inside it is marked public domain by its own comment.
+
+What changed:
+- `scripts/vendor_pink_trombone.mjs`: Pink Trombone is one web page, so this
+  script cuts the Glottis object, the Tract object, and the noise routine out
+  of the shelf copy and writes `vendor/pink-trombone.js`, with the author's
+  notice and a list of what was changed in its header. Three things in the
+  page would not run as a module and are handled there: a zero written as
+  `00`, a variable assigned without being declared, and a reference to a
+  drawing canvas.
+- `src/mouth.js`: renders a clip offline, following the page's own audio
+  loop: 512-sample blocks, the tract stepped twice per sample, and noise
+  through two band-pass filters computed directly. Pitch, tongue, and lips
+  glide from one setting to another. The tongue shaping is a hand-port of the
+  page's `TractUI.setRestDiameter`.
+- `data/creatures.js`: a `mouth` entry per kind, with a comment saying which
+  vowel it is aiming at. The voice is heard when a creature comes out and
+  when the shoal it is on is played. Its sounds every few seconds are still
+  the ZzFX call or the dithertick tick.
+- `src/main.js`: all of a kind's sounds are now rendered in a timer after it
+  comes out, not inside a key press. A creature that has to sound before its
+  renders exist is silent that once.
+- `scripts/check_creatures.mjs`: fails if the vendored file is not what the
+  script makes from the shelf, or has lost its notice. It renders every voice
+  and measures its pitch by autocorrelation.
+
+Measured by the check, asked against measured in hertz: crab 570/632, shrimp
+675/667, octopus 100/99, jellyfish 210/210, turtle 75/75, milkfish 375/400,
+squid 220/207, monkey 450/490, sprout 195/199, bubbles 600/716. The ten
+voices took 939 ms to render in Node, about a tenth of a second each, and the
+longest is 0.96 s. An early test rendered a front vowel with about three times
+the zero crossings of a back one, so the tongue position does change the
+sound.
+
+Verified in the Browser pane by DOM, through the server already on port 8000:
+the page loads with the new modules and no console messages; after calling an
+octopus and waiting 1.5 s, pressing its key took 2 ms, against 38 ms before
+rendering moved out of the key press, and marked it sounding.
+
+Not verified: any voice, by ear. The measurements show a sound at the right
+pitch with a spectrum that moves with the tongue; they do not show that an
+"oo" sounds like an "oo", or that these read as animals and not as a person.
+The level, 22% of a key, is a guess. Whether the page stutters while a voice
+renders in its timer was not looked at.
+
+Known: the voices are human-shaped, because the model is a human vocal tract.
+If that is wrong for the piece, the tract length (the number of sections,
+44) is the first thing to change, and the extract would need a small edit to
+allow it.
+
 2026-10-10 — Claude Code — Added ZzFX as a second creature voice, after Xyh
 opened vendoring to engines by other people and asked for a root folder to
 keep such copies in.
