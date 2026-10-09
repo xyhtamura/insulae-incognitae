@@ -247,9 +247,10 @@ check to measure.
   again when the tide is in, with generated light on the water over them.
 - Playing a shoal shows its habitat's name at the foot of the window, and the
   shoal glows amber while it sounds.
-- The board fills the window. A Menu button in the top right corner opens a
-  panel with the instructions, the settings, and the testing controls, and a
-  Reshuffle button sits in the bottom left corner.
+- The board fills the window. The title sits in the top left corner. A Menu
+  button in the top right corner opens a panel with a list of the habitats on
+  the board, the instructions, and the settings, and a Reshuffle button sits
+  in the bottom left corner.
 - It is a build-free static page with no network requests. Any `localStorage`
   key is prefixed `bahura_`.
 

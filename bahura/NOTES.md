@@ -18,6 +18,44 @@ device, and hiding the Audition panel for the finished page.
 
 ## Log
 
+2026-10-10 — Claude Code — Calmed the water, redrew the menu, and put the
+title on the page, at Xyh's request.
+
+What changed:
+- Water. The light on the water is at 28% strength, was 60%. The background's
+  three colours are closer together, and the pale patch in the landward
+  corner is half as strong.
+- Title. "Bahura" is set in the top left corner in small spaced capitals,
+  pale against the water. It is the page's heading and takes no clicks.
+- Buttons. Menu and Reshuffle are pebbles: irregular, sand-coloured, lit
+  from the upper left as the shoals are, with the amber glow of a sounding
+  shoal when pointed at or focused. Menu keeps the glow while it is open.
+- Menu. A sheet of sea glass: the board shows through it blurred
+  (`backdrop-filter`), with an uneven rounded outline and small spaced
+  headings. Sliders and checkboxes take the amber as their accent.
+- "On this shoal", new at the top of the menu: every habitat on the board at
+  the moment, in shore order, as a pebble of its colour with its name and how
+  many shoals it has. It is rebuilt when the board is drawn and whenever the
+  terrain changes.
+
+Verified: two headless Edge screenshots of board 5 at 1280 by 720, closed and
+open, looked at. The web of light is faint and the water reads as one
+surface; the title and both pebbles sit clear of the shoals; the open menu
+lists nine habitats with counts. In the Browser pane by DOM: the list read
+"mangrove 6, creek mouth 4, sandbar 3, pink sand 4, basalt 6, anemone 2,
+coral head 11, sea fan 3, cave 1", its counts sum to 40, it changed after an
+earthquake and again after a reshuffle, and there were no console errors.
+`npm run check` passes.
+
+Not verified: the menu on a phone, and in a browser without
+`backdrop-filter`, where it falls back to its translucent tint with the
+board showing through sharp. At 720 px tall the open menu is longer than the
+window and scrolls. The pebbles' glow on hover was not looked at.
+
+Offered and not done: the title in Baybayin beside the Latin. The agent
+cannot proofread it, and whether "ra" is written with the older da or the
+newer ra character is Xyh's call.
+
 2026-10-10 — Claude Code — Hid the testing panel, strengthened the colours,
 and drew the shoals as partly under water, at Xyh's request and from three
 reference photographs Xyh attached: clear water with light rippling on pale

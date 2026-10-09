@@ -15,7 +15,7 @@ import { ZZFX } from '../vendor/zzfx.js';
 import { renderMouth } from './mouth.js';
 import { CREATURE_LEVEL, DITHERTICK, VARIANTS, MOUTH_VARIANTS, MOUTH_LEVEL } from '../data/creatures.js';
 import { createVoice } from './voice.js';
-import { habitat } from '../data/habitats.js';
+import { habitat, HABITATS, UNUSUAL } from '../data/habitats.js';
 import { ENVELOPES, scriptOf } from '../data/envelopes.js';
 import { SYMPATHY } from '../data/voice.js';
 import { CONTACT, TICK, SPEEDS } from '../data/rates.js';
@@ -180,6 +180,7 @@ function draw() {
   for (const creature of creatures.out) life.add(creature);
   $('seed').textContent = `Board ${board.seed}`;
   label();
+  legend();
 }
 
 // A key's colours and glyph follow its habitat, which contact can change.
@@ -191,6 +192,24 @@ function paint(key) {
   shape.glyphLabel.textContent = key.glyph;
   for (const el of [shape.glyphLabel, shape.charLabel, shape.hzLabel]) el.setAttribute('fill', kind.fg);
   shape.badge.style.display = key.changed ? '' : 'none';
+}
+
+// The menu lists what the board is made of at the moment: each habitat on it,
+// in shore order, as a pebble of its colour with its name and how many shoals
+// it has.
+function legend() {
+  const counts = new Map();
+  for (const key of board.keys) counts.set(key.habitat, (counts.get(key.habitat) ?? 0) + 1);
+  const items = [...HABITATS, ...UNUSUAL].filter(kind => counts.has(kind.id)).map(kind => {
+    const item = document.createElement('li'), swatch = document.createElement('span'), count = document.createElement('span');
+    swatch.className = 'swatch';
+    swatch.style.background = kind.bg;
+    count.className = 'count';
+    count.textContent = counts.get(kind.id);
+    item.append(swatch, kind.name, count);
+    return item;
+  });
+  $('legend').replaceChildren(...items);
 }
 
 // Frequencies depend on the settings, so the labels are rewritten when one changes.
@@ -265,6 +284,7 @@ function apply(changes) {
   if (!changes.length) return '';
   for (const { key } of changes) { key.changed = true; paint(key); }
   label();
+  legend();
   return changes.map(c => `   ${c.key.char} changed${c.cause === 'contact' ? '' : ` by ${c.cause}`}: ${habitat(c.from).name} to ${habitat(c.to).name}`).join('');
 }
 

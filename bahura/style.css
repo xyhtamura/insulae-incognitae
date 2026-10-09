@@ -10,9 +10,9 @@
   --dim: #5b6763;
   --line: #b9beb6;
   /* Clear water over pale sand: aqua at the landward edge, blue at the seaward. */
-  --water-shallow: #6fd3cf;
-  --water: #2fa9bd;
-  --water-deep: #1c6f9f;
+  --water-shallow: #58c2c6;
+  --water: #37abbd;
+  --water-deep: #2a8fb0;
 }
 
 * { box-sizing: border-box; }
@@ -28,8 +28,6 @@ body {
   line-height: 1.45;
 }
 
-.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-
 #board {
   /* The board is the whole window. Its drawing is fitted inside and the
      water, which is this element's background, runs to every edge. */
@@ -41,7 +39,7 @@ body {
   /* Layered radial gradients over the water colour, after Ombak Lock: a pale
      patch up and to the left and a deeper one down and to the right. */
   background:
-    radial-gradient(70% 60% at 22% 8%, #ffffff40 0%, transparent 60%),
+    radial-gradient(70% 60% at 22% 8%, #ffffff1f 0%, transparent 60%),
     linear-gradient(to bottom, var(--water-shallow), var(--water) 45%, var(--water-deep));
   touch-action: manipulation;
   user-select: none;
@@ -53,7 +51,7 @@ body {
 /* Upright, the landward edge is on the left. */
 #board.upright {
   background:
-    radial-gradient(60% 70% at 8% 22%, #ffffff40 0%, transparent 60%),
+    radial-gradient(60% 70% at 8% 22%, #ffffff1f 0%, transparent 60%),
     linear-gradient(to right, var(--water-shallow), var(--water) 45%, var(--water-deep));
 }
 /* The tide coming in deepens the water and covers the shoals further. */
@@ -62,7 +60,7 @@ body {
 /* Water over each shoal, and the light on the water. */
 #water, .caustics { pointer-events: none; }
 .veil { opacity: calc(var(--depth, 0.3) + var(--tide, 0)); transition: opacity 3s ease; }
-.caustics { mix-blend-mode: soft-light; opacity: 0.6; }
+.caustics { mix-blend-mode: soft-light; opacity: 0.28; }
 
 /* One control for how strong every colour on the board is. */
 .coloured { filter: saturate(var(--saturation, 0.65)); }
@@ -135,44 +133,87 @@ body {
 }
 #subtitle.shown { opacity: 1; transition-duration: 0.1s; }
 
-/* One button in the corner opens everything that is not the board. */
-#menu-button {
-  position: fixed; z-index: 3;
-  top: max(10px, env(safe-area-inset-top)); right: max(10px, env(safe-area-inset-right));
-  min-width: 64px;
-  background: #f1f1ecd9; border-color: #20282833;
+/* The title, set into the water in the corner opposite the menu. */
+#title {
+  position: fixed; z-index: 1; margin: 0; pointer-events: none;
+  top: max(14px, env(safe-area-inset-top)); left: max(18px, env(safe-area-inset-left));
+  font-size: 15px; font-weight: 600; letter-spacing: 0.42em; text-transform: uppercase;
+  color: #f4fbfa; opacity: 0.82; text-shadow: 0 1px 6px #0d4a5c66;
 }
+
+/* The two buttons are pebbles: irregular, sand-coloured, lit from the upper
+   left as the shoals are, and glowing amber, as a sounding shoal does, when
+   pointed at or focused. */
+.pebble {
+  position: fixed; z-index: 3;
+  min-height: 44px; padding: 10px 18px;
+  font: inherit; font-weight: 600; letter-spacing: 0.04em; color: #3b2f17;
+  border: 0; cursor: pointer;
+  background:
+    radial-gradient(60% 55% at 34% 26%, #fffbe9d9 0%, transparent 62%),
+    radial-gradient(120% 110% at 64% 80%, #e6cf95, #c9a968 72%);
+  box-shadow: 0 2px 10px #0d4a5c4d, inset 0 -3px 6px #7a5a2444;
+  transition: box-shadow 0.2s ease, transform 0.1s ease;
+}
+.pebble:hover, .pebble:focus-visible { box-shadow: 0 0 22px hsl(36 92% 60% / 0.85), 0 2px 10px #0d4a5c4d, inset 0 -3px 6px #7a5a2444; outline: none; }
+.pebble:active { transform: translateY(1px) scale(0.98); }
+#menu-button {
+  top: max(10px, env(safe-area-inset-top)); right: max(10px, env(safe-area-inset-right));
+  border-radius: 58% 42% 55% 45% / 52% 60% 40% 48%;
+}
+#menu-button[aria-expanded="true"] { box-shadow: 0 0 18px hsl(36 92% 60% / 0.7), inset 0 -3px 6px #7a5a2444; }
+/* Reshuffle has the opposite corner on the left, so the open menu never covers
+   it on a wide window and a board can be watched changing. */
+#reshuffle {
+  bottom: max(10px, env(safe-area-inset-bottom)); left: max(10px, env(safe-area-inset-left));
+  border-radius: 44% 56% 48% 52% / 58% 46% 54% 42%;
+}
+
+/* The menu is a sheet of sea glass: the board shows through it, blurred. */
 #menu {
   position: fixed; z-index: 2;
   top: max(10px, env(safe-area-inset-top)); right: max(10px, env(safe-area-inset-right));
-  width: min(340px, calc(100vw - 20px));
+  width: min(330px, calc(100vw - 20px));
   max-height: calc(100% - 20px);
   overflow: auto;
-  padding: 56px 16px 16px;
-  background: #f1f1ecf2; border: 1px solid var(--line); border-radius: 6px;
+  padding: 62px 20px 18px;
+  color: #0f3a44;
+  background: linear-gradient(160deg, #f3fbf8c7, #d9f1f0b8 55%, #c3e6ecb8);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  backdrop-filter: blur(14px) saturate(1.2);
+  border: 1px solid #ffffff8c;
+  border-radius: 26px 26px 34px 22px / 26px 30px 26px 34px;
+  box-shadow: 0 10px 34px #0d4a5c59, inset 0 1px 0 #ffffffb3;
 }
 #menu[hidden] { display: none; }
-#menu section, #menu details { margin-bottom: 16px; }
-#menu h2, #menu summary { margin: 0 0 4px; font-size: 14px; font-weight: 600; }
+#menu section, #menu details { margin-bottom: 18px; }
+#menu h2, #menu summary {
+  margin: 0 0 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: #1f6f80;
+}
 #menu summary { cursor: pointer; }
 #menu p { margin: 0 0 8px; }
 #menu label { display: flex; align-items: center; gap: 8px; margin: 10px 0; }
 #menu input[type="range"], #menu select { flex: 1; min-width: 0; }
+#menu input { accent-color: #d98a1f; }
 #menu .row { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+#menu .note { color: #3f6f7a; }
 
-button, select {
-  font: inherit; color: var(--ink);
-  background: #fff; border: 1px solid var(--line); border-radius: 3px;
-  padding: 8px 12px; min-height: 40px; cursor: pointer;
+/* What the board is made of. */
+#legend { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; }
+#legend li { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+#legend .swatch {
+  flex: none; width: 18px; height: 16px; border-radius: 58% 42% 55% 45% / 52% 60% 40% 48%;
+  box-shadow: inset 2px 2px 3px #ffffff59, inset -2px -2px 3px #0000002e;
 }
-/* Reshuffle has the opposite corner on the left, so the open menu never covers
-   it on a wide window and a board can be watched changing. */
-#reshuffle {
-  position: fixed; z-index: 3;
-  bottom: max(10px, env(safe-area-inset-bottom)); left: max(10px, env(safe-area-inset-left));
-  background: #f1f1ecd9; border-color: #20282833;
+#legend .count { margin-left: auto; color: #3f6f7a; font-variant-numeric: tabular-nums; }
+
+/* Buttons and selects inside the menu. */
+#menu button, select {
+  font: inherit; color: #0f3a44;
+  background: #ffffffb3; border: 1px solid #ffffffd9; border-radius: 12px;
+  padding: 8px 12px; min-height: 40px; cursor: pointer;
 }
 #unpin { min-height: 0; padding: 2px 8px; }
 
 .note { margin: 0; color: var(--dim); font-size: 13px; }
-#readout { color: var(--dim); font-family: ui-monospace, Consolas, monospace; font-size: 12px; overflow-wrap: anywhere; }
+#readout { color: #3f6f7a; font-family: ui-monospace, Consolas, monospace; font-size: 12px; overflow-wrap: anywhere; }

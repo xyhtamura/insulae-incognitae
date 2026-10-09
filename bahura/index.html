@@ -8,16 +8,18 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1 class="visually-hidden">Bahura</h1>
+  <h1 id="title">Bahura</h1>
   <svg id="board" role="group" aria-label="Keyboard"></svg>
 
-  <button id="menu-button" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
-  <button id="reshuffle" type="button">Reshuffle</button>
+  <button id="menu-button" class="pebble" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
+  <button id="reshuffle" class="pebble" type="button">Reshuffle</button>
   <p id="subtitle" aria-live="polite"></p>
 
   <aside id="menu" aria-label="Menu" hidden>
     <section>
+      <h2>On this shoal</h2>
       <p class="note"><span id="seed"></span> · <span id="tide"></span></p>
+      <ul id="legend"></ul>
     </section>
 
     <section>
