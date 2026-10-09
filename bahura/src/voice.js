@@ -59,10 +59,35 @@ export function createVoice() {
     };
   }
 
+  // True once a key has been played. Creatures appear on a timer, and a timer
+  // is not a gesture the browser accepts for starting audio, so until then they
+  // are silent.
+  const ready = () => Boolean(ctx) && ctx.state === 'running';
+
+  // Turns a rendered pair of channels into a buffer for `play`.
+  function buffer(rendered) {
+    const made = ctx.createBuffer(2, rendered.left.length, rendered.sampleRate);
+    made.copyToChannel(rendered.left, 0);
+    made.copyToChannel(rendered.right, 1);
+    return made;
+  }
+
+  // Plays a buffer once. `pan` runs from -1 at the left to 1 at the right, and
+  // `rate` is the playback speed.
+  function play(made, { gain = 1, pan = 0, rate = 1 } = {}) {
+    const source = ctx.createBufferSource(), amp = ctx.createGain(), place = ctx.createStereoPanner();
+    source.buffer = made;
+    source.playbackRate.value = rate;
+    amp.gain.value = gain;
+    place.pan.value = pan;
+    source.connect(amp); amp.connect(place); place.connect(master);
+    source.start();
+  }
+
   function setLevel(value) {
     level = value;
     if (master) master.gain.value = value;
   }
 
-  return { start, setLevel };
+  return { start, setLevel, ready, buffer, play, get sampleRate() { return ctx.sampleRate; } };
 }

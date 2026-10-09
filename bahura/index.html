@@ -10,7 +10,7 @@
 <body>
   <header>
     <h1>Bahura</h1>
-    <p id="hint">Press a key on the keyboard, or click or tap a shoal here. Its colour is the note, and the script its glyph is written in is how the note starts and stops. Some notes last while the key is held. Two shoals of one colour in a row are a few hertz apart and beat when played together. The terrain changes slowly, by playing and by itself, and the tide comes in and goes out. A shoal that has changed carries a ring until it is next played.</p>
+    <p id="hint">Press a key on the keyboard, or click or tap a shoal here. Its colour is the note, and the script its glyph is written in is how the note starts and stops. Some notes last while the key is held. Two shoals of one colour in a row are a few hertz apart and beat when played together. The terrain changes slowly, by playing and by itself, and the tide comes in and goes out. A shoal that has changed carries a ring until it is next played. Animals come out of the terrain for a minute or so and make their own sounds; playing the shoal one is on startles it.</p>
   </header>
 
   <main>
@@ -31,6 +31,8 @@
       <label>Neighbour ringing <input id="sympathy" type="range"> <output id="sympathy-value"></output></label>
       <label>Colour <input id="saturation" type="range"> <output id="saturation-value"></output></label>
       <label>Terrain change <select id="speed"></select></label>
+      <label><input id="creatures-on" type="checkbox" checked> Creatures</label>
+      <button id="call" type="button">Call a creature</button>
       <button id="turn-tide" type="button">Turn the tide</button>
       <button id="shake" type="button">Earthquake</button>
       <label><input id="show-hz" type="checkbox"> Show hertz on keys</label>

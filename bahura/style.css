@@ -80,6 +80,20 @@ h1 { margin: 0 0 4px; font-size: 20px; font-weight: 600; }
 /* The upright board is for screens with no keyboard, so it drops the key characters. */
 #board.upright .char { display: none; }
 
+/* A creature is a pale word with a dark edge, readable on any habitat. */
+#creatures { pointer-events: none; }
+.creature {
+  font-size: 0.26px; font-weight: 600; text-anchor: middle; dominant-baseline: middle;
+  fill: #fdfbef; stroke: #202b28; stroke-width: 0.04px; paint-order: stroke; stroke-linejoin: round;
+  transition: transform 0.6s ease, opacity 0.8s ease;
+}
+.creature.arriving, .creature.leaving { opacity: 0; }
+.creature.sounding { animation: creature-sound 0.35s ease-out; }
+@keyframes creature-sound { from { fill: #ffd34d; stroke-width: 0.09px; } }
+@media (prefers-reduced-motion: reduce) {
+  .creature { transition: opacity 0.8s ease; }
+}
+
 .changed { pointer-events: none; }
 .changed circle { fill: #f4f3e9; stroke: var(--ink); stroke-width: 0.03; }
 .changed .dot { fill: var(--ink); stroke: none; }

@@ -3,6 +3,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node scripts/check_board.mjs && node scripts/check_contact.mjs"
+    "check": "node scripts/check_board.mjs && node scripts/check_contact.mjs && node scripts/check_creatures.mjs"
   }
 }

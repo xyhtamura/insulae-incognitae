@@ -7,6 +7,9 @@ import { unit } from './hash.js';
 import { view, centre, outline } from './shape.js';
 import { contact } from './contact.js';
 import { createClock } from './clock.js';
+import { createCreatures } from './creatures.js';
+import { buildPlan, renderPlan } from '../vendor/dithertick-synth.js';
+import { CREATURE_LEVEL, DITHERTICK, VARIANTS } from '../data/creatures.js';
 import { createVoice } from './voice.js';
 import { habitat } from '../data/habitats.js';
 import { ENVELOPES, scriptOf } from '../data/envelopes.js';
@@ -29,6 +32,11 @@ const sounding = new Map();  // key character -> { releases, marks }
 let sympathy = SYMPATHY.initial;
 let last = null;             // the last key struck, for the beat readout
 let clock = null;            // terrain time for this board
+let creatures = null;        // what is out on this board
+const drawn = new Map();     // creature id -> its element
+const rendered = new Map();  // creature kind id -> its sound buffers
+let creaturesOn = true;
+const seconds = () => performance.now() / 1000;
 let speed = SPEEDS[0];       // the Audition panel's multiplier on the contact chance
 
 // A narrow upright screen has no keyboard under it, so the board is turned to run down it.
@@ -76,6 +84,8 @@ function writeAddress() {
 function load(seed) {
   board = generateBoard(seed);
   clock = createClock(board);
+  creatures = createCreatures(board);
+  drawn.clear();
   settings = { ...drawSettings(seed, unit), ...pinned };
   last = null;
   readout.textContent = 'No key struck yet.';
@@ -93,6 +103,7 @@ function draw() {
   boardEl.setAttribute('viewBox', `0 0 ${size.width} ${size.height}`);
   boardEl.classList.toggle('upright', upright);
   const land = svg('g'), shade = svg('g', { class: 'shade' }), text = svg('g', { class: 'labels' }), marks = svg('g', { id: 'marks' });
+  const life = svg('g', { id: 'creatures' });
   for (const key of board.keys) {
     const at = centre(key, board.seed, upright);
     const shape = svg('path', { d: outline(key, board.seed, at), class: 'key', role: 'button', tabindex: 0 });
@@ -125,7 +136,10 @@ function draw() {
   const grain = svg('rect', { class: 'grain', x: -size.width, y: -size.height, width: size.width * 3, height: size.height * 3, filter: 'url(#grain)' });
   const coloured = svg('g', { class: 'coloured' });
   coloured.append(land, shade, grain, text);
-  boardEl.replaceChildren(defs(), coloured, marks);
+  boardEl.replaceChildren(defs(), coloured, marks, life);
+  // A redraw, as when the layout turns, puts back whatever is out.
+  drawn.clear();
+  for (const creature of creatures.out) place(creature);
   $('seed').textContent = `Board ${board.seed}`;
   label();
 }
@@ -180,6 +194,7 @@ function press(char) {
   // neighbours one contact opportunity each.
   key.changed = false;
   paint(key);
+  if (creaturesOn) show(creatures.disturb(char, seconds()));
   const changes = speed.factor
     ? contact(board, [key, ...neighbours(board, key)], { ...CONTACT, chance: CONTACT.chance * speed.factor })
     : [];
@@ -200,6 +215,76 @@ function showTide() {
   $('tide').textContent = clock.tideIn ? 'Tide in' : 'Tide out';
   boardEl.classList.toggle('tide-in', clock.tideIn);
 }
+
+// Creatures. Each is a short word or mark drawn over the shoal it is on.
+function spot(creature) {
+  const key = board.keys.find(k => k.char === creature.key), at = centre(key, board.seed, narrow.matches);
+  return { x: at.x - 0.18, y: at.y - 0.3 };
+}
+function place(creature) {
+  const el = svg('text', { class: 'creature' }), at = spot(creature);
+  el.textContent = creature.kind.glyph;
+  el.style.transform = `translate(${at.x}px, ${at.y}px)`;
+  $('creatures').append(el);
+  drawn.set(creature.id, el);
+  return el;
+}
+
+// A creature's sounds are rendered by dithertick the first time it is heard:
+// one note in its family, a few times over with different seeds.
+function soundsOf(kind) {
+  if (!rendered.has(kind.id)) {
+    const made = [];
+    for (let v = 0; v < VARIANTS; v++) {
+      const settings = { ...DITHERTICK, seed: `${kind.id}:${v}`, brightness: DITHERTICK.brightness + kind.brightness * 0.3, tailScale: kind.tail };
+      const plan = buildPlan([{ time: 0, note: 42, velocity: 0.8, duration: 0.1, track: 0, channel: 9 }], settings, kind.family);
+      made.push(voice.buffer(renderPlan(plan, settings, voice.sampleRate)));
+    }
+    rendered.set(kind.id, made);
+  }
+  return rendered.get(kind.id);
+}
+function sound(creature) {
+  const el = drawn.get(creature.id);
+  if (el) { el.classList.remove('sounding'); void el.getBoundingClientRect(); el.classList.add('sounding'); }
+  if (!voice.ready()) return;
+  const key = board.keys.find(k => k.char === creature.key), made = soundsOf(creature.kind);
+  // Landward creatures play a little higher, as the keys do, and each sits in
+  // the stereo field where its column is.
+  voice.play(made[Math.floor(Math.random() * made.length)], {
+    gain: CREATURE_LEVEL, pan: (key.col / 9) * 1.4 - 0.7, rate: 1.25 - key.row * 0.15,
+  });
+}
+
+function show(events) {
+  for (const event of events) {
+    const { creature } = event;
+    if (event.type === 'appear') {
+      const el = place(creature);
+      el.classList.add('arriving');
+      void el.getBoundingClientRect();
+      el.classList.remove('arriving');
+      readout.textContent = `A ${creature.kind.name} came out on ${creature.key}.`;
+    } else if (event.type === 'leave') {
+      const el = drawn.get(creature.id);
+      drawn.delete(creature.id);
+      if (el) { el.classList.add('leaving'); el.addEventListener('transitionend', () => el.remove(), { once: true }); }
+    } else {
+      if (event.type === 'move') {
+        const el = drawn.get(creature.id), at = spot(creature);
+        if (el) el.style.transform = `translate(${at.x}px, ${at.y}px)`;
+      }
+      sound(creature);
+    }
+  }
+}
+
+// Twice a second is fine enough for sounds a few seconds apart. A hidden page
+// stands still, and coming back does not replay what was missed.
+setInterval(() => {
+  if (document.hidden || !creaturesOn) return;
+  show(creatures.step(seconds()));
+}, 500);
 
 // Terrain time. One timer moves the board's clock on; the Audition speed
 // multiplies how much terrain time each real tick is worth. A hidden page
@@ -303,6 +388,14 @@ const showSaturation = () => {
 };
 showSaturation();
 saturationEl.addEventListener('input', showSaturation);
+$('creatures-on').addEventListener('change', e => {
+  creaturesOn = e.target.checked;
+  $('creatures').style.display = creaturesOn ? '' : 'none';
+});
+$('call').addEventListener('click', () => {
+  const event = creatures.appear(seconds());
+  if (event) show([event]); else readout.textContent = 'No shoal here suits a creature.';
+});
 $('show-hz').addEventListener('change', e => boardEl.classList.toggle('show-hz', e.target.checked));
 
 // Choices in the address are pinned, if they name something that exists.
@@ -313,3 +406,9 @@ if (params.has('window') && band >= WINDOW.min && band <= WINDOW.max) pinned.win
 
 const asked = Number(params.get('seed'));
 load(params.has('seed') && Number.isInteger(asked) ? asked : 5);
+
+// For testing and screenshots: ?creatures=3 calls that many out as the page opens.
+for (let n = Math.min(3, Number(params.get('creatures')) || 0); n > 0; n--) {
+  const event = creatures.appear(seconds());
+  if (event) show([event]);
+}

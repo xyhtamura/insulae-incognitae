@@ -9,13 +9,80 @@ earthquake. That is the first complete version by the spec's own measure.
 
 ## Next step
 
-Xyh looks for photographed textures and says whether the shading, grain, and
+Xyh listens to the creatures: whether dithertick's ticks sit well against the
+gong voice, how often they sound, and how loud. Alongside that, Xyh looks for photographed textures and says whether the shading, grain, and
 colour strength are right. A texture is added by putting the file in
 `textures/` and listing it in `data/look.js`. After the look is settled, step 5
 of [SPEC.md](SPEC.md) section 10 is what is left: a check on a real touch
 device, and hiding the Audition panel for the finished page.
 
 ## Log
+
+2026-10-09 — Claude Code — Added creatures, at Xyh's request: animals and
+other things that come out of the terrain, make sounds unlike the keys', and
+leave by themselves. Xyh offered `cytophone/` and `dithertick/` as engines to
+vendor.
+
+Which engine: dithertick. `dithertick/synth.js` is a module with a public
+`buildPlan` and `renderPlan` that turn one note into a short buffer in one of
+nine families, and its own page already auditions a family that way. The
+cytophones are single HTML files with their engines inline, so using one
+would mean a hand-port and not a copy. Nothing from `cytophone/` is used.
+
+What changed:
+- `vendor/dithertick-synth.js`: a stamped copy, unmodified below its header.
+  The contract and blast-radius row are in the root `DEPENDENCIES.md`. To
+  copy it again, from this folder: rewrite the header's hash and date, then
+  append `../../dithertick/synth.js` unchanged. The check below fails if the
+  body and the stamp disagree.
+- `data/creatures.js`: ten kinds. Crab, shrimp, octopus, jellyfish, turtle,
+  milkfish, squid, and monkey use the words Sulat already has for them
+  (`../sulat/landAnimals.js`). A sprout and bubbles are marks, since Sulat has
+  no plant words and none were invented here. Each kind lists the habitats it
+  comes out of, a dithertick family, how often it sounds (2 to 12 s), and how
+  long it stays (15 to 120 s).
+- `src/creatures.js`: at most three are out. Each second there is a 2% chance
+  of another while there is room. A sitter sounds in place; a walker moves to
+  a touching key of a habitat that suits it on 70% of its turns and sounds as
+  it goes. A creature leaves when its time is up or when the terrain under it
+  changes to something that does not suit it. Playing the key one is on makes
+  it sound, moves a walker away, and brings its leaving forward to within 4 to
+  12 s.
+- `src/voice.js`, `src/main.js`, `style.css`: the sounds are rendered the
+  first time a kind is heard, three variants each, and played through the same
+  output as the keys at 30% of a key's level, panned by column and a little
+  higher toward the landward row. A creature is drawn as a pale word with a
+  dark edge above its shoal, slides when it moves, flashes when it sounds, and
+  fades in and out. They are silent until a key has been played, because a
+  timer cannot start audio in a browser.
+- Audition panel: a Creatures checkbox and a "Call a creature" button.
+  `?creatures=3` calls up to three as the page opens, for screenshots.
+
+Measured by `node scripts/check_creatures.mjs`, 100 boards left alone for 60
+simulated minutes: 1.13 creatures out on average, three at most, and none 30%
+of the time; 1.08 appear per minute and there are 10.1 sounds per minute; a
+creature stays 63 s on average. Crabs are about a quarter of all appearances
+(2,027 of 7,495), because they suit the most habitats; squid are the rarest
+(134). The 30 renders took 302 ms in Node, and the longest is 0.49 s of sound.
+
+Verified in the Browser pane by DOM, board 5, after two real key presses to
+start audio: calling twice drew a monkey and a milkfish; pressing the
+milkfish's key moved its drawing to another shoal and set its sounding state,
+and that key press took 38 ms including the first render of its three sounds;
+nine seconds later it had gone and its element was removed; no console
+errors. Looked at one headless Edge screenshot with a shrimp, a monkey, and an
+octopus out; the words were small and heavy-edged, so they were enlarged and
+the edge thinned, and that second state has not been looked at.
+
+Not verified: any creature sound, by ear, or its level against the keys. The
+38 ms first-render pause happens inside a key press and may be audible as a
+late note. Movement and fade were checked by DOM state, not watched. The
+Thai, Devanagari, and Baybayin words rely on system fonts, as the terrain
+glyphs do.
+
+Dropped: invented plant words in other scripts. Getting a word wrong in a
+script the agent cannot proofread is worse than using a mark; Xyh can supply
+words and they go in `data/creatures.js`.
 
 2026-10-09 — Claude Code — First pass on the look of the shoals, after Xyh
 played steps 1 to 4 and found the sound and behaviour acceptable. Xyh asked
