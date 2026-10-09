@@ -3,14 +3,76 @@
 A browser gong keyboard whose forty keys are a patch of estuarine terrain: the
 glyph on a key is its note, and the notes change as the terrain does. Sulat's
 terrain and contact rules with Ombak Lock's beating, at shoal scale. The design
-is in [SPEC.md](SPEC.md). Nothing is built.
+is in [SPEC.md](SPEC.md). Step 1 is built: a playable board with no mutation.
 
 ## Next step
 
-Build step 1 of [SPEC.md](SPEC.md) section 10: a playable board with no
-mutation, so that Xyh can audition the tuning and the voice.
+Xyh auditions the tuning, registers, beat band, and voice on the step 1 page
+and says which to keep. Step 2 of [SPEC.md](SPEC.md) section 10, sympathetic
+ringing, follows that.
 
 ## Log
+
+2026-10-09 — Claude Code — Built step 1 at Xyh's request, to audition the
+tuning. Open `http://localhost:8000/insulae-incognitae/bahura/`.
+
+What changed:
+- `src/board.js`: a board from a seed. Ten centres are placed on the keyboard,
+  each with a habitat drawn from those near its row's place on the shore, and
+  every key takes the habitat of its nearest centre. About 5% of keys are
+  unusual terrain. Also the ten column offsets and the six-neighbour lookup.
+- `data/habitats.js`: twelve habitats and ten unusual ones, with glyph sets
+  copied from `../sulat/biomes.js`, colours, and placeholder decay and
+  brightness.
+- `data/tuning.js`: the pitch formula with presets. `data/voice.js` and
+  `src/voice.js`: four sine partials at the ideal free-bar ratios, decaying.
+- `src/main.js`, `index.html`, `style.css`: the keys, keyboard and pointer
+  striking, Reshuffle, Volume, and an Audition panel.
+- `scripts/check_board.mjs` and `package.json` (`npm run check`).
+
+The Audition panel is not in the spec. It switches the tuning (13 equal
+spread, 13 equal in shore order, 7 equal, 5 equal), the registers (octaves
+from 118 Hz, or fifths from 158 Hz), and the width of the beat band (2 to
+12 Hz), can print each key's frequency on it, and reports the last key struck
+and its distance in hertz from the one before. Every setting is written to
+the address bar. It is there for step 1 and is meant to come out once the
+values are chosen.
+
+Found while building: the spec's 12 Hz band and its "the glyph is the note"
+rule pull against each other in low registers. 12 Hz is 22 cents at 946 Hz and
+about 165 cents at 118 Hz, which is wider than one 13-division step, so two
+bottom-row keys of one habitat can sound as two different notes. The band
+width and the fifths registers are in the panel so that this can be judged by
+ear. The page opens at 6 Hz, where neighbouring offsets can be as close as
+0.6 Hz; the spec's 1.1 Hz floor holds only at 12 Hz.
+
+Verified:
+- `node scripts/check_board.mjs` over 100 seeds: two builds of a seed are
+  identical; column offsets are at least 1.22 Hz apart at a 12 Hz band;
+  every frequency under every preset lies between 118.3 and 1852.8 Hz; 2.0
+  unusual keys per board; 10.1 patches per board with a mean of 3.97 keys,
+  the largest 18, and 29% of patches a single key. The first generator, two
+  noise fields, left 63% of patches as single keys and was replaced.
+- In the Browser pane, by DOM, through the root server: 40 keys in four rows
+  of ten; no glyph measured as zero width; pressing q then w gave the readout
+  "w  creek mouth  531.56 Hz   0.65 Hz from q"; Reshuffle changed the seed in
+  the address bar; a pointer press set and cleared the struck state; changing
+  the tuning changed a key's printed frequency from 426.5 to 237.8 Hz; no
+  console errors; no horizontal overflow at 1280 px or at 375 px, where a key
+  is 28.8 px.
+
+Not verified: the sound. No agent has heard it; the strikes ran without
+error, which is all that is known. Screenshots timed out because the pane was
+hidden, so the layout and colours have not been looked at. Glyph coverage
+was measured on this machine's fonts only; the page loads Noto Sans Tagalog
+from `../fonts/` and takes every other script from system fonts, so another
+machine may show empty boxes.
+
+Dropped from step 1: separate `render.js` and `input.js`, which the spec
+lists; one `src/main.js` holds both at this size. `noise` in `src/hash.js` is
+unused since the generator changed.
+
+Undone: steps 2 to 5, and the decisions in spec section 11.
 
 2026-10-09 — Claude Code — Created the folder and wrote [SPEC.md](SPEC.md) from
 Xyh's brief, given over two days in the multicart thread: Sulat plus Ombak Lock

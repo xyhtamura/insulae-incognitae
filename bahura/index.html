@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bahura</title>
+  <meta name="description" content="A gong keyboard whose keys are a patch of estuarine terrain.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Bahura</h1>
+    <p id="hint">Press a key on the keyboard, or click or tap one here. Each glyph is a note. Two keys with the same glyph in one row are a few hertz apart and beat when played together.</p>
+  </header>
+
+  <main>
+    <div id="board" role="group" aria-label="Keyboard"></div>
+
+    <div class="bar">
+      <button id="reshuffle" type="button">Reshuffle</button>
+      <label>Volume <input id="volume" type="range" min="0" max="1" step="0.01" value="0.7"></label>
+      <span id="seed"></span>
+    </div>
+
+    <fieldset id="audition">
+      <legend>Audition</legend>
+      <label>Tuning <select id="tuning"></select></label>
+      <label>Registers <select id="registers"></select></label>
+      <label>Beat band <input id="window" type="range"> <output id="window-value"></output></label>
+      <label><input id="show-hz" type="checkbox"> Show hertz on keys</label>
+      <p id="readout" aria-live="polite">No key struck yet.</p>
+    </fieldset>
+  </main>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

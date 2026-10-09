@@ -110,10 +110,10 @@ two unusual keys in forty, and an earthquake (section 7) can add one.
 
 ### Generating a board
 
-A board is a function of a seed. Seeded value noise over key positions picks
-each key's habitat, weighted by row toward the habitats the table lists for
-it, so habitats form
-patches of two to six keys. Single scattered keys would leave nothing to
+A board is a function of a seed. Ten centres are placed on the keyboard, each
+with a habitat drawn from those the table lists near its row, and every key
+takes the habitat of its nearest centre, so habitats form patches of about
+four keys. Single scattered keys would leave nothing to
 spread and no neighbours to ring with.
 
 `?seed=<whole number>` selects a board. **Reshuffle** picks another seed and
