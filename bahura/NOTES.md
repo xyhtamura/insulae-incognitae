@@ -18,6 +18,21 @@ device, and hiding the Audition panel for the finished page.
 
 ## Log
 
+2026-10-10 — Claude Code — Moved Reshuffle out of the menu to a small button
+of its own in the bottom left corner, at Xyh's request. The menu keeps the
+board number and tide. The corner is the one diagonally opposite the menu, so
+the open panel does not cover it on a wide window.
+
+Verified: two headless Edge screenshots, looked at. At 1280 by 720 with the
+menu open, Reshuffle is in the bottom left, clear of the panel and of the
+shoals. At 520 by 900 with the menu open, the panel ends above it and it sits
+over the water beside the lowest shoals. In the Browser pane by DOM: there is
+one Reshuffle button, it is outside the menu, and clicking it with the menu
+closed changed the seed in the address. `npm run check` passes.
+
+Not verified: a real phone, where a thumb reaching for the lowest shoals may
+find the button in the way.
+
 2026-10-10 — Claude Code — Made the board the whole window and put everything
 else behind one corner button, at Xyh's request for a minimal page.
 

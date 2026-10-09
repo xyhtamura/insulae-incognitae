@@ -243,8 +243,9 @@ check to measure.
 - The tuning, registers, and beat band are drawn by the seed on each
   reshuffle. The step 1 page shows them in an Audition panel for testing; the
   finished page hides the panel and gives the player no control over them.
-- The board fills the window. One Menu button in a corner opens a panel with
-  Reshuffle, the instructions, the settings, and the testing controls.
+- The board fills the window. A Menu button in the top right corner opens a
+  panel with the instructions, the settings, and the testing controls, and a
+  Reshuffle button sits in the bottom left corner.
 - It is a build-free static page with no network requests. Any `localStorage`
   key is prefixed `bahura_`.
 
