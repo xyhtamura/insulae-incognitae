@@ -6,5 +6,9 @@ export const PARTIALS = [1, 2.756, 5.404, 8.933];
 // Each higher partial decays this much faster than the one below it.
 export const DECAY_FALLOFF = 0.55;
 
+// A key's same-habitat neighbours ring with it at this share of its level,
+// starting over at least this many seconds.
+export const SYMPATHY = { min: 0, max: 0.6, step: 0.05, initial: 0.3, attack: 0.06 };
+
 // Seconds from silence to full level at the strike.
 export const ATTACK = 0.004;

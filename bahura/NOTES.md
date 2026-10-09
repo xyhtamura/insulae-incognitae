@@ -3,15 +3,49 @@
 A browser gong keyboard whose forty keys are a patch of estuarine terrain: the
 glyph on a key is its note, and the notes change as the terrain does. Sulat's
 terrain and contact rules with Ombak Lock's beating, at shoal scale. The design
-is in [SPEC.md](SPEC.md). Step 1 is built: a playable board with no mutation.
+is in [SPEC.md](SPEC.md). Steps 1 and 2 are built: a playable board with
+sympathetic ringing and no mutation.
 
 ## Next step
 
-Xyh auditions the envelopes, the shoal drawing, and the seed-drawn tunings on
-the step 1 page. Step 2 of [SPEC.md](SPEC.md) section 10, sympathetic ringing,
-follows that.
+Build step 3 of [SPEC.md](SPEC.md) section 10: contact mutation driven by
+playing, with the changed-key mark and the closed-rules check. Xyh's verdicts
+on the envelopes, tunings, and ringing level are still owed and can arrive at
+any point.
 
 ## Log
+
+2026-10-09 — Claude Code — Built step 2, sympathetic ringing, at Xyh's request.
+
+What changed:
+- `src/main.js`: playing a key also starts each of its six neighbours that
+  has the same habitat, at that neighbour's own pitch and envelope, and stops
+  them when the key is lifted. Each ringing neighbour gets a thin broken
+  outline.
+- `src/voice.js`: a note takes a level and a minimum attack. A ringing
+  neighbour plays at 30% of a played key's level and starts over at least
+  0.06 s, so it is not heard as a second strike. Both values are in
+  `data/voice.js`.
+- Audition panel: a "Neighbour ringing" slider from off to 60%, and the
+  readout lists which keys ring and how many hertz each is from the played
+  key.
+
+A neighbour in the row above or below is in another register, so it rings
+about an octave or a fifth away and does not beat closely. Only same-row
+neighbours give the close beating.
+
+Verified in the Browser pane by DOM, board 5: pressing 5 (mangrove) gave three
+outlines, two of them the neighbour kind, and the readout "rings with 4
+(5.32 Hz), 6 (1.36 Hz)"; lifting removed all three; with the slider at off the
+same key gave one outline and no "rings with"; no console errors.
+`node scripts/check_board.mjs` passes.
+
+Not verified: the sound. No agent has heard whether a patch shimmers or
+whether 30% is too much. A neighbour whose glyph is a mark rings out fully
+after the played key is lifted, because marks ignore release; whether that is
+wanted is for the ear.
+
+Undone: steps 3 to 5.
 
 2026-10-09 — Claude Code — Three changes after Xyh played step 1: envelopes
 that follow the glyph, a board drawn as shoals, and tuning drawn by the

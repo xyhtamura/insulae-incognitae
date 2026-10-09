@@ -1,12 +1,13 @@
 // Step 1 of SPEC.md: a playable board with no mutation. Draws the shoals, plays
 // them from the keyboard and the pointer, and holds the Audition panel.
 
-import { generateBoard } from './board.js';
+import { generateBoard, neighbours } from './board.js';
 import { unit } from './hash.js';
 import { VIEW, centre, outline, ripples } from './shape.js';
 import { createVoice } from './voice.js';
 import { habitat } from '../data/habitats.js';
 import { ENVELOPES, scriptOf } from '../data/envelopes.js';
+import { SYMPATHY } from '../data/voice.js';
 import { TUNINGS, REGISTERS, WINDOW, frequency, drawSettings } from '../data/tuning.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
@@ -19,7 +20,8 @@ let board = null;
 let settings = null;
 let pinned = {};             // Audition choices that override what the seed drew
 const shapes = new Map();    // key character -> its outline element
-const sounding = new Map();  // key character -> { release, mark }
+const sounding = new Map();  // key character -> { releases, marks }
+let sympathy = SYMPATHY.initial;
 let last = null;             // the last key struck, for the beat readout
 
 const svg = (name, attrs = {}) => {
@@ -45,7 +47,7 @@ function load(seed) {
 }
 
 function draw() {
-  for (const { release } of sounding.values()) release();
+  for (const { releases } of sounding.values()) releases.forEach(release => release());
   sounding.clear();
   shapes.clear();
   boardEl.setAttribute('viewBox', `0 0 ${VIEW.width} ${VIEW.height}`);
@@ -86,15 +88,27 @@ function press(char) {
   if (!key || sounding.has(char)) return;
   const hz = hzOf(key), kind = habitat(key.habitat), envelope = ENVELOPES[scriptOf(key.glyph)];
   // The struck outline is redrawn on top, so a neighbour's overlap cannot hide it.
-  const mark = svg('path', { d: shapes.get(char).getAttribute('d'), class: 'mark' });
-  $('marks').append(mark);
-  sounding.set(char, { release: voice.start(hz, kind, envelope), mark });
+  const outlineOf = (c, cls) => {
+    const mark = svg('path', { d: shapes.get(c).getAttribute('d'), class: cls });
+    $('marks').append(mark);
+    return mark;
+  };
+  const releases = [voice.start(hz, kind, envelope)], marks = [outlineOf(char, 'mark')];
+  // Neighbours of the same habitat ring with it, each at its own pitch and
+  // envelope, and stop when this key does.
+  const ringing = sympathy > 0 ? neighbours(board, key).filter(n => n.habitat === key.habitat) : [];
+  for (const n of ringing) {
+    releases.push(voice.start(hzOf(n), kind, ENVELOPES[scriptOf(n.glyph)], sympathy, SYMPATHY.attack));
+    marks.push(outlineOf(n.char, 'mark sympathetic'));
+  }
+  sounding.set(char, { releases, marks });
 
   let text = `${key.char}  ${kind.name}  ${hz.toFixed(2)} Hz  ${envelope.label}: attack ${envelope.attack} s, sustain ${envelope.sustain}, ${envelope.release == null ? 'rings out' : `release ${envelope.release} s`}`;
   if (last && last.char !== key.char) {
     const gap = Math.abs(hz - hzOf(last));
     if (gap < 20) text += `   ${gap.toFixed(2)} Hz from ${last.char}`;
   }
+  if (ringing.length) text += `   rings with ${ringing.map(n => `${n.char} (${n.row === key.row ? `${Math.abs(hz - hzOf(n)).toFixed(2)} Hz` : 'other row'})`).join(', ')}`;
   readout.textContent = text;
   last = key;
 }
@@ -102,8 +116,8 @@ function press(char) {
 function lift(char) {
   const note = sounding.get(char);
   if (!note) return;
-  note.release();
-  note.mark.remove();
+  note.releases.forEach(release => release());
+  note.marks.forEach(mark => mark.remove());
   sounding.delete(char);
 }
 const liftAll = () => [...sounding.keys()].forEach(lift);
@@ -171,6 +185,11 @@ $('tuning').addEventListener('change', e => pin('tuning', e.target.value));
 $('registers').addEventListener('change', e => pin('registers', e.target.value));
 windowEl.addEventListener('input', e => pin('window', Number(e.target.value)));
 $('unpin').addEventListener('click', () => { pinned = {}; load(board.seed); });
+const sympathyEl = $('sympathy');
+Object.assign(sympathyEl, { min: SYMPATHY.min, max: SYMPATHY.max, step: SYMPATHY.step, value: sympathy });
+const showSympathy = () => { $('sympathy-value').textContent = sympathy ? `${Math.round(sympathy * 100)}%` : 'off'; };
+showSympathy();
+sympathyEl.addEventListener('input', e => { sympathy = Number(e.target.value); liftAll(); showSympathy(); });
 $('show-hz').addEventListener('change', e => boardEl.classList.toggle('show-hz', e.target.checked));
 
 // Choices in the address are pinned, if they name something that exists.

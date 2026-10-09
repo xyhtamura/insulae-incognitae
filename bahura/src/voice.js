@@ -21,16 +21,18 @@ export function createVoice() {
   // Starts a note and returns the function that releases it. `decay` is the
   // seconds the fundamental takes to settle; `bright` is the gain ratio between
   // successive partials. Higher partials decay and release faster.
-  function start(hz, { decay, bright }, envelope) {
+  // `gain` scales the whole note, and `minAttack` softens its start: a neighbour
+  // set ringing by another key is quieter and is not struck.
+  function start(hz, { decay, bright }, envelope, gain = 1, minAttack = 0) {
     ensure();
-    const now = ctx.currentTime, peakAt = now + envelope.attack;
+    const now = ctx.currentTime, peakAt = now + Math.max(envelope.attack, minAttack);
     const settle = decay * envelope.decay;
     let total = 0;
     PARTIALS.forEach((_, k) => { total += bright ** k; });
     const parts = [];
     PARTIALS.forEach((ratio, k) => {
       if (hz * ratio > 16000) return;
-      const faster = 1 + k * DECAY_FALLOFF * 2, peak = 0.32 * bright ** k / total;
+      const faster = 1 + k * DECAY_FALLOFF * 2, peak = 0.32 * gain * bright ** k / total;
       const osc = ctx.createOscillator(), amp = ctx.createGain();
       osc.frequency.value = hz * ratio;
       amp.gain.setValueAtTime(0, now);

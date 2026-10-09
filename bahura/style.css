@@ -59,6 +59,8 @@ h1 { margin: 0 0 4px; font-size: 20px; font-weight: 600; }
 
 /* A sounding shoal is outlined, so the state does not rest on colour. */
 .mark { fill: none; stroke: var(--ink); stroke-width: 0.06; pointer-events: none; }
+/* A neighbour set ringing by another key has a thinner, broken outline. */
+.mark.sympathetic { stroke-width: 0.03; stroke-dasharray: 0.08 0.06; }
 
 .bar {
   display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
