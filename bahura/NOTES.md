@@ -18,6 +18,8 @@ device, and hiding the Audition panel for the finished page.
 
 ## Log
 
+2026-10-10 — Claude Code — Added favicon.svg, a gong seen from the front on the deep-water blue, and linked it from index.html, at Xyh's request for the multicart's three hax. An original drawing with no outside source. Rendered at 16, 32, and 96 px in headless Edge on light and dark backgrounds and inspected the screenshot; the motif is legible at 16 px. The root server returns the file as image/svg+xml. Display in an actual browser tab was not checked.
+
 2026-10-10 — Claude Code — Calmed the water, redrew the menu, and put the
 title on the page, at Xyh's request.
 
